@@ -41,12 +41,7 @@ header.app-header .sub{ font-size:10.5px; color:var(--text-secondary); margin-to
 .badge-group{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
 .status-badge{ display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; padding:6px 12px; border-radius:999px; white-space:nowrap;}
 .status-badge.connected{ color:#00875c; background:rgba(0,214,143,0.12); border:1px solid rgba(0,214,143,0.35);}
-.status-badge.local{ color:var(--warning); background:var(--warning-dim); border:1px solid #F0DDB0;}
-.status-badge.loading{ color:var(--text-secondary); background:var(--surface-1); border:1px solid var(--border);}
-.status-badge .spin{ width:10px; height:10px; border-radius:50%; border:2px solid var(--grid); border-top-color:var(--text-secondary); animation:spin .7s linear infinite;}
-@keyframes spin{ to{ transform:rotate(360deg); } }
-.db-note{ font-size:11px; color:var(--text-muted); padding:0 4px; display:none; max-width:1400px; margin-left:auto; margin-right:auto;}
-.db-note.show{ display:block; }
+.status-badge.disconnected{ color:var(--text-muted); background:var(--surface-1); border:1px solid var(--border);}
 .tabs{ display:flex; gap:8px; background:transparent; padding:14px 24px 0; overflow-x:auto;}
 .tab-btn{
   border:1px solid var(--border); background:var(--surface-2); box-shadow:var(--shadow);
@@ -138,8 +133,6 @@ tbody tr:hover{ background:var(--surface-1); }
 
 .pagination{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:12px; font-size:13px; color:var(--text-secondary);}
 .empty-state{ text-align:center; padding:40px 20px; color:var(--text-muted); font-size:13px;}
-.note-box{ background:var(--accent-dim); border:1px solid var(--accent-line); border-radius:10px; padding:13px 16px; font-size:12.5px; color:var(--text-secondary); margin-bottom:16px; }
-.note-box b{ color:var(--s1); }
 .map-link{ color:var(--s1); text-decoration:none; font-weight:700; font-size:12px;}
 .map-link:hover{ text-decoration:underline; }
 .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--text-primary); color:#fff; padding:11px 22px; border-radius:9px; font-size:13px; font-weight:600; z-index:200; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; box-shadow:0 12px 32px -8px rgba(16,27,43,.3);}
@@ -199,11 +192,10 @@ tbody tr:hover{ background:var(--surface-1); }
     <div class="sub">EQUIPMENT ASSET LOCATOR · قاعدة بيانات المعدات · لوحة المتابعة</div>
   </div>
   <div class="badge-group">
-    <div class="status-badge loading" id="statusBadge"><span class="spin"></span> جارٍ الاتصال...</div>
+    <div class="status-badge disconnected" id="statusBadge">غير متصل</div>
     <button id="themeBtn" class="ghost" style="padding:2px 6px; font-size:11px;" title="تبديل الوضع الليلي">🌙 / ☀️</button>
   </div>
 </header>
-<div class="db-note" id="dbNote" style="margin:8px 24px 0;"></div>
 
 <nav class="tabs">
   <button class="tab-btn active" data-tab="coords">📍 الإحداثيات والمعدات</button>
@@ -214,10 +206,6 @@ tbody tr:hover{ background:var(--surface-1); }
 
 <!-- ===================== TAB 1: COORDINATES ===================== -->
 <section id="tab-coords" class="tab-panel active">
-
-  <div class="note-box">
-    <b>ملاحظة:</b> قاعدة بيانات المعدات الذكية (<span id="polesCountNote"></span> عمود/معدة). يمكنك البحث والتعديل والإضافة والحذف مباشرة — راجع شارة الاتصال أعلى الصفحة لمعرفة هل التعديلات تُحفظ بشكل دائم ومشترك مع الفريق أم في هذه الجلسة فقط. يمكنك أيضًا تصدير البيانات كملف إكسل كنسخة احتياطية في أي وقت.
-  </div>
 
   <div class="card">
     <div class="search-hero">
@@ -267,10 +255,6 @@ tbody tr:hover{ background:var(--surface-1); }
       <div id="chartByManu"></div>
     </div>
   </div>
-
-  <div class="note-box">
-    <b>ملاحظة عن قاعدة البيانات:</b> الصفحة مربوطة بقاعدة بيانات خارجية (Google Sheets) عبر تطبيق ويب مبني على Google Apps Script (راجع ملف google_apps_script_backend.gs). عند نجاح الاتصال (شارة خضراء أعلى الصفحة) تصبح كل إضافة أو تعديل محفوظًا في الشيت ومرئيًا فوريًا لكل من يفتح الصفحة. إن لم تُربط بعد أو تعذّر الاتصال تعمل الصفحة في "وضع محلي" وتحتفظ بالتعديلات داخل الجلسة الحالية فقط.
-  </div>
 </section>
 
 <footer class="app-footer">
@@ -308,23 +292,13 @@ function apiConfigured(){
 
 function setConnStatus(state){
   const badge = document.getElementById('statusBadge');
-  const note = document.getElementById('dbNote');
   if(!badge) return;
   if(state === 'connected'){
     badge.className = 'status-badge connected';
-    badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M20 6 9 17l-5-5"/></svg> متصل بقاعدة بيانات Google Sheets`;
-    note.classList.remove('show');
-  } else if(state === 'local'){
-    badge.className = 'status-badge local';
-    badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg> وضع محلي (بدون حفظ دائم)`;
-    note.textContent = apiConfigured()
-      ? 'تعذّر الاتصال بقاعدة بيانات Google Sheets. تحقّق من رابط API_URL وكلمة السر API_KEY في أعلى السكربت، ومن أن تطبيق الويب منشور بصلاحية "Anyone". أي إضافة أو تعديل الآن لن يظهر لباقي الفريق ولن يُحفظ بعد إغلاق الصفحة.'
-      : 'لم يتم ربط الصفحة بقاعدة بيانات خارجية بعد. افتح ملف google_apps_script_backend.gs ونفّذ خطوات النشر، ثم الصق رابط API_URL وكلمة السر API_KEY في أعلى سكربت هذه الصفحة. حاليًا التعديلات تُحفظ في هذه الجلسة فقط.';
-    note.classList.add('show');
+    badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M20 6 9 17l-5-5"/></svg> متصل`;
   } else {
-    badge.className = 'status-badge loading';
-    badge.innerHTML = `<span class="spin"></span> جارٍ الاتصال...`;
-    note.classList.remove('show');
+    badge.className = 'status-badge disconnected';
+    badge.innerHTML = `غير متصل`;
   }
 }
 
@@ -378,7 +352,6 @@ function persistPoles(){
 }
 
 async function initData(){
-  setConnStatus('loading');
   try{
     const data = await apiFetchAll();
     STORAGE_AVAILABLE = true;
@@ -391,7 +364,7 @@ async function initData(){
     console.warn('external database unavailable, falling back to local/session copy', e);
     POLES = EMBEDDED_POLES.slice();
     STORAGE_AVAILABLE = false;
-    setConnStatus('local');
+    setConnStatus('disconnected');
   }
 
   renderPoleResults();
@@ -438,25 +411,20 @@ document.getElementById('themeBtn').addEventListener('click', ()=>{
 });
 
 /* ================= COORDINATES TAB (search → cards) ================= */
-function findPoleMatches(q){
-  const s = (q||'').trim().toLowerCase();
-  if(!s) return [];
-  return POLES.filter(p=>(p.pole||'').toLowerCase().includes(s));
-}
-
 function renderPoleResults(){
   const container = document.getElementById('poleResults');
   const q = poleFilters.search.trim();
   if(!q){
-    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">ابدأ بكتابة رقم العمود في خانة البحث أعلاه لعرض بيانات المعدة.</div>`;
+    container.innerHTML = '';
     return;
   }
-  const list = findPoleMatches(q);
-  if(list.length===0){
-    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">لا توجد نتائج مطابقة لـ "${escapeHtml(q)}"</div>`;
+  const ql = q.toLowerCase();
+  const exact = POLES.find(p=>(p.pole||'').toLowerCase()===ql);
+  if(!exact){
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">اختر رقم العمود من قائمة الاقتراحات لعرض بطاقته.</div>`;
     return;
   }
-  const shown = list.slice(0, 60);
+  const shown = [exact];
   container.innerHTML = shown.map(p=>{
     const idx = POLES.indexOf(p);
     const hasCoords = p.lat && p.lng;
@@ -480,7 +448,7 @@ function renderPoleResults(){
         </button>
       </div>
     </div>`;
-  }).join('') + (list.length>60 ? `<div class="empty-state" style="grid-column:1/-1;">تم عرض 60 نتيجة من أصل ${list.length} — دقّق البحث لعرض نتائج أقل.</div>` : '');
+  }).join('');
 }
 
 function openPoleDetail(idx){
@@ -703,7 +671,6 @@ function renderBarChart(containerId, data){
 }
 
 function renderDashboard(){
-  document.getElementById('polesCountNote').textContent = POLES.length;
   document.getElementById('kpiTotalPoles').innerHTML = POLES.length.toLocaleString('en-US');
 
   renderBarChart('chartByType', countBy(POLES,'type'));
