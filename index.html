@@ -139,13 +139,16 @@ tbody tr:hover{ background:var(--surface-1); }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(-6px); }
 
 /* pole result cards (coordinates tab) — styled after the reference "result-card" */
-.pole-results-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; margin-bottom:16px;}
-.pole-card{ background:var(--surface-1); border:1.5px solid var(--border); border-radius:12px; padding:20px; }
+.pole-results-grid{ display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:16px;}
+.pole-card{ background:var(--surface-1); border:1.5px solid var(--border); border-radius:12px; padding:20px; width:100%;}
 .pole-card .pc-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px dashed var(--baseline); flex-wrap:wrap;}
 .pole-card .pc-title{ font-size:17px; font-weight:800; direction:ltr; text-align:right; word-break:break-all; color:var(--s1);}
-.pole-card .pc-fields{ display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-bottom:14px;}
+.pole-card .pc-fields{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px 14px; margin-bottom:14px;}
 .pole-card .pc-field .k{ font-size:10.5px; color:var(--text-muted); font-weight:600; margin-bottom:3px;}
 .pole-card .pc-field .v{ font-size:13.5px; font-weight:600; direction:ltr; text-align:right; word-break:break-word; }
+.pole-card .pc-extra{ display:none; margin-bottom:14px; padding-top:14px; border-top:1px dashed var(--baseline); }
+.pole-card .pc-extra.show{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px 14px; }
+.btn-toggle-extra{ background:var(--surface-2); border:1.5px dashed var(--baseline); color:var(--s1); font-weight:700; font-size:12.5px;}
 .pole-card .pc-ip{ background:var(--surface-2); border:1.5px dashed var(--baseline); border-radius:9px; padding:10px 12px; font-size:14px; font-weight:700; direction:ltr; text-align:right; margin-bottom:14px;}
 .pole-card .pc-ip .k{ font-size:10.5px; color:var(--text-muted); font-weight:600; direction:rtl; text-align:right; display:block; margin-bottom:3px; font-family:'IBM Plex Sans Arabic',sans-serif;}
 .pole-card .pc-actions{ display:flex; gap:8px; flex-wrap:wrap; }
@@ -327,25 +330,49 @@ async function apiSave(sheetName, data){
     return false;
   }
 }
-const SERIAL_COL = 'الرقم التسلسي'; // must match the column header exactly as added in Google Sheets
+// extra (non-essential) columns — key: exact Google Sheet header text
+const EXTRA_COLS = {
+  serial: 'الرقم التسلسي',
+  station: 'المحطة',
+  feeder: 'المغذي',
+  function_location: 'FUNCTION LOCATION',
+  modem_type: 'نوع المودم',
+  manufacture_year: 'سنة الصنع',
+};
+const EXTRA_LABELS = {
+  serial: 'الرقم التسلسي',
+  station: 'المحطة',
+  feeder: 'المغذي',
+  function_location: 'FUNCTION LOCATION',
+  modem_type: 'نوع المودم',
+  manufacture_year: 'سنة الصنع',
+};
 function normalizePoles(arr){
-  return (arr||[]).map(p=>({
-    pole: String(p.pole||''),
-    office: String(p.office||''),
-    type: String(p.type||''),
-    manufacturer: String(p.manufacturer||''),
-    rtu: String(p.rtu||''),
-    ip: String(p.ip||''),
-    serial: String(p[SERIAL_COL] || p.serial || ''),
-    lat: (p.lat==='' || p.lat===undefined || p.lat===null || isNaN(parseFloat(p.lat))) ? null : parseFloat(p.lat),
-    lng: (p.lng==='' || p.lng===undefined || p.lng===null || isNaN(parseFloat(p.lng))) ? null : parseFloat(p.lng),
-  })).filter(p=>p.pole);
+  return (arr||[]).map(p=>{
+    const rec = {
+      pole: String(p.pole||''),
+      office: String(p.office||''),
+      type: String(p.type||''),
+      manufacturer: String(p.manufacturer||''),
+      rtu: String(p.rtu||''),
+      ip: String(p.ip||''),
+      lat: (p.lat==='' || p.lat===undefined || p.lat===null || isNaN(parseFloat(p.lat))) ? null : parseFloat(p.lat),
+      lng: (p.lng==='' || p.lng===undefined || p.lng===null || isNaN(parseFloat(p.lng))) ? null : parseFloat(p.lng),
+    };
+    Object.keys(EXTRA_COLS).forEach(k=>{
+      rec[k] = String(p[EXTRA_COLS[k]] || p[k] || '');
+    });
+    return rec;
+  }).filter(p=>p.pole);
 }
 function persistPoles(){
   const payload = POLES.map(p=>{
     const rest = Object.assign({}, p);
-    delete rest.serial;
-    rest[SERIAL_COL] = p.serial || '';
+    Object.keys(EXTRA_COLS).forEach(k=>{
+      const val = rest[k] || '';
+      delete rest[k];
+      rest[EXTRA_COLS[k]] = val;
+    });
     return rest;
   });
   apiSave('Poles', payload);
@@ -428,6 +455,9 @@ function renderPoleResults(){
   container.innerHTML = shown.map(p=>{
     const idx = POLES.indexOf(p);
     const hasCoords = p.lat && p.lng;
+    const extraHtml = Object.keys(EXTRA_COLS).map(k=>
+      `<div class="pc-field"><div class="k">${escapeHtml(EXTRA_LABELS[k])}</div><div class="v">${escapeHtml(p[k]||'—')}</div></div>`
+    ).join('');
     return `<div class="pole-card">
       <div class="pc-head">
         <div class="pc-title">${escapeHtml(p.pole)}</div>
@@ -437,18 +467,26 @@ function renderPoleResults(){
         <div class="pc-field"><div class="k">المكتب</div><div class="v">${escapeHtml(p.office||'—')}</div></div>
         <div class="pc-field"><div class="k">الشركة المصنّعة</div><div class="v">${escapeHtml(p.manufacturer||'—')}</div></div>
         <div class="pc-field"><div class="k">RTU</div><div class="v">${escapeHtml(p.rtu||'—')}</div></div>
-        <div class="pc-field"><div class="k">الرقم التسلسي</div><div class="v">${escapeHtml(p.serial||'—')}</div></div>
         <div class="pc-field"><div class="k">الإحداثيات</div><div class="v">${hasCoords? p.lat.toFixed(5)+', '+p.lng.toFixed(5) : '—'}</div></div>
       </div>
+      <div class="pc-extra" id="pcExtra_${idx}">${extraHtml}</div>
       <div class="pc-ip"><span class="k">عنوان IP</span>${escapeHtml(p.ip||'—')}</div>
       <div class="pc-actions">
         ${hasCoords? `<button class="btn-maps" style="flex:1;" onclick="window.open('${mapsLink(p.lat,p.lng)}','_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z" style="display:none;"/><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg> الانتقال إلى خرائط جوجل</button>` : ''}
+        <button class="btn-toggle-extra" id="pcExtraBtn_${idx}" onclick="togglePoleExtra(${idx})">إظهار المزيد ▾</button>
         <button class="ghost" onclick="openPoleDetail(${idx})" title="تعديل / حذف">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px; vertical-align:-2px;"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> تعديل
         </button>
       </div>
     </div>`;
   }).join('');
+}
+function togglePoleExtra(idx){
+  const box = document.getElementById('pcExtra_'+idx);
+  const btn = document.getElementById('pcExtraBtn_'+idx);
+  if(!box || !btn) return;
+  const showing = box.classList.toggle('show');
+  btn.textContent = showing ? 'إخفاء ▴' : 'إظهار المزيد ▾';
 }
 
 function openPoleDetail(idx){
@@ -545,6 +583,25 @@ function renderPoleDetailForm(p, idx){
       </div>
       <div class="row">
         <div class="col"><label>الرقم التسلسي</label><input type="text" id="f_serial" value="${escapeHtml(p?.serial||'')}"></div>
+        <div class="col">
+          <label>المحطة</label>
+          <select id="f_station_select" onchange="handleSelectOrNew(this,'f_station_new')">${buildSelectOptions('station', p?.station)}</select>
+          <input type="text" id="f_station_new" placeholder="اكتب اسم المحطة الجديدة" style="display:none; margin-top:6px;">
+        </div>
+        <div class="col">
+          <label>المغذي</label>
+          <select id="f_feeder_select" onchange="handleSelectOrNew(this,'f_feeder_new')">${buildSelectOptions('feeder', p?.feeder)}</select>
+          <input type="text" id="f_feeder_new" placeholder="اكتب اسم المغذي الجديد" style="display:none; margin-top:6px;">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col"><label>FUNCTION LOCATION</label><input type="text" id="f_function_location" value="${escapeHtml(p?.function_location||'')}"></div>
+        <div class="col">
+          <label>نوع المودم</label>
+          <select id="f_modem_select" onchange="handleSelectOrNew(this,'f_modem_new')">${buildSelectOptions('modem_type', p?.modem_type)}</select>
+          <input type="text" id="f_modem_new" placeholder="اكتب نوع المودم الجديد" style="display:none; margin-top:6px;">
+        </div>
+        <div class="col"><label>سنة الصنع</label><input type="text" id="f_manufacture_year" value="${escapeHtml(p?.manufacture_year||'')}"></div>
       </div>
       <div class="row">
         <div class="col"><label>خط العرض (Lat)</label><input type="text" id="f_lat" value="${p?.lat??''}"></div>
@@ -575,6 +632,11 @@ function savePole(idx){
     rtu: getFieldValue('f_rtu_select','f_rtu_new'),
     ip: document.getElementById('f_ip').value.trim(),
     serial: document.getElementById('f_serial').value.trim(),
+    station: getFieldValue('f_station_select','f_station_new'),
+    feeder: getFieldValue('f_feeder_select','f_feeder_new'),
+    function_location: document.getElementById('f_function_location').value.trim(),
+    modem_type: getFieldValue('f_modem_select','f_modem_new'),
+    manufacture_year: document.getElementById('f_manufacture_year').value.trim(),
     lat: parseFloat(document.getElementById('f_lat').value) || null,
     lng: parseFloat(document.getElementById('f_lng').value) || null,
   };
@@ -634,8 +696,8 @@ document.addEventListener('click', (e)=>{
 
 /* Excel export */
 document.getElementById('btnExportExcel').addEventListener('click', ()=>{
-  const headers = ['pole','office','type','manufacturer','rtu','ip','serial','lat','lng'];
-  const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', rtu:'RTU', ip:'عنوان IP', serial:'الرقم التسلسي', lat:'خط العرض', lng:'خط الطول'};
+  const headers = ['pole','office','type','manufacturer','rtu','ip','serial','station','feeder','function_location','modem_type','manufacture_year','lat','lng'];
+  const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', rtu:'RTU', ip:'عنوان IP', serial:'الرقم التسلسي', station:'المحطة', feeder:'المغذي', function_location:'FUNCTION LOCATION', modem_type:'نوع المودم', manufacture_year:'سنة الصنع', lat:'خط العرض', lng:'خط الطول'};
   const ws = XLSX.utils.json_to_sheet(POLES.map(p=>{
     const row = {};
     headers.forEach(h=>{ row[headerLabels[h]] = p[h] ?? ''; });
