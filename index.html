@@ -353,6 +353,7 @@ async function apiSave(sheetName, data){
     return false;
   }
 }
+const SERIAL_COL = 'الرقم التسلسي'; // must match the column header exactly as added in Google Sheets
 function normalizePoles(arr){
   return (arr||[]).map(p=>({
     pole: String(p.pole||''),
@@ -361,11 +362,20 @@ function normalizePoles(arr){
     manufacturer: String(p.manufacturer||''),
     rtu: String(p.rtu||''),
     ip: String(p.ip||''),
+    serial: String(p[SERIAL_COL] || p.serial || ''),
     lat: (p.lat==='' || p.lat===undefined || p.lat===null || isNaN(parseFloat(p.lat))) ? null : parseFloat(p.lat),
     lng: (p.lng==='' || p.lng===undefined || p.lng===null || isNaN(parseFloat(p.lng))) ? null : parseFloat(p.lng),
   })).filter(p=>p.pole);
 }
-function persistPoles(){ apiSave('Poles', POLES); }
+function persistPoles(){
+  const payload = POLES.map(p=>{
+    const rest = Object.assign({}, p);
+    delete rest.serial;
+    rest[SERIAL_COL] = p.serial || '';
+    return rest;
+  });
+  apiSave('Poles', payload);
+}
 
 async function initData(){
   setConnStatus('loading');
@@ -459,6 +469,7 @@ function renderPoleResults(){
         <div class="pc-field"><div class="k">المكتب</div><div class="v">${escapeHtml(p.office||'—')}</div></div>
         <div class="pc-field"><div class="k">الشركة المصنّعة</div><div class="v">${escapeHtml(p.manufacturer||'—')}</div></div>
         <div class="pc-field"><div class="k">RTU</div><div class="v">${escapeHtml(p.rtu||'—')}</div></div>
+        <div class="pc-field"><div class="k">الرقم التسلسي</div><div class="v">${escapeHtml(p.serial||'—')}</div></div>
         <div class="pc-field"><div class="k">الإحداثيات</div><div class="v">${hasCoords? p.lat.toFixed(5)+', '+p.lng.toFixed(5) : '—'}</div></div>
       </div>
       <div class="pc-ip"><span class="k">عنوان IP</span>${escapeHtml(p.ip||'—')}</div>
@@ -565,6 +576,9 @@ function renderPoleDetailForm(p, idx){
         <div class="col"><label>عنوان IP</label><input type="text" id="f_ip" value="${escapeHtml(p?.ip||'')}"></div>
       </div>
       <div class="row">
+        <div class="col"><label>الرقم التسلسي</label><input type="text" id="f_serial" value="${escapeHtml(p?.serial||'')}"></div>
+      </div>
+      <div class="row">
         <div class="col"><label>خط العرض (Lat)</label><input type="text" id="f_lat" value="${p?.lat??''}"></div>
         <div class="col"><label>خط الطول (Lng)</label><input type="text" id="f_lng" value="${p?.lng??''}"></div>
         <div class="col">
@@ -592,6 +606,7 @@ function savePole(idx){
     manufacturer: getFieldValue('f_manu_select','f_manu_new'),
     rtu: getFieldValue('f_rtu_select','f_rtu_new'),
     ip: document.getElementById('f_ip').value.trim(),
+    serial: document.getElementById('f_serial').value.trim(),
     lat: parseFloat(document.getElementById('f_lat').value) || null,
     lng: parseFloat(document.getElementById('f_lng').value) || null,
   };
@@ -651,8 +666,8 @@ document.addEventListener('click', (e)=>{
 
 /* Excel export */
 document.getElementById('btnExportExcel').addEventListener('click', ()=>{
-  const headers = ['pole','office','type','manufacturer','rtu','ip','lat','lng'];
-  const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', rtu:'RTU', ip:'عنوان IP', lat:'خط العرض', lng:'خط الطول'};
+  const headers = ['pole','office','type','manufacturer','rtu','ip','serial','lat','lng'];
+  const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', rtu:'RTU', ip:'عنوان IP', serial:'الرقم التسلسي', lat:'خط العرض', lng:'خط الطول'};
   const ws = XLSX.utils.json_to_sheet(POLES.map(p=>{
     const row = {};
     headers.forEach(h=>{ row[headerLabels[h]] = p[h] ?? ''; });
