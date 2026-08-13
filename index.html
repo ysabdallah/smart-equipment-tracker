@@ -164,6 +164,7 @@ tbody tr:hover{ background:var(--surface-1); }
 
 .chip-small{ display:inline-block; padding:3px 10px; border-radius:999px; background:var(--accent-dim); font-size:10.5px; color:var(--s1); font-weight:700;}
 .close-x{ float:left; background:none; border:none; box-shadow:none; color:var(--text-muted); font-size:18px; cursor:pointer; padding:2px 6px; }
+.form-actions{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
 .app-footer{ display:block; text-align:center; margin-top:28px; color:var(--text-muted); font-size:11px; font-family:'JetBrains Mono',monospace; line-height:1.9;}
 .app-footer .credit{ margin-top:14px; padding-top:14px; border-top:1px dashed var(--baseline); font-family:'IBM Plex Sans Arabic',sans-serif; font-size:11.5px; color:var(--text-secondary); font-weight:700; letter-spacing:.3px;}
 .app-footer .credit b{ color:var(--s1); }
@@ -478,6 +479,56 @@ function openPoleDetail(idx){
   document.getElementById('poleDetailPanel').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
+function distinctValues(key){
+  return [...new Set(POLES.map(x=>(x[key]||'').toString().trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+}
+function buildSelectOptions(key, current){
+  const values = distinctValues(key);
+  if(current && !values.includes(current)) values.push(current);
+  let opts = `<option value="">— اختر —</option>`;
+  opts += values.map(v=>`<option value="${escapeHtml(v)}" ${v===current?'selected':''}>${escapeHtml(v)}</option>`).join('');
+  opts += `<option value="__new__">+ إضافة قيمة جديدة...</option>`;
+  return opts;
+}
+function handleSelectOrNew(selectEl, inputId){
+  const input = document.getElementById(inputId);
+  if(selectEl.value === '__new__'){
+    input.style.display = 'block';
+    input.value = '';
+    input.focus();
+  } else {
+    input.style.display = 'none';
+  }
+}
+function getFieldValue(selectId, inputId){
+  const select = document.getElementById(selectId);
+  if(select.value === '__new__'){
+    return document.getElementById(inputId).value.trim();
+  }
+  return select.value.trim();
+}
+function useCurrentLocation(){
+  if(!navigator.geolocation){ toast('المتصفح لا يدعم تحديد الموقع'); return; }
+  const btn = document.getElementById('btnUseLocation');
+  const orig = btn.textContent;
+  btn.textContent = '⏳ جارٍ تحديد الموقع...';
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      document.getElementById('f_lat').value = pos.coords.latitude;
+      document.getElementById('f_lng').value = pos.coords.longitude;
+      toast('تم تحديد الموقع الفعلي بنجاح');
+      btn.textContent = orig;
+      btn.disabled = false;
+    },
+    (err)=>{
+      toast('تعذّر الحصول على الموقع — تأكد من السماح بالوصول للموقع في المتصفح');
+      btn.textContent = orig;
+      btn.disabled = false;
+    },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+}
 function renderPoleDetailForm(p, idx){
   const isNew = idx===null;
   const panel = document.getElementById('poleDetailPanel');
@@ -487,7 +538,11 @@ function renderPoleDetailForm(p, idx){
       <h2>${isNew? 'إضافة عمود / معدة جديدة' : 'تفاصيل العمود: '+escapeHtml(p.pole)}</h2>
       <div class="row">
         <div class="col"><label>رقم العمود</label><input type="text" id="f_pole" value="${escapeHtml(p?.pole||'')}"></div>
-        <div class="col"><label>المكتب</label><input type="text" id="f_office" value="${escapeHtml(p?.office||'')}"></div>
+        <div class="col">
+          <label>المكتب</label>
+          <select id="f_office_select" onchange="handleSelectOrNew(this,'f_office_new')">${buildSelectOptions('office', p?.office)}</select>
+          <input type="text" id="f_office_new" placeholder="اكتب اسم المكتب الجديد" style="display:none; margin-top:6px;">
+        </div>
         <div class="col"><label>نوع المعدة</label>
           <select id="f_type">
             <option value="RECLOSER" ${p?.type==='RECLOSER'?'selected':''}>RECLOSER</option>
@@ -497,13 +552,25 @@ function renderPoleDetailForm(p, idx){
         </div>
       </div>
       <div class="row">
-        <div class="col"><label>الشركة المصنّعة</label><input type="text" id="f_manu" value="${escapeHtml(p?.manufacturer||'')}"></div>
-        <div class="col"><label>RTU</label><input type="text" id="f_rtu" value="${escapeHtml(p?.rtu||'')}"></div>
+        <div class="col">
+          <label>الشركة المصنّعة</label>
+          <select id="f_manu_select" onchange="handleSelectOrNew(this,'f_manu_new')">${buildSelectOptions('manufacturer', p?.manufacturer)}</select>
+          <input type="text" id="f_manu_new" placeholder="اكتب اسم الشركة الجديدة" style="display:none; margin-top:6px;">
+        </div>
+        <div class="col">
+          <label>RTU</label>
+          <select id="f_rtu_select" onchange="handleSelectOrNew(this,'f_rtu_new')">${buildSelectOptions('rtu', p?.rtu)}</select>
+          <input type="text" id="f_rtu_new" placeholder="اكتب نوع RTU الجديد" style="display:none; margin-top:6px;">
+        </div>
         <div class="col"><label>عنوان IP</label><input type="text" id="f_ip" value="${escapeHtml(p?.ip||'')}"></div>
       </div>
       <div class="row">
         <div class="col"><label>خط العرض (Lat)</label><input type="text" id="f_lat" value="${p?.lat??''}"></div>
         <div class="col"><label>خط الطول (Lng)</label><input type="text" id="f_lng" value="${p?.lng??''}"></div>
+        <div class="col">
+          <label>&nbsp;</label>
+          <button type="button" id="btnUseLocation" onclick="useCurrentLocation()" style="width:100%;">📍 استخدام موقعي الحالي</button>
+        </div>
       </div>
       <div class="form-actions">
         <button class="primary" onclick="savePole(${isNew?'null':idx})">💾 حفظ</button>
@@ -520,10 +587,10 @@ function closePoleDetail(){
 function savePole(idx){
   const rec = {
     pole: document.getElementById('f_pole').value.trim(),
-    office: document.getElementById('f_office').value.trim(),
+    office: getFieldValue('f_office_select','f_office_new'),
     type: document.getElementById('f_type').value,
-    manufacturer: document.getElementById('f_manu').value.trim(),
-    rtu: document.getElementById('f_rtu').value.trim(),
+    manufacturer: getFieldValue('f_manu_select','f_manu_new'),
+    rtu: getFieldValue('f_rtu_select','f_rtu_new'),
     ip: document.getElementById('f_ip').value.trim(),
     lat: parseFloat(document.getElementById('f_lat').value) || null,
     lng: parseFloat(document.getElementById('f_lng').value) || null,
