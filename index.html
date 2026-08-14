@@ -92,6 +92,19 @@ main{ padding:20px 24px 60px; max-width:1400px; margin:0 auto;}
 .row{ display:flex; gap:12px; flex-wrap:wrap; }
 .col{ flex:1; min-width:220px; }
 
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+@media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } }
+
+.task-item{ border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:10px; background:var(--surface-1); }
+.task-item .task-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+.task-item .task-desc{ font-size:13.5px; font-weight:700; margin-bottom:4px; }
+.task-item .task-meta{ font-size:11.5px; color:var(--text-secondary); }
+.status-pill{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+.status-pill.status-new{ background:#fde68a33; color:#b45309; }
+.status-pill.status-progress{ background:#93c5fd33; color:#1d4ed8; }
+.status-pill.status-done{ background:#86efac33; color:#15803d; }
+.task-item .task-actions{ margin-top:10px; display:flex; gap:8px; }
+
 label{ display:block; font-size:12.5px; color:var(--text-secondary); margin-bottom:6px; font-weight:700;}
 input[type=text], input[type=search], input[type=tel], input[type=email], select, textarea{
   width:100%; padding:11px 14px; border:1.5px solid var(--baseline); border-radius:9px; font-size:13.5px;
@@ -297,6 +310,7 @@ tbody tr:hover{ background:var(--surface-1); }
 <nav class="tabs">
   <button class="tab-btn active" data-tab="coords">📍 الإحداثيات والمعدات</button>
   <button class="tab-btn" data-tab="dash">📊 لوحة المعلومات</button>
+  <button class="tab-btn" data-tab="tasks">🧾 المهام</button>
 </nav>
 
 <main>
@@ -372,6 +386,37 @@ tbody tr:hover{ background:var(--surface-1); }
       <div class="warranty-note" id="warrantyUnknownNote"></div>
     </div>
   </div>
+</section>
+
+<!-- ===================== TAB 3: TASKS ===================== -->
+<section id="tab-tasks" class="tab-panel">
+
+  <div class="card" id="assignTaskCard" style="display:none;">
+    <h3>➕ إسناد مهمة جديدة لفني</h3>
+    <div class="form-grid">
+      <div>
+        <label>الفني</label>
+        <select id="assignTechnicianSelect"><option value="">-- اختر الفني --</option></select>
+      </div>
+      <div>
+        <label>رقم العمود (اختياري)</label>
+        <input type="text" id="assignPoleId" placeholder="مثال: BNE4-84-46-11-19-14">
+      </div>
+      <div style="grid-column:1/-1;">
+        <label>وصف المهمة</label>
+        <textarea id="assignDescription" rows="3" placeholder="مثال: افحص المعدة وتأكد من حالتها"></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="primary" id="btnAssignTask">إسناد المهمة</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 id="tasksListTitle">مهامي</h3>
+    <div id="tasksListWrap"></div>
+  </div>
+
 </section>
 
 <footer class="app-footer">
@@ -462,6 +507,8 @@ async function doLogout(){
   const token = authToken();
   clearAuth();
   showLoginScreen();
+  TASKS = [];
+  TECHNICIANS_CACHE = null;
   try{
     if(token){
       await fetch(API_URL, {
@@ -665,11 +712,13 @@ async function attemptReconnect(){
       STORAGE_AVAILABLE = true;
       POLES = normalizePoles(data.poles);
       ACTIVITY_LOG = normalizeActivity(data.assignments);
+      TASKS = normalizeTasks(data.tasks);
       cachePolesLocally();
       cacheActivityLocally();
       renderPoleResults();
       renderDashboard();
       renderNotifBadge();
+      renderTasksView();
       setConnStatus('connected');
     }catch(e){
       if(e && e.isAuthError){ forceReLogin(); return; }
@@ -708,6 +757,7 @@ async function initData(){
       STORAGE_AVAILABLE = true;
       POLES = normalizePoles(data.poles);
       ACTIVITY_LOG = normalizeActivity(data.assignments);
+      TASKS = normalizeTasks(data.tasks);
       cachePolesLocally();
       cacheActivityLocally();
       setConnStatus('connected');
@@ -731,6 +781,7 @@ async function initData(){
   renderNotifBadge();
   renderPoleResults();
   renderDashboard();
+  renderTasksView();
 }
 document.getElementById('syncPendingBtn').addEventListener('click', ()=>{
   toast('جارٍ محاولة المزامنة...');
@@ -747,6 +798,180 @@ function currentUserName(){
   const auth = getAuth();
   return (auth && (auth.name || auth.username)) || 'غير معروف';
 }
+function isAdmin(){
+  const auth = getAuth();
+  return !!(auth && auth.role === 'admin');
+}
+
+/* ================= إسناد المهام (Tasks) ================= */
+let TASKS = [];
+let TECHNICIANS_CACHE = null;
+
+function normalizeTasks(arr){
+  return (arr||[]).map(t=>({
+    id: String(t['معرف المهمة']||''),
+    description: String(t['الوصف']||''),
+    poleId: String(t['رقم العمود']||''),
+    assignedToUsername: String(t['اسم المستخدم المسند إليه']||''),
+    assignedToName: String(t['اسم الفني']||''),
+    assignedBy: String(t['المسند من']||''),
+    status: String(t['الحالة']||'جديد'),
+    assignedAt: String(t['تاريخ الإسناد']||''),
+    completedAt: String(t['تاريخ الإكمال']||''),
+  })).filter(t=>t.id);
+}
+
+function statusClass(status){
+  if(status === 'مكتمل') return 'status-done';
+  if(status === 'قيد التنفيذ') return 'status-progress';
+  return 'status-new';
+}
+
+async function loadTechniciansForAssignment(){
+  if(!authToken()) return [];
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'listTechnicians', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok) return [];
+    return json.users || [];
+  }catch(e){ return []; }
+}
+
+async function renderTasksView(){
+  const auth = getAuth();
+  const assignCard = document.getElementById('assignTaskCard');
+  const listTitle = document.getElementById('tasksListTitle');
+  const listWrap = document.getElementById('tasksListWrap');
+  const admin = isAdmin();
+
+  assignCard.style.display = admin ? 'block' : 'none';
+  listTitle.textContent = admin ? 'كل المهام المُسندة' : 'مهامي';
+
+  if(admin && !TECHNICIANS_CACHE){
+    TECHNICIANS_CACHE = await loadTechniciansForAssignment();
+    const select = document.getElementById('assignTechnicianSelect');
+    select.innerHTML = '<option value="">-- اختر الفني --</option>' +
+      TECHNICIANS_CACHE.filter(u=>u.username !== (auth&&auth.username)).map(u=>
+        `<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)} (${u.role==='admin'?'مدير':'فني'})</option>`
+      ).join('');
+  }
+
+  const visibleTasks = admin ? TASKS : TASKS.filter(t=>t.assignedToUsername.toLowerCase() === String(auth&&auth.username||'').toLowerCase());
+
+  if(!visibleTasks.length){
+    listWrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">لا توجد مهام حاليًا</div>`;
+    return;
+  }
+
+  listWrap.innerHTML = visibleTasks.slice().reverse().map(t=>{
+    const canUpdate = admin || t.assignedToUsername.toLowerCase() === String(auth&&auth.username||'').toLowerCase();
+    const statusLabel = t.status;
+    let actionsHtml = '';
+    if(canUpdate && t.status !== 'مكتمل'){
+      actionsHtml = `<div class="task-actions">`;
+      if(t.status !== 'قيد التنفيذ'){
+        actionsHtml += `<button data-task-status="قيد التنفيذ" data-task-id="${escapeHtml(t.id)}">بدء التنفيذ</button>`;
+      }
+      actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
+      actionsHtml += `</div>`;
+    }
+    return `<div class="task-item">
+      <div class="task-top">
+        <div>
+          <div class="task-desc">${escapeHtml(t.description || 'بدون وصف')}</div>
+          <div class="task-meta">${t.poleId ? ('العمود: ' + escapeHtml(t.poleId) + ' · ') : ''}الفني: ${escapeHtml(t.assignedToName)} · أسندها: ${escapeHtml(t.assignedBy)}</div>
+        </div>
+        <span class="status-pill ${statusClass(t.status)}">${escapeHtml(statusLabel)}</span>
+      </div>
+      ${actionsHtml}
+    </div>`;
+  }).join('');
+
+  listWrap.querySelectorAll('[data-task-status]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const taskId = btn.dataset.taskId;
+      const status = btn.dataset.taskStatus;
+      btn.disabled = true;
+      const ok = await updateTaskStatusApi(taskId, status);
+      if(ok){
+        const t = TASKS.find(x=>x.id === taskId);
+        if(t) t.status = status;
+        toast('تم تحديث حالة المهمة');
+        renderTasksView();
+      } else {
+        toast('تعذر تحديث حالة المهمة');
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+async function updateTaskStatusApi(taskId, status){
+  if(!authToken()) return false;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'updateTaskStatus', token: authToken(), taskId, status })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      return false;
+    }
+    return true;
+  }catch(e){ return false; }
+}
+
+document.getElementById('btnAssignTask').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnAssignTask');
+  const assignedTo = document.getElementById('assignTechnicianSelect').value;
+  const poleId = document.getElementById('assignPoleId').value.trim();
+  const description = document.getElementById('assignDescription').value.trim();
+  if(!assignedTo){ toast('يرجى اختيار الفني'); return; }
+  if(!description){ toast('يرجى كتابة وصف المهمة'); return; }
+
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'assignTask', token: authToken(), assignedTo, poleId, description })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      toast(json.error || 'تعذر إسناد المهمة');
+      return;
+    }
+    TASKS.push({
+      id: json.taskId, description, poleId,
+      assignedToUsername: assignedTo, assignedToName: json.technicianName,
+      assignedBy: currentUserName(), status: 'جديد', assignedAt: new Date().toISOString(), completedAt: ''
+    });
+    document.getElementById('assignPoleId').value = '';
+    document.getElementById('assignDescription').value = '';
+    document.getElementById('assignTechnicianSelect').value = '';
+    renderTasksView();
+    toast('تم إسناد المهمة بنجاح');
+
+    if(json.technicianPhone){
+      const phone = String(json.technicianPhone).replace(/[^0-9]/g, '');
+      const msg = `مرحبًا ${json.technicianName}، تم إسناد مهمة جديدة لك في نظام إدارة المعدات الذكية:\n${description}${poleId ? ('\nرقم العمود: ' + poleId) : ''}`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    } else {
+      toast('لا يوجد رقم واتساب مسجل لهذا الفني — لن يصله إشعار تلقائي');
+    }
+  }catch(e){
+    toast('تعذر الاتصال بالخادم لإسناد المهمة');
+  }finally{
+    btn.disabled = false;
+  }
+});
 
 /* ================= ACTIVITY LOG / NOTIFICATIONS (stored in Assignments sheet) ================= */
 const ACTIVITY_COL = { timestamp:'الوقت', editor:'المستخدم', pole:'رقم العمود', action:'الإجراء' };
@@ -854,6 +1079,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.classList.add('active');
     document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
     if(btn.dataset.tab==='dash') renderDashboard();
+    if(btn.dataset.tab==='tasks') renderTasksView();
   });
 });
 document.querySelectorAll('.subtab-btn').forEach(btn=>{
