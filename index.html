@@ -264,13 +264,39 @@ tbody tr:hover{ background:var(--surface-1); }
 .auth-screen button[type="submit"]:disabled{ opacity:.65; cursor:default; }
 .auth-screen .login-foot{ margin-top:18px; font-size:10.5px; color:var(--text-muted); }
 .auth-screen .login-foot a{ color:var(--s1); font-weight:700; text-decoration:none; cursor:pointer; }
+.phone-input-row{ display:flex; gap:8px; direction:ltr; }
+.phone-input-row .phone-prefix{ display:flex; align-items:center; justify-content:center; padding:0 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--surface-1); color:var(--text-secondary); font-weight:700; font-size:14px; white-space:nowrap; }
+.phone-input-row input{ direction:ltr; text-align:left; }
 .pending-req{ text-align:right; border-bottom:1px dashed var(--baseline); padding:10px 4px; font-size:12.5px; }
 .pending-req .pr-name{ font-weight:700; margin-bottom:2px; }
 .pending-req .pr-meta{ font-size:11px; color:var(--text-muted); margin-bottom:8px; }
 .pending-req .pr-actions{ display:flex; gap:8px; }
 .pending-req .pr-actions button{ flex:1; padding:6px 8px; font-size:11.5px; border-radius:7px; }
-.user-chip{ display:flex; align-items:center; gap:6px; padding:2px 8px; font-size:11px; border-radius:999px; }
+.employees-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:14px; }
+.employee-card{ background:var(--surface-1); border:1.5px solid var(--border); border-radius:12px; padding:18px; text-align:center; }
+.employee-card .emp-avatar{ width:64px; height:64px; border-radius:50%; overflow:hidden; margin:0 auto 10px; background:var(--surface-2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:26px; color:var(--text-muted); }
+.employee-card .emp-avatar img{ width:100%; height:100%; object-fit:cover; }
+.employee-card .emp-name{ font-weight:800; font-size:14px; margin-bottom:2px; }
+.employee-card .emp-role{ font-size:10.5px; color:var(--s1); font-weight:700; margin-bottom:10px; }
+.employee-card .emp-row{ display:flex; justify-content:space-between; gap:8px; font-size:11.5px; padding:6px 0; border-top:1px dashed var(--baseline); text-align:right; }
+.employee-card .emp-row .k{ color:var(--text-muted); font-weight:700; white-space:nowrap; }
+.employee-card .emp-row .v{ color:var(--text-primary); font-weight:600; direction:ltr; text-align:left; overflow-wrap:anywhere; }
+.employee-card .emp-status{ display:inline-block; margin-top:10px; padding:3px 10px; border-radius:999px; font-size:10.5px; font-weight:700; }
+.employee-card .emp-status.active{ color:#00875c; background:rgba(0,214,143,0.12); }
+.employee-card .emp-status.inactive{ color:var(--critical); background:var(--critical-dim); }
+.user-chip{ display:flex; align-items:center; gap:6px; padding:2px 8px; font-size:11px; border-radius:999px; cursor:pointer; }
 .user-chip .role-pill{ font-size:9.5px; background:var(--accent-dim); color:var(--s1); padding:1px 7px; border-radius:999px; font-weight:700; }
+.profile-modal-overlay{ position:fixed; inset:0; z-index:600; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(10,20,35,0.55); }
+.profile-modal-overlay.show{ display:flex; }
+.profile-modal{ width:100%; max-width:420px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:26px 24px; max-height:88vh; overflow-y:auto; position:relative; }
+.profile-modal h3{ margin:0 0 4px; font-size:17px; }
+.profile-avatar-row{ display:flex; flex-direction:column; align-items:center; gap:10px; margin:14px 0 18px; padding-bottom:16px; border-bottom:1px dashed var(--baseline); }
+.profile-avatar{ width:88px; height:88px; border-radius:50%; overflow:hidden; background:var(--surface-1); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:34px; color:var(--text-muted); }
+.profile-modal label{ display:block; text-align:right; font-size:12px; font-weight:700; color:var(--text-secondary); margin:12px 0 6px; }
+.profile-modal input[type=text],.profile-modal input[type=password]{ width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid var(--border); background:var(--surface-1); color:var(--text-primary); font-size:13.5px; font-family:inherit; box-sizing:border-box; }
+.profile-modal .form-msg{ margin-top:10px; padding:8px 10px; border-radius:8px; font-size:12px; font-weight:600; display:none; }
+.profile-modal .form-msg.err{ background:var(--critical-dim); color:var(--critical); display:block; }
+.profile-modal .form-msg.ok{ background:rgba(0,214,143,0.12); color:#00875c; display:block; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -282,29 +308,36 @@ tbody tr:hover{ background:var(--surface-1); }
     <h2>نظام إدارة المعدات الذكية</h2>
     <div class="login-sub">الرجاء تسجيل الدخول للمتابعة — الصفحة تحتوي على بيانات حساسة</div>
     <form id="loginForm" autocomplete="off">
-      <label for="loginUsername">اسم المستخدم</label>
-      <input type="text" id="loginUsername" autocomplete="username" required>
+      <label for="loginUsername">اسم المستخدم / رقم الهوية أو الإقامة</label>
+      <input type="text" id="loginUsername" autocomplete="username" placeholder="رقم الهوية أو الإقامة (للموظفين)" required>
       <label for="loginPassword">كلمة المرور</label>
       <input type="password" id="loginPassword" autocomplete="current-password" required>
       <div class="login-error" id="loginError"></div>
       <button type="submit" id="loginSubmitBtn">تسجيل الدخول</button>
     </form>
-    <div class="login-foot"><a id="showRegisterLink">فني جديد؟ أنشئ حسابًا من هنا</a></div>
+    <div class="login-foot"><a id="showRegisterLink">موظف جديد؟ أنشئ حسابًا من هنا</a></div>
   </div>
 </div>
 
 <div id="registerScreen" class="auth-screen" style="display:none;">
   <div class="login-card">
     <div class="login-logo">🧑‍🔧</div>
-    <h2>إنشاء حساب فني جديد</h2>
-    <div class="login-sub">سيُرسل طلبك لمدير النظام للموافقة قبل أن تتمكن من الدخول</div>
+    <h2>إنشاء حساب موظف جديد</h2>
+    <div class="login-sub">سيُرسل طلبك لمدير النظام للموافقة قبل أن تتمكن من الدخول — جميع الحقول إجبارية</div>
     <form id="registerForm" autocomplete="off">
-      <label for="regFullName">الاسم الكامل</label>
+      <label for="regFullName">الاسم بالكامل</label>
       <input type="text" id="regFullName" required>
-      <label for="regUsername">اسم المستخدم</label>
-      <input type="text" id="regUsername" autocomplete="username" placeholder="بالإنجليزية وبدون مسافات" required>
+      <label for="regNationalId">رقم الهوية الوطنية أو رقم الإقامة</label>
+      <input type="text" id="regNationalId" inputmode="numeric" placeholder="أرقام فقط" required>
       <label for="regPhone">رقم الواتساب</label>
-      <input type="tel" id="regPhone" placeholder="مثال: 966501234567">
+      <div class="phone-input-row">
+        <span class="phone-prefix">+966</span>
+        <input type="tel" id="regPhone" inputmode="numeric" placeholder="5XXXXXXXX" required>
+      </div>
+      <label for="regContractor">اسم المقاول</label>
+      <input type="text" id="regContractor" required>
+      <label for="regSecurityCard">رقم بطاقة الأمن الصناعي</label>
+      <input type="text" id="regSecurityCard" required>
       <label for="regPassword">كلمة المرور</label>
       <input type="password" id="regPassword" autocomplete="new-password" required>
       <div class="login-error" id="registerError"></div>
@@ -326,7 +359,7 @@ tbody tr:hover{ background:var(--surface-1); }
     <div class="status-badge disconnected" id="statusBadge">غير متصل</div>
     <button id="syncPendingBtn" class="ghost sync-pending-btn" style="display:none;" title="يوجد تغييرات محلية لم تتم مزامنتها بعد — اضغط للمحاولة الآن">⏳ بانتظار المزامنة</button>
     <div class="badge-icons-row">
-      <div class="ghost user-chip" title="المستخدم الحالي">👤 <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></div>
+      <button id="profileBtn" class="ghost user-chip" title="حسابي — تعديل كلمة المرور والصورة الشخصية">👤 <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></button>
       <button id="logoutBtn" class="ghost" style="padding:2px 8px; font-size:11px;" title="تسجيل الخروج">🚪 خروج</button>
       <div class="notif-wrap">
         <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات">🔔<span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
@@ -337,10 +370,35 @@ tbody tr:hover{ background:var(--surface-1); }
   </div>
 </header>
 
+<div id="profileModalOverlay" class="profile-modal-overlay">
+  <div class="profile-modal">
+    <button class="close-x" id="closeProfileModal" type="button">×</button>
+    <h3>👤 حسابي</h3>
+    <div class="login-sub" id="profileNameSub" style="margin:0;"></div>
+    <div class="profile-avatar-row">
+      <div class="profile-avatar" id="profileAvatarPreview">👤</div>
+      <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;">
+      <button type="button" id="btnChoosePhoto" class="ghost" style="font-size:11.5px; padding:6px 12px;">📷 تغيير الصورة الشخصية</button>
+      <div class="form-msg" id="photoMsg"></div>
+    </div>
+    <form id="changePasswordForm" autocomplete="off">
+      <label for="curPassword">كلمة المرور الحالية</label>
+      <input type="password" id="curPassword" autocomplete="current-password" required>
+      <label for="newPassword">كلمة المرور الجديدة</label>
+      <input type="password" id="newPassword" autocomplete="new-password" required>
+      <label for="confirmPassword">تأكيد كلمة المرور الجديدة</label>
+      <input type="password" id="confirmPassword" autocomplete="new-password" required>
+      <div class="form-msg" id="passwordMsg"></div>
+      <button type="submit" class="primary" style="width:100%; margin-top:14px;">تحديث كلمة المرور</button>
+    </form>
+  </div>
+</div>
+
 <nav class="tabs">
   <button class="tab-btn active" data-tab="coords">📍 الإحداثيات والمعدات</button>
   <button class="tab-btn" data-tab="dash">📊 لوحة المعلومات</button>
   <button class="tab-btn" data-tab="tasks">🧾 المهام</button>
+  <button class="tab-btn" data-tab="employees" id="employeesTabBtn" style="display:none;">👥 الموظفون</button>
 </nav>
 
 <main>
@@ -422,11 +480,11 @@ tbody tr:hover{ background:var(--surface-1); }
 <section id="tab-tasks" class="tab-panel">
 
   <div class="card" id="assignTaskCard" style="display:none;">
-    <h3>➕ إسناد مهمة جديدة لفني</h3>
+    <h3>➕ إسناد مهمة جديدة لموظف</h3>
     <div class="form-grid">
       <div>
-        <label>الفني</label>
-        <select id="assignTechnicianSelect"><option value="">-- اختر الفني --</option></select>
+        <label>الموظف</label>
+        <select id="assignTechnicianSelect"><option value="">-- اختر الموظف --</option></select>
       </div>
       <div>
         <label>رقم العمود (اختياري)</label>
@@ -443,10 +501,21 @@ tbody tr:hover{ background:var(--surface-1); }
   </div>
 
   <div class="card">
-    <h3 id="tasksListTitle">مهامي</h3>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+      <h3 id="tasksListTitle" style="margin:0;">مهامي</h3>
+      <button id="btnExportTasksExcel" style="display:none;">⬇ تصدير المهام إلى إكسل</button>
+    </div>
     <div id="tasksListWrap"></div>
   </div>
 
+</section>
+
+<!-- ===================== TAB 4: EMPLOYEES (admin only) ===================== -->
+<section id="tab-employees" class="tab-panel">
+  <div class="card">
+    <h3>👥 بيانات الموظفين</h3>
+    <div id="employeesCardsWrap" class="employees-grid"></div>
+  </div>
 </section>
 
 <footer class="app-footer">
@@ -529,7 +598,12 @@ function showAppShell(){
   const nameLabel = document.getElementById('currentUserLabel');
   const roleLabel = document.getElementById('currentUserRole');
   if(nameLabel) nameLabel.textContent = (auth && (auth.name || auth.username)) || '—';
-  if(roleLabel) roleLabel.textContent = (auth && auth.role === 'admin') ? 'مدير' : 'فني';
+  if(roleLabel) roleLabel.textContent = (auth && auth.role === 'admin') ? 'مدير' : 'موظف';
+  const admin = isAdmin();
+  const employeesTabBtn = document.getElementById('employeesTabBtn');
+  if(employeesTabBtn) employeesTabBtn.style.display = admin ? '' : 'none';
+  const exportTasksBtn = document.getElementById('btnExportTasksExcel');
+  if(exportTasksBtn) exportTasksBtn.style.display = admin ? '' : 'none';
 }
 async function doLogin(username, password){
   const res = await fetch(API_URL, {
@@ -539,7 +613,7 @@ async function doLogin(username, password){
   });
   const json = await res.json();
   if(!json.ok) throw new Error(json.error || 'فشل تسجيل الدخول');
-  setAuth({ token: json.token, username: json.username, name: json.name, role: json.role });
+  setAuth({ token: json.token, username: json.username, name: json.name, role: json.role, photoUrl: json.photoUrl || '' });
 }
 async function doLogout(){
   const token = authToken();
@@ -584,11 +658,11 @@ document.getElementById('logoutBtn').addEventListener('click', ()=>{ doLogout();
 document.getElementById('showRegisterLink').addEventListener('click', (ev)=>{ ev.preventDefault(); showRegisterScreen(); });
 document.getElementById('showLoginLink').addEventListener('click', (ev)=>{ ev.preventDefault(); showLoginScreen(); });
 
-async function doRegister(fullName, username, phone, password){
+async function doRegister(fullName, nationalId, phone, contractor, securityCard, password){
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'register', fullName, username, phone, password })
+    body: JSON.stringify({ action: 'register', fullName, nationalId, phone, contractor, securityCard, password })
   });
   const json = await res.json();
   if(!json.ok) throw new Error(json.error || 'تعذر إرسال الطلب');
@@ -596,18 +670,30 @@ async function doRegister(fullName, username, phone, password){
 document.getElementById('registerForm').addEventListener('submit', async (ev)=>{
   ev.preventDefault();
   const fullName = document.getElementById('regFullName').value.trim();
-  const username = document.getElementById('regUsername').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
+  const nationalId = document.getElementById('regNationalId').value.trim();
+  const phoneLocal = document.getElementById('regPhone').value.trim().replace(/^0+/, '');
+  const phone = phoneLocal ? ('966' + phoneLocal) : '';
+  const contractor = document.getElementById('regContractor').value.trim();
+  const securityCard = document.getElementById('regSecurityCard').value.trim();
   const password = document.getElementById('regPassword').value;
   const errBox = document.getElementById('registerError');
   const successBox = document.getElementById('registerSuccess');
   const btn = document.getElementById('registerSubmitBtn');
   errBox.classList.remove('show');
   successBox.classList.remove('show');
-  if(!fullName || !username || !password) return;
+  if(!fullName || !nationalId || !phoneLocal || !contractor || !securityCard || !password){
+    errBox.textContent = 'جميع الحقول إجبارية';
+    errBox.classList.add('show');
+    return;
+  }
+  if(!/^[0-9]{5,15}$/.test(nationalId)){
+    errBox.textContent = 'رقم الهوية أو الإقامة يجب أن يتكون من أرقام فقط';
+    errBox.classList.add('show');
+    return;
+  }
   btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
   try{
-    await doRegister(fullName, username, phone, password);
+    await doRegister(fullName, nationalId, phone, contractor, securityCard, password);
     document.getElementById('registerForm').reset();
     successBox.classList.add('show');
     setTimeout(()=>{ showLoginScreen(); }, 2500);
@@ -616,6 +702,113 @@ document.getElementById('registerForm').addEventListener('submit', async (ev)=>{
     errBox.classList.add('show');
   }finally{
     btn.disabled = false; btn.textContent = 'إرسال الطلب';
+  }
+});
+
+/* ================= الملف الشخصي: تغيير كلمة المرور والصورة ================= */
+function updateAvatarPreview(url){
+  const el = document.getElementById('profileAvatarPreview');
+  if(!el) return;
+  el.innerHTML = url ? `<img src="${escapeHtml(url)}" style="width:100%;height:100%;object-fit:cover;">` : '👤';
+}
+function openProfileModal(){
+  const auth = getAuth();
+  document.getElementById('profileNameSub').textContent = (auth && auth.name) || '';
+  updateAvatarPreview(auth && auth.photoUrl);
+  const photoMsg = document.getElementById('photoMsg');
+  photoMsg.className = 'form-msg'; photoMsg.textContent = '';
+  const pwdMsg = document.getElementById('passwordMsg');
+  pwdMsg.className = 'form-msg'; pwdMsg.textContent = '';
+  document.getElementById('changePasswordForm').reset();
+  document.getElementById('profileModalOverlay').classList.add('show');
+}
+function closeProfileModalFn(){
+  document.getElementById('profileModalOverlay').classList.remove('show');
+}
+document.getElementById('profileBtn').addEventListener('click', openProfileModal);
+document.getElementById('closeProfileModal').addEventListener('click', closeProfileModalFn);
+document.getElementById('profileModalOverlay').addEventListener('click', (ev)=>{
+  if(ev.target.id === 'profileModalOverlay') closeProfileModalFn();
+});
+
+function resizeImageToDataUrl(file, maxW, maxH, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        const ratio = Math.min(maxW / w, maxH / h, 1);
+        w = Math.round(w * ratio); h = Math.round(h * ratio);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('btnChoosePhoto').addEventListener('click', ()=>{
+  document.getElementById('profilePhotoInput').click();
+});
+document.getElementById('profilePhotoInput').addEventListener('change', async (ev)=>{
+  const file = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  if(!file) return;
+  const msg = document.getElementById('photoMsg');
+  msg.className = 'form-msg ok'; msg.textContent = 'جارٍ رفع الصورة...';
+  try{
+    const dataUrl = await resizeImageToDataUrl(file, 320, 320, 0.75);
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'uploadProfilePhoto', token: authToken(), imageBase64: dataUrl, mimeType: 'image/jpeg' })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر رفع الصورة';
+      return;
+    }
+    updateAvatarPreview(json.url);
+    const auth = getAuth();
+    if(auth){ auth.photoUrl = json.url; setAuth(auth); }
+    msg.className = 'form-msg ok'; msg.textContent = 'تم تحديث الصورة الشخصية بنجاح';
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر رفع الصورة — تأكد من الاتصال بالإنترنت';
+  }
+});
+
+document.getElementById('changePasswordForm').addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const msg = document.getElementById('passwordMsg');
+  msg.className = 'form-msg'; msg.textContent = '';
+  const cur = document.getElementById('curPassword').value;
+  const nw = document.getElementById('newPassword').value;
+  const confirmPwd = document.getElementById('confirmPassword').value;
+  if(nw.length < 4){ msg.className = 'form-msg err'; msg.textContent = 'كلمة المرور الجديدة قصيرة جدًا (4 أحرف على الأقل)'; return; }
+  if(nw !== confirmPwd){ msg.className = 'form-msg err'; msg.textContent = 'كلمة المرور الجديدة غير متطابقة'; return; }
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'changePassword', token: authToken(), currentPassword: cur, newPassword: nw })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر تحديث كلمة المرور';
+      return;
+    }
+    msg.className = 'form-msg ok'; msg.textContent = 'تم تحديث كلمة المرور بنجاح';
+    document.getElementById('changePasswordForm').reset();
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
   }
 });
 
@@ -905,6 +1098,11 @@ function statusClass(status){
   if(status === 'قيد التنفيذ') return 'status-progress';
   return 'status-new';
 }
+function statusDisplayLabel(status){
+  if(status === 'مكتمل') return 'مكتملة';
+  if(status === 'قيد التنفيذ') return 'قيد التنفيذ';
+  return 'لم تبدأ';
+}
 
 async function loadTechniciansForAssignment(){
   if(!authToken()) return [];
@@ -933,9 +1131,9 @@ async function renderTasksView(){
   if(admin && !TECHNICIANS_CACHE){
     TECHNICIANS_CACHE = await loadTechniciansForAssignment();
     const select = document.getElementById('assignTechnicianSelect');
-    select.innerHTML = '<option value="">-- اختر الفني --</option>' +
+    select.innerHTML = '<option value="">-- اختر الموظف --</option>' +
       TECHNICIANS_CACHE.filter(u=>u.username !== (auth&&auth.username)).map(u=>
-        `<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)} (${u.role==='admin'?'مدير':'فني'})</option>`
+        `<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)} (${u.role==='admin'?'مدير':'موظف'})</option>`
       ).join('');
   }
 
@@ -948,7 +1146,7 @@ async function renderTasksView(){
 
   listWrap.innerHTML = visibleTasks.slice().reverse().map(t=>{
     const canUpdate = admin || t.assignedToUsername.toLowerCase() === String(auth&&auth.username||'').toLowerCase();
-    const statusLabel = t.status;
+    const statusLabel = statusDisplayLabel(t.status);
     let actionsHtml = '';
     if(canUpdate && t.status !== 'مكتمل'){
       actionsHtml = `<div class="task-actions">`;
@@ -962,7 +1160,7 @@ async function renderTasksView(){
       <div class="task-top">
         <div>
           <div class="task-desc">${escapeHtml(t.description || 'بدون وصف')}</div>
-          <div class="task-meta">${t.poleId ? ('العمود: ' + escapeHtml(t.poleId) + ' · ') : ''}الفني: ${escapeHtml(t.assignedToName)} · أسندها: ${escapeHtml(t.assignedBy)}</div>
+          <div class="task-meta">${t.poleId ? ('العمود: ' + escapeHtml(t.poleId) + ' · ') : ''}الموظف: ${escapeHtml(t.assignedToName)} · أسندها: ${escapeHtml(t.assignedBy)}</div>
         </div>
         <span class="status-pill ${statusClass(t.status)}">${escapeHtml(statusLabel)}</span>
       </div>
@@ -1006,12 +1204,80 @@ async function updateTaskStatusApi(taskId, status){
   }catch(e){ return false; }
 }
 
+document.getElementById('btnExportTasksExcel').addEventListener('click', ()=>{
+  if(!TASKS.length){ toast('لا توجد مهام لتصديرها'); return; }
+  const rows = TASKS.map(t=>({
+    'الموظف': t.assignedToName,
+    'الوصف': t.description,
+    'رقم العمود': t.poleId,
+    'الحالة': statusDisplayLabel(t.status),
+    'أسندها': t.assignedBy,
+    'تاريخ الإسناد': t.assignedAt,
+    'تاريخ الإكمال': t.completedAt
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'المهام');
+  XLSX.writeFile(wb, 'tasks_export.xlsx');
+  toast('تم تصدير المهام كملف إكسل');
+});
+
+/* ================= تبويب بيانات الموظفين (للمدير) ================= */
+let EMPLOYEES_CACHE = null;
+function taskCountForUsername(username){
+  const u = String(username||'').toLowerCase();
+  return TASKS.filter(t=>t.assignedToUsername.toLowerCase() === u).length;
+}
+async function loadEmployeesForAdmin(){
+  if(!authToken()) return [];
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'listEmployees', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      return [];
+    }
+    return json.employees || [];
+  }catch(e){ return []; }
+}
+async function renderEmployeesView(){
+  if(!isAdmin()) return;
+  const wrap = document.getElementById('employeesCardsWrap');
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">جارٍ التحميل...</div>`;
+  EMPLOYEES_CACHE = await loadEmployeesForAdmin();
+  const employees = EMPLOYEES_CACHE.filter(u=>u.role !== 'admin');
+  if(!employees.length){
+    wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">لا يوجد موظفون مسجّلون بعد</div>`;
+    return;
+  }
+  wrap.innerHTML = employees.map(u=>{
+    const avatar = u.photoUrl ? `<img src="${escapeHtml(u.photoUrl)}">` : '👤';
+    const statusOk = u.active && (u.status === 'approved' || !u.status);
+    const waLink = u.phone ? `https://wa.me/${String(u.phone).replace(/[^0-9]/g,'')}` : '';
+    return `<div class="employee-card">
+      <div class="emp-avatar">${avatar}</div>
+      <div class="emp-name">${escapeHtml(u.name)}</div>
+      <div class="emp-role">موظف</div>
+      <div class="emp-row"><span class="k">رقم الهوية/الإقامة</span><span class="v">${escapeHtml(u.nationalId||u.username)}</span></div>
+      <div class="emp-row"><span class="k">اسم المقاول</span><span class="v" style="direction:rtl; text-align:right;">${escapeHtml(u.contractor||'—')}</span></div>
+      <div class="emp-row"><span class="k">بطاقة الأمن الصناعي</span><span class="v">${escapeHtml(u.securityCard||'—')}</span></div>
+      <div class="emp-row"><span class="k">الواتساب</span><span class="v">${waLink ? `<a href="${waLink}" target="_blank">${escapeHtml(u.phone)}</a>` : '—'}</span></div>
+      <div class="emp-row"><span class="k">عدد المهام</span><span class="v">${taskCountForUsername(u.username)}</span></div>
+      <span class="emp-status ${statusOk?'active':'inactive'}">${statusOk ? 'نشط' : (u.status==='pending' ? 'قيد المراجعة' : 'موقوف')}</span>
+    </div>`;
+  }).join('');
+}
+
 document.getElementById('btnAssignTask').addEventListener('click', async ()=>{
   const btn = document.getElementById('btnAssignTask');
   const assignedTo = document.getElementById('assignTechnicianSelect').value;
   const poleId = document.getElementById('assignPoleId').value.trim();
   const description = document.getElementById('assignDescription').value.trim();
-  if(!assignedTo){ toast('يرجى اختيار الفني'); return; }
+  if(!assignedTo){ toast('يرجى اختيار الموظف'); return; }
   if(!description){ toast('يرجى كتابة وصف المهمة'); return; }
 
   btn.disabled = true;
@@ -1043,7 +1309,7 @@ document.getElementById('btnAssignTask').addEventListener('click', async ()=>{
       const msg = `مرحبًا ${json.technicianName}، تم إسناد مهمة جديدة لك في نظام إدارة المعدات الذكية:\n${description}${poleId ? ('\nرقم العمود: ' + poleId) : ''}`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     } else {
-      toast('لا يوجد رقم واتساب مسجل لهذا الفني — لن يصله إشعار تلقائي');
+      toast('لا يوجد رقم واتساب مسجل لهذا الموظف — لن يصله إشعار تلقائي');
     }
   }catch(e){
     toast('تعذر الاتصال بالخادم لإسناد المهمة');
@@ -1128,8 +1394,8 @@ function renderNotifPanel(){
     pendingHtml = `<div class="na-top" style="padding:4px 0 6px; font-weight:800;">طلبات حسابات جديدة (${PENDING_USERS.length})</div>` +
       PENDING_USERS.map(u=>`
         <div class="pending-req" data-username="${escapeHtml(u.username)}">
-          <div class="pr-name">${escapeHtml(u.name)} (${escapeHtml(u.username)})</div>
-          <div class="pr-meta">${u.phone ? ('واتساب: ' + escapeHtml(u.phone) + ' · ') : ''}${timeAgo(u.requestedAt)}</div>
+          <div class="pr-name">${escapeHtml(u.name)} — هوية/إقامة: ${escapeHtml(u.nationalId||u.username)}</div>
+          <div class="pr-meta">${u.contractor ? ('المقاول: ' + escapeHtml(u.contractor) + ' · ') : ''}${u.phone ? ('واتساب: ' + escapeHtml(u.phone) + ' · ') : ''}${timeAgo(u.requestedAt)}</div>
           <div class="pr-actions">
             <button class="primary" data-approve="${escapeHtml(u.username)}">✅ قبول</button>
             <button data-reject="${escapeHtml(u.username)}">🚫 رفض</button>
@@ -1155,6 +1421,8 @@ function renderNotifPanel(){
       const ok = await approveUserApi(username, 'approved');
       if(ok){
         PENDING_USERS = PENDING_USERS.filter(u=>u.username !== username);
+        TECHNICIANS_CACHE = null; // إعادة تحميل قائمة الموظفين لتشمل الحساب المفعّل حديثًا
+        EMPLOYEES_CACHE = null;
         toast('تم تفعيل الحساب بنجاح');
         renderNotifPanel();
         renderNotifBadge();
@@ -1225,6 +1493,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
     if(btn.dataset.tab==='dash') renderDashboard();
     if(btn.dataset.tab==='tasks') renderTasksView();
+    if(btn.dataset.tab==='employees') renderEmployeesView();
   });
 });
 document.querySelectorAll('.subtab-btn').forEach(btn=>{
