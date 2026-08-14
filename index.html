@@ -247,20 +247,28 @@ tbody tr:hover{ background:var(--surface-1); }
 .warranty-table td{ padding:8px 10px; border-bottom:1px dashed var(--baseline); direction:ltr; text-align:right;}
 .warranty-table tr:last-child td{ border-bottom:none; }
 .warranty-note{ color:var(--text-muted); font-size:11px; margin-top:8px; text-align:center;}
-#loginScreen{ position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; padding:20px;
+.auth-screen{ position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; padding:20px;
   background: radial-gradient(circle at 88% -8%, #E4F1FF 0%, transparent 42%), radial-gradient(circle at 6% 108%, #E7FBF3 0%, transparent 40%), var(--plane); }
-#loginScreen .login-card{ width:100%; max-width:380px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; text-align:center; }
-#loginScreen .login-logo{ font-size:34px; margin-bottom:6px; }
-#loginScreen h2{ margin:0 0 4px; font-size:19px; }
-#loginScreen .login-sub{ color:var(--text-secondary); font-size:12px; margin-bottom:22px; }
-#loginScreen label{ display:block; text-align:right; font-size:12px; font-weight:700; color:var(--text-secondary); margin:14px 0 6px; }
-#loginScreen input{ width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--border); background:var(--surface-1); color:var(--text-primary); font-size:14px; font-family:inherit; }
-#loginScreen input:focus{ outline:none; border-color:var(--brand-blue); }
-#loginScreen .login-error{ display:none; margin-top:14px; padding:9px 12px; border-radius:9px; background:var(--critical-dim); color:var(--critical); font-size:12.5px; font-weight:600; }
-#loginScreen .login-error.show{ display:block; }
-#loginScreen button[type="submit"]{ width:100%; margin-top:20px; padding:12px; border:none; border-radius:10px; background:var(--brand-gradient); color:#fff; font-weight:800; font-size:14px; cursor:pointer; }
-#loginScreen button[type="submit"]:disabled{ opacity:.65; cursor:default; }
-#loginScreen .login-foot{ margin-top:18px; font-size:10.5px; color:var(--text-muted); }
+.auth-screen .login-card{ width:100%; max-width:380px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; text-align:center; }
+.auth-screen .login-logo{ font-size:34px; margin-bottom:6px; }
+.auth-screen h2{ margin:0 0 4px; font-size:19px; }
+.auth-screen .login-sub{ color:var(--text-secondary); font-size:12px; margin-bottom:22px; }
+.auth-screen label{ display:block; text-align:right; font-size:12px; font-weight:700; color:var(--text-secondary); margin:14px 0 6px; }
+.auth-screen input{ width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--border); background:var(--surface-1); color:var(--text-primary); font-size:14px; font-family:inherit; }
+.auth-screen input:focus{ outline:none; border-color:var(--brand-blue); }
+.auth-screen .login-error{ display:none; margin-top:14px; padding:9px 12px; border-radius:9px; background:var(--critical-dim); color:var(--critical); font-size:12.5px; font-weight:600; }
+.auth-screen .login-error.show{ display:block; }
+.auth-screen .login-success{ display:none; margin-top:14px; padding:9px 12px; border-radius:9px; background:rgba(0,214,143,0.12); color:#00875c; font-size:12.5px; font-weight:600; }
+.auth-screen .login-success.show{ display:block; }
+.auth-screen button[type="submit"]{ width:100%; margin-top:20px; padding:12px; border:none; border-radius:10px; background:var(--brand-gradient); color:#fff; font-weight:800; font-size:14px; cursor:pointer; }
+.auth-screen button[type="submit"]:disabled{ opacity:.65; cursor:default; }
+.auth-screen .login-foot{ margin-top:18px; font-size:10.5px; color:var(--text-muted); }
+.auth-screen .login-foot a{ color:var(--s1); font-weight:700; text-decoration:none; cursor:pointer; }
+.pending-req{ text-align:right; border-bottom:1px dashed var(--baseline); padding:10px 4px; font-size:12.5px; }
+.pending-req .pr-name{ font-weight:700; margin-bottom:2px; }
+.pending-req .pr-meta{ font-size:11px; color:var(--text-muted); margin-bottom:8px; }
+.pending-req .pr-actions{ display:flex; gap:8px; }
+.pending-req .pr-actions button{ flex:1; padding:6px 8px; font-size:11.5px; border-radius:7px; }
 .user-chip{ display:flex; align-items:center; gap:6px; padding:2px 8px; font-size:11px; border-radius:999px; }
 .user-chip .role-pill{ font-size:9.5px; background:var(--accent-dim); color:var(--s1); padding:1px 7px; border-radius:999px; font-weight:700; }
 </style>
@@ -268,7 +276,7 @@ tbody tr:hover{ background:var(--surface-1); }
 </head>
 <body>
 
-<div id="loginScreen" style="display:none;">
+<div id="loginScreen" class="auth-screen" style="display:none;">
   <div class="login-card">
     <div class="login-logo">🔒</div>
     <h2>نظام إدارة المعدات الذكية</h2>
@@ -281,7 +289,29 @@ tbody tr:hover{ background:var(--surface-1); }
       <div class="login-error" id="loginError"></div>
       <button type="submit" id="loginSubmitBtn">تسجيل الدخول</button>
     </form>
-    <div class="login-foot">لإنشاء حساب فني جديد تواصل مع مدير النظام</div>
+    <div class="login-foot"><a id="showRegisterLink">فني جديد؟ أنشئ حسابًا من هنا</a></div>
+  </div>
+</div>
+
+<div id="registerScreen" class="auth-screen" style="display:none;">
+  <div class="login-card">
+    <div class="login-logo">🧑‍🔧</div>
+    <h2>إنشاء حساب فني جديد</h2>
+    <div class="login-sub">سيُرسل طلبك لمدير النظام للموافقة قبل أن تتمكن من الدخول</div>
+    <form id="registerForm" autocomplete="off">
+      <label for="regFullName">الاسم الكامل</label>
+      <input type="text" id="regFullName" required>
+      <label for="regUsername">اسم المستخدم</label>
+      <input type="text" id="regUsername" autocomplete="username" placeholder="بالإنجليزية وبدون مسافات" required>
+      <label for="regPhone">رقم الواتساب</label>
+      <input type="tel" id="regPhone" placeholder="مثال: 966501234567">
+      <label for="regPassword">كلمة المرور</label>
+      <input type="password" id="regPassword" autocomplete="new-password" required>
+      <div class="login-error" id="registerError"></div>
+      <div class="login-success" id="registerSuccess">تم إرسال طلبك بنجاح — سيتم تفعيل حسابك بعد موافقة المدير</div>
+      <button type="submit" id="registerSubmitBtn">إرسال الطلب</button>
+    </form>
+    <div class="login-foot"><a id="showLoginLink">لديك حساب؟ سجّل الدخول</a></div>
   </div>
 </div>
 
@@ -482,7 +512,15 @@ function authToken(){
 }
 function showLoginScreen(){
   document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('registerScreen').style.display = 'none';
   document.getElementById('appShell').style.display = 'none';
+}
+function showRegisterScreen(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('registerScreen').style.display = 'flex';
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('registerError').classList.remove('show');
+  document.getElementById('registerSuccess').classList.remove('show');
 }
 function showAppShell(){
   document.getElementById('loginScreen').style.display = 'none';
@@ -509,6 +547,7 @@ async function doLogout(){
   showLoginScreen();
   TASKS = [];
   TECHNICIANS_CACHE = null;
+  PENDING_USERS = [];
   try{
     if(token){
       await fetch(API_URL, {
@@ -541,6 +580,44 @@ document.getElementById('loginForm').addEventListener('submit', async (ev)=>{
   }
 });
 document.getElementById('logoutBtn').addEventListener('click', ()=>{ doLogout(); });
+
+document.getElementById('showRegisterLink').addEventListener('click', (ev)=>{ ev.preventDefault(); showRegisterScreen(); });
+document.getElementById('showLoginLink').addEventListener('click', (ev)=>{ ev.preventDefault(); showLoginScreen(); });
+
+async function doRegister(fullName, username, phone, password){
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'register', fullName, username, phone, password })
+  });
+  const json = await res.json();
+  if(!json.ok) throw new Error(json.error || 'تعذر إرسال الطلب');
+}
+document.getElementById('registerForm').addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const fullName = document.getElementById('regFullName').value.trim();
+  const username = document.getElementById('regUsername').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const errBox = document.getElementById('registerError');
+  const successBox = document.getElementById('registerSuccess');
+  const btn = document.getElementById('registerSubmitBtn');
+  errBox.classList.remove('show');
+  successBox.classList.remove('show');
+  if(!fullName || !username || !password) return;
+  btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
+  try{
+    await doRegister(fullName, username, phone, password);
+    document.getElementById('registerForm').reset();
+    successBox.classList.add('show');
+    setTimeout(()=>{ showLoginScreen(); }, 2500);
+  }catch(e){
+    errBox.textContent = (e && e.message) ? e.message : 'تعذر إرسال الطلب — تأكد من الاتصال بالإنترنت';
+    errBox.classList.add('show');
+  }finally{
+    btn.disabled = false; btn.textContent = 'إرسال الطلب';
+  }
+});
 
 /* دالة خطأ خاصة لتمييز "الجلسة غير صالحة" (يجب تسجيل الدخول من جديد) عن انقطاع الاتصال العادي */
 function authError(){
@@ -713,6 +790,7 @@ async function attemptReconnect(){
       POLES = normalizePoles(data.poles);
       ACTIVITY_LOG = normalizeActivity(data.assignments);
       TASKS = normalizeTasks(data.tasks);
+      PENDING_USERS = data.pendingUsers || [];
       cachePolesLocally();
       cacheActivityLocally();
       renderPoleResults();
@@ -758,6 +836,7 @@ async function initData(){
       POLES = normalizePoles(data.poles);
       ACTIVITY_LOG = normalizeActivity(data.assignments);
       TASKS = normalizeTasks(data.tasks);
+      PENDING_USERS = data.pendingUsers || [];
       cachePolesLocally();
       cacheActivityLocally();
       setConnStatus('connected');
@@ -1017,25 +1096,91 @@ function timeAgo(iso){
   if(diff<86400) return 'قبل ' + Math.floor(diff/3600) + ' ساعة';
   return 'قبل ' + Math.floor(diff/86400) + ' يوم';
 }
+let PENDING_USERS = [];
 function renderNotifBadge(){
   let lastSeen = '';
   try{ lastSeen = localStorage.getItem('lastSeenActivityTs') || ''; }catch(e){}
-  const unseen = ACTIVITY_LOG.filter(a=>a.timestamp > lastSeen).length;
+  const unseen = ACTIVITY_LOG.filter(a=>a.timestamp > lastSeen).length + PENDING_USERS.length;
   const badge = document.getElementById('notifBadge');
   if(!badge) return;
   if(unseen>0){ badge.style.display='flex'; badge.textContent = unseen>99?'99+':unseen; }
   else{ badge.style.display='none'; }
 }
+async function approveUserApi(username, status){
+  if(!authToken()) return false;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: status === 'approved' ? 'approveUser' : 'rejectUser', token: authToken(), username })
+    });
+    const json = await res.json();
+    if(!json.ok){ if(json.error === 'unauthorized') forceReLogin(); return false; }
+    return true;
+  }catch(e){ return false; }
+}
 function renderNotifPanel(){
   const panel = document.getElementById('notifPanel');
   const sorted = ACTIVITY_LOG.slice().sort((a,b)=> b.timestamp.localeCompare(a.timestamp)).slice(0,30);
-  if(!sorted.length){ panel.innerHTML = '<div class="notif-empty">لا توجد تعديلات مسجّلة بعد</div>'; return; }
-  panel.innerHTML = sorted.map(a=>`
+
+  let pendingHtml = '';
+  if(isAdmin() && PENDING_USERS.length){
+    pendingHtml = `<div class="na-top" style="padding:4px 0 6px; font-weight:800;">طلبات حسابات جديدة (${PENDING_USERS.length})</div>` +
+      PENDING_USERS.map(u=>`
+        <div class="pending-req" data-username="${escapeHtml(u.username)}">
+          <div class="pr-name">${escapeHtml(u.name)} (${escapeHtml(u.username)})</div>
+          <div class="pr-meta">${u.phone ? ('واتساب: ' + escapeHtml(u.phone) + ' · ') : ''}${timeAgo(u.requestedAt)}</div>
+          <div class="pr-actions">
+            <button class="primary" data-approve="${escapeHtml(u.username)}">✅ قبول</button>
+            <button data-reject="${escapeHtml(u.username)}">🚫 رفض</button>
+          </div>
+        </div>
+      `).join('');
+  }
+
+  const activityHtml = sorted.length ? sorted.map(a=>`
     <div class="notif-item">
       <div class="na-top"><span>${escapeHtml(a.action)} — ${escapeHtml(a.pole)}</span><span class="na-meta">${timeAgo(a.timestamp)}</span></div>
       <div class="na-meta">بواسطة: ${escapeHtml(a.editor||'غير معروف')}</div>
     </div>
-  `).join('');
+  `).join('') : (pendingHtml ? '' : '<div class="notif-empty">لا توجد تعديلات مسجّلة بعد</div>');
+
+  panel.innerHTML = pendingHtml + activityHtml;
+
+  panel.querySelectorAll('[data-approve]').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      btn.disabled = true;
+      const username = btn.dataset.approve;
+      const ok = await approveUserApi(username, 'approved');
+      if(ok){
+        PENDING_USERS = PENDING_USERS.filter(u=>u.username !== username);
+        toast('تم تفعيل الحساب بنجاح');
+        renderNotifPanel();
+        renderNotifBadge();
+      } else {
+        toast('تعذر تنفيذ العملية');
+        btn.disabled = false;
+      }
+    });
+  });
+  panel.querySelectorAll('[data-reject]').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      btn.disabled = true;
+      const username = btn.dataset.reject;
+      const ok = await approveUserApi(username, 'rejected');
+      if(ok){
+        PENDING_USERS = PENDING_USERS.filter(u=>u.username !== username);
+        toast('تم رفض الطلب');
+        renderNotifPanel();
+        renderNotifBadge();
+      } else {
+        toast('تعذر تنفيذ العملية');
+        btn.disabled = false;
+      }
+    });
+  });
 }
 function markNotificationsSeen(){
   try{ localStorage.setItem('lastSeenActivityTs', new Date().toISOString()); }catch(e){}
