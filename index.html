@@ -50,6 +50,8 @@ header.app-header h1{ font-size:17px; margin:0; font-weight:800;}
 header.app-header .sub{ font-size:10.5px; color:var(--text-secondary); margin-top:3px; font-weight:600; letter-spacing:.3px;}
 .badge-group{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
 .badge-icons-row{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+.sync-pending-btn{ padding:2px 10px; font-size:10.5px; font-weight:700; color:var(--warning); background:var(--warning-dim); border:1.5px dashed var(--warning); border-radius:999px; animation:syncPulse 1.8s ease-in-out infinite;}
+@keyframes syncPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
 .status-badge{ display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; padding:6px 12px; border-radius:999px; white-space:nowrap;}
 .status-badge.connected{ color:#00875c; background:rgba(0,214,143,0.12); border:1px solid rgba(0,214,143,0.35);}
 .status-badge.disconnected{ color:var(--text-muted); background:var(--surface-1); border:1px solid var(--border);}
@@ -228,6 +230,7 @@ tbody tr:hover{ background:var(--surface-1); }
   </div>
   <div class="badge-group">
     <div class="status-badge disconnected" id="statusBadge">غير متصل</div>
+    <button id="syncPendingBtn" class="ghost sync-pending-btn" style="display:none;" title="يوجد تغييرات محلية لم تتم مزامنتها بعد — اضغط للمحاولة الآن">⏳ بانتظار المزامنة</button>
     <div class="badge-icons-row">
       <button id="editorNameBtn" class="ghost" style="padding:2px 8px; font-size:11px;" title="تسجيل / تعديل اسمك">👤 <span id="editorNameLabel">تسجيل الاسم</span></button>
       <div class="notif-wrap">
@@ -384,7 +387,7 @@ async function apiSave(sheetName, data){
     return true;
   }catch(e){
     console.error('save failed for', sheetName, e);
-    toast('تعذّر الحفظ في قاعدة البيانات الخارجية — سيبقى محفوظًا في هذه الجلسة فقط');
+    toast('لا يوجد اتصال بالإنترنت — تم حفظ التغيير على جهازك وستتم مزامنته تلقائيًا عند عودة الاتصال');
     return false;
   }
 }
@@ -423,8 +426,9 @@ function normalizePoles(arr){
     return rec;
   }).filter(p=>p.pole);
 }
-function persistPoles(){
-  const payload = POLES.map(p=>{
+async function persistPoles(sourcePoles){
+  const src = sourcePoles || POLES;
+  const payload = src.map(p=>{
     const rest = Object.assign({}, p);
     Object.keys(EXTRA_COLS).forEach(k=>{
       const val = rest[k] || '';
@@ -433,31 +437,153 @@ function persistPoles(){
     });
     return rest;
   });
-  apiSave('Poles', payload);
+  const ok = await apiSave('Poles', payload);
+  setPendingSync(!ok);
+  return ok;
+}
+
+/* ================= OFFLINE — local cache + pending-sync queue =================
+   الفكرة: أي تعديل يُحفظ محليًا فورًا (localStorage) بغض النظر عن حالة الاتصال،
+   فلا يُفقد أي عمل عند انقطاع الإنترنت. إذا فشلت المزامنة مع الخادم تبقى علامة
+   "بانتظار المزامنة" ظاهرة، ويُعاد المحاولة تلقائيًا عند عودة الاتصال أو دوريًا. */
+const CACHE_KEYS = {
+  poles: 'oh_poles_cache',
+  activity: 'oh_activity_cache',
+  pendingPoles: 'oh_pending_poles_sync',
+  pendingActivity: 'oh_pending_activity_sync',
+};
+function cachePolesLocally(){
+  try{ localStorage.setItem(CACHE_KEYS.poles, JSON.stringify(POLES)); }catch(e){}
+}
+function loadPolesFromCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEYS.poles);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function cacheActivityLocally(){
+  try{ localStorage.setItem(CACHE_KEYS.activity, JSON.stringify(ACTIVITY_LOG)); }catch(e){}
+}
+function loadActivityFromCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEYS.activity);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function updateSyncBadge(){
+  const btn = document.getElementById('syncPendingBtn');
+  if(!btn) return;
+  btn.style.display = (hasPendingSync() || hasPendingActivitySync()) ? 'inline-flex' : 'none';
+}
+function setPendingSync(flag){
+  try{ if(flag) localStorage.setItem(CACHE_KEYS.pendingPoles,'1'); else localStorage.removeItem(CACHE_KEYS.pendingPoles); }catch(e){}
+  updateSyncBadge();
+}
+function hasPendingSync(){
+  try{ return !!localStorage.getItem(CACHE_KEYS.pendingPoles); }catch(e){ return false; }
+}
+function setPendingActivitySync(flag){
+  try{ if(flag) localStorage.setItem(CACHE_KEYS.pendingActivity,'1'); else localStorage.removeItem(CACHE_KEYS.pendingActivity); }catch(e){}
+  updateSyncBadge();
+}
+function hasPendingActivitySync(){
+  try{ return !!localStorage.getItem(CACHE_KEYS.pendingActivity); }catch(e){ return false; }
+}
+async function attemptReconnect(){
+  if(!apiConfigured()) return;
+  if(hasPendingSync()){
+    STORAGE_AVAILABLE = true;
+    const cachedPoles = loadPolesFromCache();
+    const ok = await persistPoles(cachedPoles || POLES);
+    if(ok){
+      setConnStatus('connected');
+      toast('تمت مزامنة التغييرات المحفوظة محليًا مع القاعدة السحابية بنجاح');
+      if(hasPendingActivitySync()){
+        const cachedActivity = loadActivityFromCache();
+        const ok2 = await apiSave('Assignments', activityToSheetFormat(cachedActivity || ACTIVITY_LOG));
+        setPendingActivitySync(!ok2);
+      }
+    } else {
+      STORAGE_AVAILABLE = false;
+      setConnStatus('disconnected');
+    }
+  } else {
+    try{
+      const data = await apiFetchAll();
+      STORAGE_AVAILABLE = true;
+      POLES = normalizePoles(data.poles);
+      ACTIVITY_LOG = normalizeActivity(data.assignments);
+      cachePolesLocally();
+      cacheActivityLocally();
+      renderPoleResults();
+      renderDashboard();
+      renderNotifBadge();
+      setConnStatus('connected');
+    }catch(e){
+      STORAGE_AVAILABLE = false;
+      setConnStatus('disconnected');
+    }
+  }
 }
 
 async function initData(){
-  try{
-    const data = await apiFetchAll();
+  if(hasPendingSync()){
+    // كانت هناك تعديلات محفوظة محليًا من جلسة سابقة انقطع فيها الاتصال —
+    // نحمّلها أولًا ونحاول رفعها للخادم قبل أي شيء آخر، حتى لا تُفقد أو تُستبدل ببيانات الخادم القديمة
+    const cachedPoles = loadPolesFromCache();
+    const cachedActivity = loadActivityFromCache();
+    POLES = (cachedPoles && cachedPoles.length) ? cachedPoles : EMBEDDED_POLES.slice();
+    ACTIVITY_LOG = cachedActivity || [];
     STORAGE_AVAILABLE = true;
-    let seeded = false;
-    POLES = normalizePoles(data.poles);
-    if(!POLES.length){ POLES = EMBEDDED_POLES.slice(); seeded = true; }
-    if(seeded){ await persistPoles(); }
-    ACTIVITY_LOG = normalizeActivity(data.assignments);
-    setConnStatus('connected');
-  } catch(e){
-    console.warn('external database unavailable, falling back to local/session copy', e);
-    POLES = EMBEDDED_POLES.slice();
-    STORAGE_AVAILABLE = false;
-    setConnStatus('disconnected');
+    const ok = await persistPoles(POLES);
+    if(ok){
+      setConnStatus('connected');
+      toast('تمت مزامنة التغييرات المحفوظة محليًا أثناء انقطاع الاتصال');
+      if(hasPendingActivitySync()){
+        const ok2 = await apiSave('Assignments', activityToSheetFormat(ACTIVITY_LOG));
+        setPendingActivitySync(!ok2);
+      }
+    } else {
+      STORAGE_AVAILABLE = false;
+      setConnStatus('disconnected');
+    }
+  } else {
+    try{
+      const data = await apiFetchAll();
+      STORAGE_AVAILABLE = true;
+      let seeded = false;
+      POLES = normalizePoles(data.poles);
+      if(!POLES.length){ POLES = EMBEDDED_POLES.slice(); seeded = true; }
+      if(seeded){ await persistPoles(); }
+      ACTIVITY_LOG = normalizeActivity(data.assignments);
+      cachePolesLocally();
+      cacheActivityLocally();
+      setConnStatus('connected');
+    } catch(e){
+      console.warn('external database unavailable, falling back to local cache/session copy', e);
+      const cachedPoles = loadPolesFromCache();
+      const cachedActivity = loadActivityFromCache();
+      POLES = (cachedPoles && cachedPoles.length) ? cachedPoles : EMBEDDED_POLES.slice();
+      ACTIVITY_LOG = cachedActivity || [];
+      STORAGE_AVAILABLE = false;
+      setConnStatus('disconnected');
+    }
   }
 
   updateEditorNameLabel();
+  updateSyncBadge();
   renderNotifBadge();
   renderPoleResults();
   renderDashboard();
 }
+document.getElementById('syncPendingBtn').addEventListener('click', ()=>{
+  toast('جارٍ محاولة المزامنة...');
+  attemptReconnect();
+});
+window.addEventListener('online', ()=>{ attemptReconnect(); });
+setInterval(()=>{
+  if(hasPendingSync() || hasPendingActivitySync() || !STORAGE_AVAILABLE) attemptReconnect();
+}, 25000);
 
 /* ================= EDITOR NAME (local per-device) ================= */
 function getEditorName(){
@@ -513,8 +639,10 @@ async function logActivity(pole, action){
   }catch(e){ /* keep local copy, fall through */ }
   ACTIVITY_LOG.push(entry);
   ACTIVITY_LOG = ACTIVITY_LOG.slice(-300);
+  cacheActivityLocally();
   renderNotifBadge();
-  apiSave('Assignments', activityToSheetFormat(ACTIVITY_LOG));
+  const ok = await apiSave('Assignments', activityToSheetFormat(ACTIVITY_LOG));
+  setPendingActivitySync(!ok);
 }
 function timeAgo(iso){
   const d = new Date(iso);
@@ -822,6 +950,7 @@ function savePole(idx){
   }
   closePoleDetail();
   renderPoleResults();
+  cachePolesLocally();
   persistPoles();
 }
 function deletePole(idx){
@@ -831,6 +960,7 @@ function deletePole(idx){
   closePoleDetail();
   renderPoleResults();
   toast('تم الحذف');
+  cachePolesLocally();
   persistPoles();
   logActivity(deletedPole, 'حذف العمود');
 }
@@ -982,6 +1112,16 @@ function renderDashboard(){
   renderBarChart('chartByOffice', countBy(POLES,'office'));
   renderBarChart('chartByManu', countBy(POLES,'manufacturer').slice(0,8));
   renderWarrantySection();
+}
+
+/* ================= OFFLINE APP SHELL (service worker) =================
+   يسمح بفتح الصفحة حتى بدون أي اتصال بالإنترنت إطلاقًا (بعد أول زيارة ناجحة)،
+   عبر تخزين نسخة من الصفحة نفسها في ذاكرة تخزين المتصفح. لا علاقة له بالبيانات
+   (البيانات تُدار عبر localStorage في القسم أعلاه) — هذا فقط لتحميل الصفحة نفسها. */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW registration failed', e));
+  });
 }
 
 /* ================= INIT ================= */
