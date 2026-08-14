@@ -604,6 +604,23 @@ function showAppShell(){
   if(employeesTabBtn) employeesTabBtn.style.display = admin ? '' : 'none';
   const exportTasksBtn = document.getElementById('btnExportTasksExcel');
   if(exportTasksBtn) exportTasksBtn.style.display = admin ? '' : 'none';
+  restoreActiveTab();
+}
+function restoreActiveTab(){
+  let saved = null;
+  try{ saved = localStorage.getItem('activeTab'); }catch(e){}
+  if(!saved) return;
+  const btn = document.querySelector('.tab-btn[data-tab="'+saved+'"]');
+  // لا تُفعّل تبويبًا مخفيًا (مثل "الموظفون" لغير المدير) — يبقى التبويب الافتراضي
+  if(!btn || btn.style.display === 'none') return;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById('tab-'+saved);
+  if(panel) panel.classList.add('active');
+  if(saved==='dash') renderDashboard();
+  if(saved==='tasks') renderTasksView();
+  if(saved==='employees') renderEmployeesView();
 }
 async function doLogin(username, password){
   const res = await fetch(API_URL, {
@@ -1491,6 +1508,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    try{ localStorage.setItem('activeTab', btn.dataset.tab); }catch(e){}
     if(btn.dataset.tab==='dash') renderDashboard();
     if(btn.dataset.tab==='tasks') renderTasksView();
     if(btn.dataset.tab==='employees') renderEmployeesView();
