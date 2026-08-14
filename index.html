@@ -68,6 +68,22 @@ header.app-header .sub{ font-size:10.5px; color:var(--text-secondary); margin-to
 main{ padding:20px 24px 60px; max-width:1400px; margin:0 auto;}
 .tab-panel{ display:none; }
 .tab-panel.active{ display:block; }
+.subtabs{ display:flex; gap:6px; margin-bottom:16px; overflow-x:auto;}
+.subtab-btn{
+  border:1px solid var(--border); background:var(--surface-2);
+  padding:7px 16px; font-size:12.5px; font-weight:700; border-radius:999px;
+  color:var(--text-secondary); cursor:pointer; white-space:nowrap;
+  font-family:'IBM Plex Sans Arabic',sans-serif;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.subtab-btn.active{ color:#fff; border-color:transparent; background:var(--brand-gradient);}
+.subtab-btn:hover:not(.active){ border-color:var(--s1); color:var(--s1);}
+.subtab-panel{ display:none; }
+.subtab-panel.active{ display:block; }
+.warranty-stats-row{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+.warranty-stat{ flex:1; min-width:130px; background:var(--surface-1); border:1px solid var(--border); border-radius:10px; padding:12px 14px;}
+.warranty-stat .k{ font-size:11px; color:var(--text-muted); font-weight:700; margin-bottom:4px;}
+.warranty-stat .v{ font-size:22px; font-weight:800; font-family:'JetBrains Mono',monospace;}
 
 .card{ background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:22px; margin-bottom:16px; box-shadow:var(--shadow);}
 .card h2{ font-size:15px; margin:0 0 12px; font-weight:800;}
@@ -279,45 +295,46 @@ tbody tr:hover{ background:var(--surface-1); }
 <!-- ===================== TAB 2: DASHBOARD ===================== -->
 <section id="tab-dash" class="tab-panel">
 
-  <div class="kpi-grid">
-    <div class="kpi-tile accent-1">
-      <div class="label">إجمالي المعدات الذكية</div>
-      <div class="value" id="kpiTotalPoles">0</div>
+  <nav class="subtabs">
+    <button class="subtab-btn active" data-subtab="overview">📈 نظرة عامة</button>
+    <button class="subtab-btn" data-subtab="warranty">🛡️ الضمان</button>
+  </nav>
+
+  <div id="subtab-overview" class="subtab-panel active">
+    <div class="kpi-grid">
+      <div class="kpi-tile accent-1">
+        <div class="label">إجمالي المعدات الذكية</div>
+        <div class="value" id="kpiTotalPoles">0</div>
+      </div>
     </div>
-    <div class="kpi-tile">
-      <div class="label">ضمن الضمان</div>
-      <div class="value" id="kpiWarrOk" style="color:var(--good);">0</div>
-    </div>
-    <div class="kpi-tile">
-      <div class="label">قارب على الانتهاء (السنة 4-5)</div>
-      <div class="value" id="kpiWarrWarning" style="color:var(--warning);">0</div>
-    </div>
-    <div class="kpi-tile">
-      <div class="label">خارج الضمان</div>
-      <div class="value" id="kpiWarrExpired" style="color:var(--critical);">0</div>
+
+    <div class="charts-grid">
+      <div class="card">
+        <h3>عدد المعدات حسب النوع</h3>
+        <div id="chartByType"></div>
+      </div>
+      <div class="card">
+        <h3>عدد المعدات حسب المكتب</h3>
+        <div id="chartByOffice"></div>
+      </div>
+      <div class="card">
+        <h3>عدد المعدات حسب الشركة المصنّعة</h3>
+        <div id="chartByManu"></div>
+      </div>
     </div>
   </div>
 
-  <div class="charts-grid">
+  <div id="subtab-warranty" class="subtab-panel">
     <div class="card">
-      <h3>عدد المعدات حسب النوع</h3>
-      <div id="chartByType"></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+        <h3 style="margin:0;">حالة الضمان — تُحسب تلقائيًا من سنة الصنع (مدة الضمان 5 سنوات)</h3>
+        <button id="btnExportWarranty">⬇ تصدير المعدات المتأثرة (قاربت/انتهى ضمانها)</button>
+      </div>
+      <div class="warranty-stats-row" id="warrantyStatsRow"></div>
+      <div id="chartByWarranty"></div>
+      <div id="warrantyTableWrap"></div>
+      <div class="warranty-note" id="warrantyUnknownNote"></div>
     </div>
-    <div class="card">
-      <h3>عدد المعدات حسب المكتب</h3>
-      <div id="chartByOffice"></div>
-    </div>
-    <div class="card">
-      <h3>عدد المعدات حسب الشركة المصنّعة</h3>
-      <div id="chartByManu"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>حالة الضمان — يُحسب تلقائيًا من سنة الصنع (مدة الضمان 5 سنوات)</h3>
-    <div id="chartByWarranty"></div>
-    <div id="warrantyTableWrap"></div>
-    <div class="warranty-note" id="warrantyUnknownNote"></div>
   </div>
 </section>
 
@@ -723,6 +740,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='dash') renderDashboard();
   });
 });
+document.querySelectorAll('.subtab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.subtab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.subtab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('subtab-'+btn.dataset.subtab).classList.add('active');
+  });
+});
 
 /* ================= THEME ================= */
 document.getElementById('themeBtn').addEventListener('click', ()=>{
@@ -1053,14 +1078,20 @@ function warrantyStatus(p){
   if(elapsed <= WARRANTY_YEARS) return { status:'warning', elapsed };
   return { status:'expired', elapsed };
 }
+let WARRANTY_ATTENTION_ALL = []; // uncapped list (expired + warning), used by the export button
+
 function renderWarrantySection(){
   const withStatus = POLES.map(p=>Object.assign({}, p, warrantyStatus(p)));
   const counts = { ok:0, warning:0, expired:0, unknown:0 };
   withStatus.forEach(p=>counts[p.status]++);
 
-  document.getElementById('kpiWarrOk').textContent = counts.ok.toLocaleString('en-US');
-  document.getElementById('kpiWarrWarning').textContent = counts.warning.toLocaleString('en-US');
-  document.getElementById('kpiWarrExpired').textContent = counts.expired.toLocaleString('en-US');
+  const statsRow = document.getElementById('warrantyStatsRow');
+  statsRow.innerHTML = `
+    <div class="warranty-stat"><div class="k">ضمن الضمان</div><div class="v" style="color:var(--good);">${counts.ok.toLocaleString('en-US')}</div></div>
+    <div class="warranty-stat"><div class="k">قارب على الانتهاء (سنة 4-5)</div><div class="v" style="color:var(--warning);">${counts.warning.toLocaleString('en-US')}</div></div>
+    <div class="warranty-stat"><div class="k">خارج الضمان</div><div class="v" style="color:var(--critical);">${counts.expired.toLocaleString('en-US')}</div></div>
+    <div class="warranty-stat"><div class="k">سنة الصنع غير محددة</div><div class="v" style="color:var(--text-muted);">${counts.unknown.toLocaleString('en-US')}</div></div>
+  `;
 
   const chartData = ['ok','warning','expired','unknown']
     .filter(k=>counts[k]>0)
@@ -1075,10 +1106,10 @@ function renderWarrantySection(){
     </div>`;
   }).join('');
 
-  const needsAttention = withStatus
+  WARRANTY_ATTENTION_ALL = withStatus
     .filter(p=>p.status==='expired' || p.status==='warning')
-    .sort((a,b)=> b.elapsed - a.elapsed)
-    .slice(0,50);
+    .sort((a,b)=> b.elapsed - a.elapsed);
+  const needsAttention = WARRANTY_ATTENTION_ALL.slice(0,50);
 
   const wrap = document.getElementById('warrantyTableWrap');
   if(!needsAttention.length){
@@ -1097,6 +1128,9 @@ function renderWarrantySection(){
           </tr>`).join('')}
       </tbody>
     </table>`;
+    if(WARRANTY_ATTENTION_ALL.length > 50){
+      wrap.innerHTML += `<div class="warranty-note">يعرض الجدول أول 50 فقط — استخدم زر التصدير للحصول على القائمة الكاملة (${WARRANTY_ATTENTION_ALL.length.toLocaleString('en-US')})</div>`;
+    }
   }
 
   const note = document.getElementById('warrantyUnknownNote');
@@ -1104,6 +1138,28 @@ function renderWarrantySection(){
     ? `${counts.unknown.toLocaleString('en-US')} معدة بدون سنة صنع مسجّلة — لا تُحتسب ضمن حالة الضمان حتى تُعبّأ`
     : '';
 }
+document.getElementById('btnExportWarranty').addEventListener('click', ()=>{
+  if(!WARRANTY_ATTENTION_ALL.length){ toast('لا توجد معدات قاربت أو انتهى ضمانها للتصدير'); return; }
+  const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', manufacture_year:'سنة الصنع', elapsed:'عدد سنوات منذ الصنع', status:'حالة الضمان', ip:'عنوان IP', station:'المحطة', feeder:'المغذي'};
+  const statusMap = { warning: WARRANTY_LABELS.warning, expired: WARRANTY_LABELS.expired };
+  const rows = WARRANTY_ATTENTION_ALL.map(p=>({
+    [headerLabels.pole]: p.pole,
+    [headerLabels.office]: p.office||'',
+    [headerLabels.type]: p.type||'',
+    [headerLabels.manufacturer]: p.manufacturer||'',
+    [headerLabels.manufacture_year]: p.manufacture_year||'',
+    [headerLabels.elapsed]: p.elapsed,
+    [headerLabels.status]: statusMap[p.status]||'',
+    [headerLabels.ip]: p.ip||'',
+    [headerLabels.station]: p.station||'',
+    [headerLabels.feeder]: p.feeder||'',
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'حالة الضمان');
+  XLSX.writeFile(wb, 'equipment_warranty_status.xlsx');
+  toast('تم تصدير قائمة المعدات المتأثرة بضمانها');
+});
 
 function renderDashboard(){
   document.getElementById('kpiTotalPoles').innerHTML = POLES.length.toLocaleString('en-US');
