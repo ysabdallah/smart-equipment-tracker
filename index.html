@@ -1886,6 +1886,13 @@ document.getElementById('leaveRequestForm').addEventListener('submit', async (ev
 /* ================= تذاكر المصنعين (Manufacturer Tickets) ================= */
 let TICKETS = [];
 
+function formatTimestampNice(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return String(iso);
+  return d.toLocaleString('ar-SA', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
 function ticketStatusClass(status){
   if(status === 'مغلقة') return 'status-done';
   if(status === 'قيد المتابعة') return 'status-progress';
@@ -1950,7 +1957,7 @@ async function renderTicketsView(){
         <span class="status-pill ${pillClass}">${escapeHtml(t.status)}</span>
       </div>
       <div class="leave-meta">${escapeHtml(t.description)}</div>
-      <div class="leave-meta">تاريخ الفتح: ${escapeHtml(t.openedAt)}</div>
+      <div class="leave-meta">تاريخ الفتح: ${escapeHtml(formatTimestampNice(t.openedAt))}</div>
       ${equipmentDetailsHtml(pole)}
       ${statusControls}
     </div>`;
