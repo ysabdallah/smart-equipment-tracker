@@ -332,6 +332,7 @@ tbody tr:hover{ background:var(--surface-1); }
       <button type="submit" id="loginSubmitBtn">تسجيل الدخول</button>
     </form>
     <div class="login-foot"><a id="showRegisterLink">موظف جديد؟ أنشئ حسابًا من هنا</a></div>
+    <div class="login-foot"><a id="showForgotLink">نسيت كلمة المرور؟</a></div>
   </div>
 </div>
 
@@ -354,13 +355,55 @@ tbody tr:hover{ background:var(--surface-1); }
       <input type="text" id="regContractor" required>
       <label for="regSecurityCard">رقم بطاقة الأمن الصناعي</label>
       <input type="text" id="regSecurityCard" required>
+      <label for="regJoinDate">تاريخ الالتحاق بالعمل</label>
+      <input type="date" id="regJoinDate" required>
       <label for="regPassword">كلمة المرور</label>
       <input type="password" id="regPassword" autocomplete="new-password" required>
+      <label for="regSecurityQuestion">سؤال أمان (لاستعادة كلمة المرور لاحقًا)</label>
+      <select id="regSecurityQuestion" required>
+        <option value="">-- اختر سؤالًا --</option>
+        <option value="ما اسم مدينتك التي وُلدت فيها؟">ما اسم مدينتك التي وُلدت فيها؟</option>
+        <option value="ما اسم والدتك قبل الزواج؟">ما اسم والدتك قبل الزواج؟</option>
+        <option value="ما اسم أول مدرسة التحقت بها؟">ما اسم أول مدرسة التحقت بها؟</option>
+        <option value="ما هو لقبك المفضل في الطفولة؟">ما هو لقبك المفضل في الطفولة؟</option>
+        <option value="ما اسم أقرب صديق لك في الطفولة؟">ما اسم أقرب صديق لك في الطفولة؟</option>
+        <option value="__other__">سؤال آخر (حدده بنفسك)</option>
+      </select>
+      <input type="text" id="regSecurityQuestionOther" placeholder="اكتب سؤالك الخاص" style="display:none; margin-top:8px;">
+      <label for="regSecurityAnswer">إجابة سؤال الأمان</label>
+      <input type="text" id="regSecurityAnswer" required>
       <div class="login-error" id="registerError"></div>
       <div class="login-success" id="registerSuccess">تم إرسال طلبك بنجاح — سيتم تفعيل حسابك بعد موافقة المدير</div>
       <button type="submit" id="registerSubmitBtn">إرسال الطلب</button>
     </form>
     <div class="login-foot"><a id="showLoginLink">لديك حساب؟ سجّل الدخول</a></div>
+  </div>
+</div>
+
+<div id="forgotScreen" class="auth-screen" style="display:none;">
+  <div class="login-card">
+    <div class="login-logo">🔑</div>
+    <h2>استعادة كلمة المرور</h2>
+    <div class="login-sub" id="forgotSub">أدخل اسم المستخدم (رقم الهوية أو الإقامة) للمتابعة</div>
+    <form id="forgotStep1Form" autocomplete="off">
+      <label for="forgotUsername">اسم المستخدم / رقم الهوية أو الإقامة</label>
+      <input type="text" id="forgotUsername" required>
+      <div class="login-error" id="forgotStep1Error"></div>
+      <button type="submit" id="forgotStep1Btn">التالي</button>
+    </form>
+    <form id="forgotStep2Form" autocomplete="off" style="display:none;">
+      <label id="forgotQuestionLabel" style="font-weight:700;"></label>
+      <label for="forgotAnswer">الإجابة</label>
+      <input type="text" id="forgotAnswer" required>
+      <label for="forgotNewPassword">كلمة المرور الجديدة</label>
+      <input type="password" id="forgotNewPassword" autocomplete="new-password" required>
+      <label for="forgotConfirmPassword">تأكيد كلمة المرور الجديدة</label>
+      <input type="password" id="forgotConfirmPassword" autocomplete="new-password" required>
+      <div class="login-error" id="forgotStep2Error"></div>
+      <div class="login-success" id="forgotSuccess">تم تحديث كلمة المرور بنجاح — يمكنك تسجيل الدخول الآن</div>
+      <button type="submit" id="forgotStep2Btn">تحديث كلمة المرور</button>
+    </form>
+    <div class="login-foot"><a id="showLoginFromForgotLink">العودة لتسجيل الدخول</a></div>
   </div>
 </div>
 
@@ -415,6 +458,7 @@ tbody tr:hover{ background:var(--surface-1); }
   <button class="tab-btn" data-tab="dash">📊 لوحة المعلومات</button>
   <button class="tab-btn" data-tab="tasks">🧾 المهام</button>
   <button class="tab-btn" data-tab="leaves">🏖️ الإجازات</button>
+  <button class="tab-btn" data-tab="tickets">🎫 تذاكر المصنعين</button>
   <button class="tab-btn" data-tab="employees" id="employeesTabBtn" style="display:none;">👥 الموظفون</button>
 </nav>
 
@@ -440,6 +484,16 @@ tbody tr:hover{ background:var(--surface-1); }
 
   <div class="card">
     <h3>إدارة البيانات</h3>
+    <div class="form-grid" style="margin-bottom:10px;">
+      <div>
+        <label for="exportFilterManu">تصفية التصدير — الشركة المصنّعة (اختياري)</label>
+        <select id="exportFilterManu"><option value="">-- الكل --</option></select>
+      </div>
+      <div>
+        <label for="exportFilterFeeder">تصفية التصدير — المغذي (اختياري)</label>
+        <select id="exportFilterFeeder"><option value="">-- الكل --</option></select>
+      </div>
+    </div>
     <div class="btn-row">
       <button class="primary" id="btnAddPole">+ إضافة عمود جديد</button>
       <button id="btnExportExcel">⬇ تصدير ملف إكسل</button>
@@ -582,8 +636,51 @@ tbody tr:hover{ background:var(--surface-1); }
 
 </section>
 
+<!-- ===================== TAB: MANUFACTURER TICKETS (تذاكر المصنعين) ===================== -->
+<section id="tab-tickets" class="tab-panel">
+
+  <div class="card">
+    <h3>➕ فتح تذكرة مصنّع جديدة</h3>
+    <form id="ticketForm">
+      <div class="form-grid">
+        <div>
+          <label for="ticketPole">رقم العمود</label>
+          <select id="ticketPole" required>
+            <option value="">-- اختر رقم العمود --</option>
+          </select>
+        </div>
+        <div>
+          <label for="ticketPriority">الأولوية</label>
+          <select id="ticketPriority">
+            <option value="عادي">عادي</option>
+            <option value="عاجل">عاجل</option>
+          </select>
+        </div>
+      </div>
+      <div id="ticketEquipmentPreview"></div>
+      <label for="ticketDescription">وصف المشكلة</label>
+      <textarea id="ticketDescription" rows="3" placeholder="مثال: عطل في RTU يستدعي تدخل المصنّع" required></textarea>
+      <div class="form-msg" id="ticketFormMsg"></div>
+      <button type="submit" class="primary" style="margin-top:12px;">إرسال التذكرة</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+      <h3 style="margin:0;">تذاكر المصنعين</h3>
+      <button id="btnExportTicketsExcel">⬇ تصدير التذاكر إلى إكسل</button>
+    </div>
+    <div id="ticketsListWrap"></div>
+  </div>
+
+</section>
+
 <!-- ===================== TAB 4: EMPLOYEES (admin only) ===================== -->
 <section id="tab-employees" class="tab-panel">
+  <div class="card" id="pendingRegsCard" style="display:none;">
+    <h3>🕓 طلبات تسجيل معلّقة</h3>
+    <div id="pendingRegsWrap"></div>
+  </div>
   <div class="card">
     <h3>👥 بيانات الموظفين</h3>
     <div id="employeesCardsWrap" class="employees-grid"></div>
@@ -654,14 +751,29 @@ function authToken(){
 function showLoginScreen(){
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('registerScreen').style.display = 'none';
+  document.getElementById('forgotScreen').style.display = 'none';
   document.getElementById('appShell').style.display = 'none';
 }
 function showRegisterScreen(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('registerScreen').style.display = 'flex';
+  document.getElementById('forgotScreen').style.display = 'none';
   document.getElementById('appShell').style.display = 'none';
   document.getElementById('registerError').classList.remove('show');
   document.getElementById('registerSuccess').classList.remove('show');
+}
+function showForgotScreen(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('registerScreen').style.display = 'none';
+  document.getElementById('forgotScreen').style.display = 'flex';
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('forgotStep1Form').style.display = '';
+  document.getElementById('forgotStep2Form').style.display = 'none';
+  document.getElementById('forgotStep1Form').reset();
+  document.getElementById('forgotStep2Form').reset();
+  document.getElementById('forgotStep1Error').classList.remove('show');
+  document.getElementById('forgotStep2Error').classList.remove('show');
+  document.getElementById('forgotSuccess').classList.remove('show');
 }
 function showAppShell(){
   document.getElementById('loginScreen').style.display = 'none';
@@ -693,6 +805,7 @@ function restoreActiveTab(){
   if(saved==='dash') renderDashboard();
   if(saved==='tasks') renderTasksView();
   if(saved==='leaves') renderLeavesView();
+  if(saved==='tickets') renderTicketsView();
   if(saved==='employees') renderEmployeesView();
 }
 async function doLogin(username, password){
@@ -747,12 +860,19 @@ document.getElementById('logoutBtn').addEventListener('click', ()=>{ doLogout();
 
 document.getElementById('showRegisterLink').addEventListener('click', (ev)=>{ ev.preventDefault(); showRegisterScreen(); });
 document.getElementById('showLoginLink').addEventListener('click', (ev)=>{ ev.preventDefault(); showLoginScreen(); });
+document.getElementById('showForgotLink').addEventListener('click', (ev)=>{ ev.preventDefault(); showForgotScreen(); });
+document.getElementById('showLoginFromForgotLink').addEventListener('click', (ev)=>{ ev.preventDefault(); showLoginScreen(); });
 
-async function doRegister(fullName, nationalId, phone, contractor, securityCard, password){
+document.getElementById('regSecurityQuestion').addEventListener('change', (ev)=>{
+  const otherInput = document.getElementById('regSecurityQuestionOther');
+  otherInput.style.display = ev.target.value === '__other__' ? '' : 'none';
+});
+
+async function doRegister(fullName, nationalId, phone, contractor, securityCard, joinDate, password, securityQuestion, securityAnswer){
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'register', fullName, nationalId, phone, contractor, securityCard, password })
+    body: JSON.stringify({ action: 'register', fullName, nationalId, phone, contractor, securityCard, joinDate, password, securityQuestion, securityAnswer })
   });
   const json = await res.json();
   if(!json.ok) throw new Error(json.error || 'تعذر إرسال الطلب');
@@ -765,13 +885,17 @@ document.getElementById('registerForm').addEventListener('submit', async (ev)=>{
   const phone = phoneLocal ? ('966' + phoneLocal) : '';
   const contractor = document.getElementById('regContractor').value.trim();
   const securityCard = document.getElementById('regSecurityCard').value.trim();
+  const joinDate = document.getElementById('regJoinDate').value;
   const password = document.getElementById('regPassword').value;
+  const securityQuestionSel = document.getElementById('regSecurityQuestion').value;
+  const securityQuestion = securityQuestionSel === '__other__' ? document.getElementById('regSecurityQuestionOther').value.trim() : securityQuestionSel;
+  const securityAnswer = document.getElementById('regSecurityAnswer').value.trim();
   const errBox = document.getElementById('registerError');
   const successBox = document.getElementById('registerSuccess');
   const btn = document.getElementById('registerSubmitBtn');
   errBox.classList.remove('show');
   successBox.classList.remove('show');
-  if(!fullName || !nationalId || !phoneLocal || !contractor || !securityCard || !password){
+  if(!fullName || !nationalId || !phoneLocal || !contractor || !securityCard || !joinDate || !password || !securityQuestion || !securityAnswer){
     errBox.textContent = 'جميع الحقول إجبارية';
     errBox.classList.add('show');
     return;
@@ -783,8 +907,9 @@ document.getElementById('registerForm').addEventListener('submit', async (ev)=>{
   }
   btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
   try{
-    await doRegister(fullName, nationalId, phone, contractor, securityCard, password);
+    await doRegister(fullName, nationalId, phone, contractor, securityCard, joinDate, password, securityQuestion, securityAnswer);
     document.getElementById('registerForm').reset();
+    document.getElementById('regSecurityQuestionOther').style.display = 'none';
     successBox.classList.add('show');
     setTimeout(()=>{ showLoginScreen(); }, 2500);
   }catch(e){
@@ -792,6 +917,76 @@ document.getElementById('registerForm').addEventListener('submit', async (ev)=>{
     errBox.classList.add('show');
   }finally{
     btn.disabled = false; btn.textContent = 'إرسال الطلب';
+  }
+});
+
+/* ================= استعادة كلمة المرور بسؤال الأمان ================= */
+let FORGOT_USERNAME = '';
+document.getElementById('forgotStep1Form').addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const username = document.getElementById('forgotUsername').value.trim();
+  const errBox = document.getElementById('forgotStep1Error');
+  const btn = document.getElementById('forgotStep1Btn');
+  errBox.classList.remove('show');
+  if(!username){ errBox.textContent = 'يرجى إدخال اسم المستخدم'; errBox.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'جارٍ التحقق...';
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getSecurityQuestion', username })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      errBox.textContent = json.error || 'تعذر العثور على الحساب';
+      errBox.classList.add('show');
+      return;
+    }
+    FORGOT_USERNAME = username;
+    document.getElementById('forgotQuestionLabel').textContent = json.question;
+    document.getElementById('forgotStep1Form').style.display = 'none';
+    document.getElementById('forgotStep2Form').style.display = '';
+  }catch(e){
+    errBox.textContent = 'تعذر الاتصال بالخادم';
+    errBox.classList.add('show');
+  }finally{
+    btn.disabled = false; btn.textContent = 'التالي';
+  }
+});
+document.getElementById('forgotStep2Form').addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const answer = document.getElementById('forgotAnswer').value.trim();
+  const newPassword = document.getElementById('forgotNewPassword').value;
+  const confirmPassword = document.getElementById('forgotConfirmPassword').value;
+  const errBox = document.getElementById('forgotStep2Error');
+  const successBox = document.getElementById('forgotSuccess');
+  const btn = document.getElementById('forgotStep2Btn');
+  errBox.classList.remove('show');
+  successBox.classList.remove('show');
+  if(!answer || !newPassword){ errBox.textContent = 'يرجى تعبئة جميع الحقول'; errBox.classList.add('show'); return; }
+  if(newPassword.length < 4){ errBox.textContent = 'كلمة المرور الجديدة قصيرة جدًا (4 أحرف على الأقل)'; errBox.classList.add('show'); return; }
+  if(newPassword !== confirmPassword){ errBox.textContent = 'كلمة المرور الجديدة غير متطابقة'; errBox.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'جارٍ التحديث...';
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'resetPasswordWithSecurityAnswer', username: FORGOT_USERNAME, answer, newPassword })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      errBox.textContent = json.error || 'تعذر تحديث كلمة المرور';
+      errBox.classList.add('show');
+      return;
+    }
+    successBox.classList.add('show');
+    document.getElementById('forgotStep2Form').reset();
+    setTimeout(()=>{ showLoginScreen(); }, 2000);
+  }catch(e){
+    errBox.textContent = 'تعذر الاتصال بالخادم';
+    errBox.classList.add('show');
+  }finally{
+    btn.disabled = false; btn.textContent = 'تحديث كلمة المرور';
   }
 });
 
@@ -1412,6 +1607,54 @@ async function loadEmployeesForAdmin(){
 }
 async function renderEmployeesView(){
   if(!isAdmin()) return;
+
+  const pendingCard = document.getElementById('pendingRegsCard');
+  const pendingWrap = document.getElementById('pendingRegsWrap');
+  if(PENDING_USERS.length){
+    pendingCard.style.display = '';
+    pendingWrap.innerHTML = PENDING_USERS.map(u=>`
+      <div class="leave-item">
+        <div class="leave-top">
+          <div class="leave-title">${escapeHtml(u.name)} — هوية/إقامة: ${escapeHtml(u.nationalId||u.username)}</div>
+        </div>
+        <div class="leave-meta">${u.contractor ? ('المقاول: ' + escapeHtml(u.contractor) + ' · ') : ''}${u.phone ? ('واتساب: ' + escapeHtml(u.phone)) : ''}</div>
+        <div class="leave-actions">
+          <button type="button" class="primary" data-approve-emp="${escapeHtml(u.username)}">✅ قبول</button>
+          <button type="button" class="ghost" data-reject-emp="${escapeHtml(u.username)}">🚫 رفض</button>
+        </div>
+      </div>
+    `).join('');
+    pendingWrap.querySelectorAll('[data-approve-emp]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        btn.disabled = true;
+        const username = btn.dataset.approveEmp;
+        const ok = await approveUserApi(username, 'approved');
+        if(ok){
+          PENDING_USERS = PENDING_USERS.filter(u=>u.username !== username);
+          TECHNICIANS_CACHE = null; EMPLOYEES_CACHE = null;
+          toast('تم تفعيل الحساب بنجاح');
+          renderNotifBadge();
+          renderEmployeesView();
+        } else { toast('تعذر تنفيذ العملية'); btn.disabled = false; }
+      });
+    });
+    pendingWrap.querySelectorAll('[data-reject-emp]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        btn.disabled = true;
+        const username = btn.dataset.rejectEmp;
+        const ok = await approveUserApi(username, 'rejected');
+        if(ok){
+          PENDING_USERS = PENDING_USERS.filter(u=>u.username !== username);
+          toast('تم رفض الطلب');
+          renderNotifBadge();
+          renderEmployeesView();
+        } else { toast('تعذر تنفيذ العملية'); btn.disabled = false; }
+      });
+    });
+  } else {
+    pendingCard.style.display = 'none';
+  }
+
   const wrap = document.getElementById('employeesCardsWrap');
   wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">جارٍ التحميل...</div>`;
   EMPLOYEES_CACHE = await loadEmployeesForAdmin();
@@ -1433,6 +1676,7 @@ async function renderEmployeesView(){
       <div class="emp-row"><span class="k">بطاقة الأمن الصناعي</span><span class="v">${escapeHtml(u.securityCard||'—')}</span></div>
       <div class="emp-row"><span class="k">الواتساب</span><span class="v">${waLink ? `<a href="${waLink}" target="_blank">${escapeHtml(u.phone)}</a>` : '—'}</span></div>
       <div class="emp-row"><span class="k">عدد المهام</span><span class="v">${taskCountForUsername(u.username)}</span></div>
+      <div class="emp-row"><span class="k">رصيد الإجازة</span><span class="v">${u.leaveRemaining!=null ? (escapeHtml(u.leaveRemaining)+' من '+escapeHtml(u.leaveTotal)) : '—'}</span></div>
       <div class="emp-row"><span class="k">تاريخ الالتحاق</span><span class="v">
         <span class="empJoinDateView" data-username="${escapeHtml(u.username)}">${u.joinDate ? escapeHtml(u.joinDate) : '—'}</span>
         <input type="date" class="empJoinDateInput" data-username="${escapeHtml(u.username)}" value="${u.joinDate ? escapeHtml(u.joinDate) : ''}" style="display:none; margin-top:4px; width:100%;">
@@ -1637,6 +1881,158 @@ document.getElementById('leaveRequestForm').addEventListener('submit', async (ev
   }finally{
     btn.disabled = false; btn.textContent = 'إرسال الطلب';
   }
+});
+
+/* ================= تذاكر المصنعين (Manufacturer Tickets) ================= */
+let TICKETS = [];
+
+function ticketStatusClass(status){
+  if(status === 'مغلقة') return 'status-done';
+  if(status === 'قيد المتابعة') return 'status-progress';
+  return 'status-new';
+}
+
+function populateTicketPoleSelect(){
+  const sel = document.getElementById('ticketPole');
+  if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- اختر رقم العمود --</option>' + poleSelectOptionsHtml(cur);
+  sel.value = cur;
+}
+
+document.getElementById('ticketPole').addEventListener('change', ()=>{
+  const pole = poleByCode(document.getElementById('ticketPole').value);
+  document.getElementById('ticketEquipmentPreview').innerHTML = equipmentDetailsHtml(pole);
+});
+
+async function loadManufacturerTickets(){
+  if(!authToken()) return [];
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'listManufacturerTickets', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      return [];
+    }
+    return json.tickets || [];
+  }catch(e){ return []; }
+}
+
+async function renderTicketsView(){
+  populateTicketPoleSelect();
+
+  const wrap = document.getElementById('ticketsListWrap');
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">جارٍ التحميل...</div>`;
+  TICKETS = await loadManufacturerTickets();
+  if(!TICKETS.length){
+    wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">لا توجد تذاكر مصنعين بعد</div>`;
+    return;
+  }
+  const admin = isAdmin();
+  const sorted = TICKETS.slice().sort((a,b)=> String(b.openedAt||'').localeCompare(String(a.openedAt||'')));
+  wrap.innerHTML = sorted.map(t=>{
+    const pillClass = ticketStatusClass(t.status);
+    const priorityBadge = t.priority === 'عاجل' ? `<span class="status-pill status-rejected">عاجل</span>` : `<span class="status-pill status-new">عادي</span>`;
+    const pole = t.poleId ? poleByCode(t.poleId) : null;
+    const statusControls = admin ? `
+      <div class="leave-actions">
+        ${t.status !== 'قيد المتابعة' ? `<button type="button" class="btnTicketStatus" data-id="${escapeHtml(t.id)}" data-status="قيد المتابعة">قيد المتابعة</button>` : ''}
+        ${t.status !== 'مغلقة' ? `<button type="button" class="primary btnTicketStatus" data-id="${escapeHtml(t.id)}" data-status="مغلقة">✔ إغلاق التذكرة</button>` : ''}
+        ${t.status !== 'مفتوحة' ? `<button type="button" class="ghost btnTicketStatus" data-id="${escapeHtml(t.id)}" data-status="مفتوحة">إعادة فتح</button>` : ''}
+      </div>` : '';
+    return `<div class="leave-item">
+      <div class="leave-top">
+        <div class="leave-title">العمود: ${escapeHtml(t.poleId)} — ${escapeHtml(t.name||t.username)} ${priorityBadge}</div>
+        <span class="status-pill ${pillClass}">${escapeHtml(t.status)}</span>
+      </div>
+      <div class="leave-meta">${escapeHtml(t.description)}</div>
+      <div class="leave-meta">تاريخ الفتح: ${escapeHtml(t.openedAt)}</div>
+      ${equipmentDetailsHtml(pole)}
+      ${statusControls}
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.btnTicketStatus').forEach(btn=>{
+    btn.addEventListener('click', ()=>updateTicketStatus(btn.dataset.id, btn.dataset.status));
+  });
+}
+
+async function updateTicketStatus(ticketId, status){
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'updateManufacturerTicketStatus', token: authToken(), ticketId, status })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      toast(json.error || 'تعذر تحديث حالة التذكرة');
+      return;
+    }
+    toast('تم تحديث حالة التذكرة');
+    renderTicketsView();
+  }catch(e){
+    toast('تعذر الاتصال بالخادم');
+  }
+}
+
+document.getElementById('ticketForm').addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const poleId = document.getElementById('ticketPole').value;
+  const priority = document.getElementById('ticketPriority').value;
+  const description = document.getElementById('ticketDescription').value.trim();
+  const msg = document.getElementById('ticketFormMsg');
+  msg.className = 'form-msg'; msg.textContent = '';
+  if(!poleId || !description){
+    msg.className = 'form-msg err'; msg.textContent = 'يرجى اختيار رقم العمود وكتابة وصف المشكلة';
+    return;
+  }
+  const btn = document.getElementById('ticketForm').querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'submitManufacturerTicket', token: authToken(), poleId, priority, description })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر إرسال التذكرة';
+      return;
+    }
+    msg.className = 'form-msg ok'; msg.textContent = 'تم إرسال التذكرة بنجاح';
+    document.getElementById('ticketForm').reset();
+    document.getElementById('ticketEquipmentPreview').innerHTML = '';
+    renderTicketsView();
+    if(json.adminPhones && json.adminPhones.length){
+      const phone = String(json.adminPhones[0]).replace(/[^0-9]/g, '');
+      const waMsg = `مرحبًا، تم فتح تذكرة مصنّع جديدة (${priority}) للعمود ${poleId} بواسطة ${currentUserName()}:\n${description}`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(waMsg)}`, '_blank');
+    }
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }finally{
+    btn.disabled = false; btn.textContent = 'إرسال التذكرة';
+  }
+});
+
+document.getElementById('btnExportTicketsExcel').addEventListener('click', ()=>{
+  if(!TICKETS.length){ toast('لا توجد تذاكر لتصديرها'); return; }
+  const rows = TICKETS.map(t=>({
+    'معرف التذكرة': t.id, 'رقم العمود': t.poleId, 'وصف المشكلة': t.description, 'الأولوية': t.priority,
+    'الحالة': t.status, 'مقدّم الطلب': t.name||t.username, 'تاريخ الفتح': t.openedAt, 'آخر تحديث': t.updatedAt
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'تذاكر المصنعين');
+  XLSX.writeFile(wb, 'manufacturer_tickets.xlsx');
+  toast('تم تصدير تذاكر المصنعين كملف إكسل');
 });
 
 async function loadDashboardSummaryForAdmin(){
@@ -1912,6 +2308,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='dash') renderDashboard();
     if(btn.dataset.tab==='tasks') renderTasksView();
     if(btn.dataset.tab==='leaves') renderLeavesView();
+    if(btn.dataset.tab==='tickets') renderTicketsView();
     if(btn.dataset.tab==='employees') renderEmployeesView();
   });
 });
@@ -2198,11 +2595,30 @@ document.addEventListener('click', (e)=>{
   }
 });
 
+/* تصفية التصدير — تُملأ قوائم الشركة المصنّعة والمغذي من بيانات المعدات الفعلية */
+function populateExportFilters(){
+  const manuSel = document.getElementById('exportFilterManu');
+  const feederSel = document.getElementById('exportFilterFeeder');
+  if(!manuSel || !feederSel) return;
+  const manus = Array.from(new Set(POLES.map(p=>p.manufacturer).filter(Boolean))).sort();
+  const feeders = Array.from(new Set(POLES.map(p=>p.feeder).filter(Boolean))).sort();
+  const curManu = manuSel.value, curFeeder = feederSel.value;
+  manuSel.innerHTML = '<option value="">-- الكل --</option>' + manus.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+  feederSel.innerHTML = '<option value="">-- الكل --</option>' + feeders.map(f=>`<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join('');
+  manuSel.value = curManu; feederSel.value = curFeeder;
+}
+
 /* Excel export */
 document.getElementById('btnExportExcel').addEventListener('click', ()=>{
   const headers = ['pole','office','type','manufacturer','rtu','ip','serial','station','feeder','function_location','modem_type','manufacture_year','lat','lng'];
   const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', rtu:'RTU', ip:'عنوان IP', serial:'الرقم التسلسي', station:'المحطة', feeder:'المغذي', function_location:'FUNCTION LOCATION', modem_type:'نوع المودم', manufacture_year:'سنة الصنع', lat:'خط العرض', lng:'خط الطول'};
-  const ws = XLSX.utils.json_to_sheet(POLES.map(p=>{
+  const filterManu = document.getElementById('exportFilterManu').value;
+  const filterFeeder = document.getElementById('exportFilterFeeder').value;
+  let filtered = POLES;
+  if(filterManu) filtered = filtered.filter(p=>p.manufacturer === filterManu);
+  if(filterFeeder) filtered = filtered.filter(p=>p.feeder === filterFeeder);
+  if(!filtered.length){ toast('لا توجد معدات مطابقة لهذه التصفية'); return; }
+  const ws = XLSX.utils.json_to_sheet(filtered.map(p=>{
     const row = {};
     headers.forEach(h=>{ row[headerLabels[h]] = p[h] ?? ''; });
     return row;
@@ -2210,7 +2626,7 @@ document.getElementById('btnExportExcel').addEventListener('click', ()=>{
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'المعدات');
   XLSX.writeFile(wb, 'poles_data.xlsx');
-  toast('تم تصدير البيانات كملف إكسل');
+  toast(`تم تصدير ${filtered.length.toLocaleString('en-US')} معدة كملف إكسل`);
 });
 
 
@@ -2344,6 +2760,7 @@ function renderDashboard(){
   renderBarChart('chartByManu', countBy(POLES,'manufacturer').slice(0,8));
   renderWarrantySection();
   loadDashboardSummaryForAdmin();
+  populateExportFilters();
 }
 
 /* ================= OFFLINE APP SHELL (service worker) =================
