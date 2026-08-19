@@ -103,7 +103,14 @@ main{ padding:20px 24px 60px; max-width:1400px; margin:0 auto;}
 .status-pill.status-new{ background:#fde68a33; color:#b45309; }
 .status-pill.status-progress{ background:#93c5fd33; color:#1d4ed8; }
 .status-pill.status-done{ background:#86efac33; color:#15803d; }
+.status-pill.status-rejected{ background:var(--critical-dim); color:var(--critical); }
 .task-item .task-actions{ margin-top:10px; display:flex; gap:8px; }
+
+.leave-item{ border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:10px; background:var(--surface-1); }
+.leave-item .leave-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+.leave-item .leave-title{ font-size:13.5px; font-weight:700; }
+.leave-item .leave-meta{ font-size:11.5px; color:var(--text-secondary); margin-top:4px; }
+.leave-item .leave-actions{ margin-top:10px; display:flex; gap:8px; }
 
 .assign-row{ border:1px dashed var(--border); border-radius:10px; padding:12px; margin-bottom:10px; background:var(--surface-2); }
 .assign-row .assignRowRemove{ font-size:11.5px; padding:5px 10px; }
@@ -407,6 +414,7 @@ tbody tr:hover{ background:var(--surface-1); }
   <button class="tab-btn active" data-tab="coords">📍 الإحداثيات والمعدات</button>
   <button class="tab-btn" data-tab="dash">📊 لوحة المعلومات</button>
   <button class="tab-btn" data-tab="tasks">🧾 المهام</button>
+  <button class="tab-btn" data-tab="leaves">🏖️ الإجازات</button>
   <button class="tab-btn" data-tab="employees" id="employeesTabBtn" style="display:none;">👥 الموظفون</button>
 </nav>
 
@@ -448,6 +456,16 @@ tbody tr:hover{ background:var(--surface-1); }
   </nav>
 
   <div id="subtab-overview" class="subtab-panel active">
+    <div class="kpi-grid" id="adminDashboardKpis" style="display:none;">
+      <div class="kpi-tile accent-2"><div class="label">الموظفون النشطون</div><div class="value" id="kpiActiveEmployees">—</div></div>
+      <div class="kpi-tile accent-3"><div class="label">طلبات تسجيل معلّقة</div><div class="value" id="kpiPendingRegs">—</div></div>
+      <div class="kpi-tile accent-1"><div class="label">مهام قيد التنفيذ</div><div class="value" id="kpiInProgressTasks">—</div></div>
+      <div class="kpi-tile accent-4"><div class="label">طلبات إجازة معلّقة</div><div class="value" id="kpiPendingLeaves">—</div></div>
+    </div>
+    <div class="card" id="onLeaveTodayCard" style="display:none;">
+      <h3 style="margin:0 0 8px;">👤 في إجازة اليوم</h3>
+      <div id="onLeaveTodayList" style="font-size:13px; color:var(--text-secondary);"></div>
+    </div>
     <div class="kpi-grid">
       <div class="kpi-tile accent-1">
         <div class="label">إجمالي المعدات الذكية</div>
@@ -511,6 +529,55 @@ tbody tr:hover{ background:var(--surface-1); }
       <button id="btnExportTasksExcel" style="display:none;">⬇ تصدير المهام إلى إكسل</button>
     </div>
     <div id="tasksListWrap"></div>
+  </div>
+
+</section>
+
+<!-- ===================== TAB: LEAVES (الإجازات) ===================== -->
+<section id="tab-leaves" class="tab-panel">
+
+  <div class="card" id="leaveBalanceCard">
+    <h3>🏖️ رصيد الإجازة السنوية</h3>
+    <div class="kpi-grid" id="leaveBalanceKpis">
+      <div class="kpi-tile accent-1"><div class="label">الرصيد السنوي</div><div class="value" id="lbTotal">—</div></div>
+      <div class="kpi-tile accent-3"><div class="label">المستخدم هذا العام</div><div class="value" id="lbUsed">—</div></div>
+      <div class="kpi-tile accent-2"><div class="label">المتبقي</div><div class="value" id="lbRemaining">—</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>➕ تقديم طلب إجازة جديد</h3>
+    <form id="leaveRequestForm">
+      <div class="form-grid">
+        <div>
+          <label for="leaveType">نوع الإجازة</label>
+          <select id="leaveType" required>
+            <option value="">-- اختر النوع --</option>
+            <option value="سنوية">سنوية</option>
+            <option value="مرضية">مرضية</option>
+            <option value="طارئة">طارئة</option>
+          </select>
+        </div>
+        <div></div>
+        <div>
+          <label for="leaveStart">من تاريخ</label>
+          <input type="date" id="leaveStart" required>
+        </div>
+        <div>
+          <label for="leaveEnd">إلى تاريخ</label>
+          <input type="date" id="leaveEnd" required>
+        </div>
+      </div>
+      <label for="leaveReason">السبب (اختياري)</label>
+      <textarea id="leaveReason" rows="2" placeholder="مثال: ظرف عائلي"></textarea>
+      <div class="form-msg" id="leaveRequestMsg"></div>
+      <button type="submit" class="primary" style="margin-top:12px;">إرسال الطلب</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 id="leaveListTitle">طلبات الإجازة</h3>
+    <div id="leaveRequestsWrap"></div>
   </div>
 
 </section>
@@ -625,6 +692,7 @@ function restoreActiveTab(){
   if(panel) panel.classList.add('active');
   if(saved==='dash') renderDashboard();
   if(saved==='tasks') renderTasksView();
+  if(saved==='leaves') renderLeavesView();
   if(saved==='employees') renderEmployeesView();
 }
 async function doLogin(username, password){
@@ -1365,9 +1433,237 @@ async function renderEmployeesView(){
       <div class="emp-row"><span class="k">بطاقة الأمن الصناعي</span><span class="v">${escapeHtml(u.securityCard||'—')}</span></div>
       <div class="emp-row"><span class="k">الواتساب</span><span class="v">${waLink ? `<a href="${waLink}" target="_blank">${escapeHtml(u.phone)}</a>` : '—'}</span></div>
       <div class="emp-row"><span class="k">عدد المهام</span><span class="v">${taskCountForUsername(u.username)}</span></div>
+      <div class="emp-row"><span class="k">تاريخ الالتحاق</span><span class="v">
+        <span class="empJoinDateView" data-username="${escapeHtml(u.username)}">${u.joinDate ? escapeHtml(u.joinDate) : '—'}</span>
+        <input type="date" class="empJoinDateInput" data-username="${escapeHtml(u.username)}" value="${u.joinDate ? escapeHtml(u.joinDate) : ''}" style="display:none; margin-top:4px; width:100%;">
+      </span></div>
+      <button type="button" class="ghost btnEditJoinDate" data-username="${escapeHtml(u.username)}" style="font-size:10.5px; padding:4px 10px; margin-top:6px;">✎ تعديل تاريخ الالتحاق</button>
       <span class="emp-status ${statusOk?'active':'inactive'}">${statusOk ? 'نشط' : (u.status==='pending' ? 'قيد المراجعة' : 'موقوف')}</span>
     </div>`;
   }).join('');
+
+  wrap.querySelectorAll('.btnEditJoinDate').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const username = btn.dataset.username;
+      const card = btn.closest('.employee-card');
+      const view = card.querySelector('.empJoinDateView');
+      const input = card.querySelector('.empJoinDateInput');
+      if(input.style.display === 'none'){
+        view.style.display = 'none';
+        input.style.display = 'inline-block';
+        btn.textContent = '✔ حفظ';
+      } else {
+        const joinDate = input.value;
+        btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
+        try{
+          const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'setEmployeeJoinDate', token: authToken(), username, joinDate })
+          });
+          const json = await res.json();
+          if(!json.ok){
+            if(json.error === 'unauthorized'){ forceReLogin(); return; }
+            toast(json.error || 'تعذر حفظ التاريخ');
+          } else {
+            view.textContent = joinDate || '—';
+            EMPLOYEES_CACHE = null;
+            toast('تم تحديث تاريخ الالتحاق');
+          }
+        }catch(e){
+          toast('تعذر الاتصال بالخادم');
+        }
+        view.style.display = '';
+        input.style.display = 'none';
+        btn.disabled = false; btn.textContent = '✎ تعديل تاريخ الالتحاق';
+      }
+    });
+  });
+}
+
+/* ================= الإجازات (Leaves) ================= */
+let LEAVE_BALANCE = null;
+let LEAVE_REQUESTS = [];
+
+function leaveStatusClass(status){
+  if(status === 'موافق عليها') return 'status-done';
+  if(status === 'مرفوضة') return 'status-rejected';
+  return 'status-new';
+}
+
+async function loadLeaveBalance(){
+  if(!authToken()) return null;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getLeaveBalance', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok) return null;
+    return json;
+  }catch(e){ return null; }
+}
+
+async function loadLeaveRequests(){
+  if(!authToken()) return [];
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'listLeaveRequests', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      return [];
+    }
+    return json.requests || [];
+  }catch(e){ return []; }
+}
+
+async function renderLeavesView(){
+  const admin = isAdmin();
+  document.getElementById('leaveListTitle').textContent = admin ? 'كل طلبات الإجازة' : 'طلباتي';
+
+  LEAVE_BALANCE = await loadLeaveBalance();
+  if(LEAVE_BALANCE){
+    document.getElementById('lbTotal').textContent = LEAVE_BALANCE.annualTotal;
+    document.getElementById('lbUsed').textContent = LEAVE_BALANCE.used;
+    document.getElementById('lbRemaining').textContent = LEAVE_BALANCE.remaining;
+  }
+
+  const wrap = document.getElementById('leaveRequestsWrap');
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">جارٍ التحميل...</div>`;
+  LEAVE_REQUESTS = await loadLeaveRequests();
+  if(!LEAVE_REQUESTS.length){
+    wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">لا توجد طلبات إجازة بعد</div>`;
+    return;
+  }
+  const sorted = LEAVE_REQUESTS.slice().sort((a,b)=> String(b.submittedAt||'').localeCompare(String(a.submittedAt||'')));
+  wrap.innerHTML = sorted.map(r=>{
+    const pillClass = leaveStatusClass(r.status);
+    const nameLine = admin ? `${escapeHtml(r.name||r.username)} — ` : '';
+    const actions = (admin && r.status === 'قيد المراجعة') ? `
+      <div class="leave-actions">
+        <button type="button" class="primary btnLeaveApprove" data-id="${escapeHtml(r.id)}">✔ موافقة</button>
+        <button type="button" class="ghost btnLeaveReject" data-id="${escapeHtml(r.id)}">✕ رفض</button>
+      </div>` : '';
+    const noteLine = r.managerNote ? `<div class="leave-meta">ملاحظة المدير: ${escapeHtml(r.managerNote)}</div>` : '';
+    return `<div class="leave-item">
+      <div class="leave-top">
+        <div class="leave-title">${nameLine}${escapeHtml(r.type)} — ${escapeHtml(r.days)} يوم</div>
+        <span class="status-pill ${pillClass}">${escapeHtml(r.status)}</span>
+      </div>
+      <div class="leave-meta">من ${escapeHtml(r.startDate)} إلى ${escapeHtml(r.endDate)}${r.reason ? (' — ' + escapeHtml(r.reason)) : ''}</div>
+      ${noteLine}
+      ${actions}
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.btnLeaveApprove').forEach(btn=>{
+    btn.addEventListener('click', ()=>respondToLeave(btn.dataset.id, 'موافق عليها'));
+  });
+  wrap.querySelectorAll('.btnLeaveReject').forEach(btn=>{
+    btn.addEventListener('click', ()=>respondToLeave(btn.dataset.id, 'مرفوضة'));
+  });
+}
+
+async function respondToLeave(requestId, decision){
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'respondToLeaveRequest', token: authToken(), requestId, decision })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      toast(json.error || 'تعذر تنفيذ العملية');
+      return;
+    }
+    toast(decision === 'موافق عليها' ? 'تمت الموافقة على الطلب' : 'تم رفض الطلب');
+    renderLeavesView();
+
+    const req = LEAVE_REQUESTS.find(r=>r.id === requestId);
+    const emp = (EMPLOYEES_CACHE || (TECHNICIANS_CACHE || [])).find(u=>u.username === (req && req.username));
+    if(req && emp && emp.phone){
+      const phone = String(emp.phone).replace(/[^0-9]/g, '');
+      const msg = decision === 'موافق عليها'
+        ? `مرحبًا ${req.name}، تمت الموافقة على طلب إجازتك (${req.type}) من ${req.startDate} إلى ${req.endDate}.`
+        : `مرحبًا ${req.name}، تم رفض طلب إجازتك (${req.type}) من ${req.startDate} إلى ${req.endDate}.`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+  }catch(e){
+    toast('تعذر الاتصال بالخادم');
+  }
+}
+
+document.getElementById('leaveRequestForm').addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const leaveType = document.getElementById('leaveType').value;
+  const startDate = document.getElementById('leaveStart').value;
+  const endDate = document.getElementById('leaveEnd').value;
+  const reason = document.getElementById('leaveReason').value.trim();
+  const msg = document.getElementById('leaveRequestMsg');
+  msg.className = 'form-msg'; msg.textContent = '';
+  if(!leaveType || !startDate || !endDate){
+    msg.className = 'form-msg err'; msg.textContent = 'يرجى تعبئة جميع الحقول المطلوبة';
+    return;
+  }
+  if(endDate < startDate){
+    msg.className = 'form-msg err'; msg.textContent = 'تاريخ النهاية يجب أن يكون بعد تاريخ البداية';
+    return;
+  }
+  const btn = document.getElementById('leaveRequestForm').querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'submitLeaveRequest', token: authToken(), leaveType, startDate, endDate, reason })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر إرسال الطلب';
+      return;
+    }
+    msg.className = 'form-msg ok'; msg.textContent = 'تم إرسال طلب الإجازة بنجاح — بانتظار موافقة المدير';
+    document.getElementById('leaveRequestForm').reset();
+    renderLeavesView();
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }finally{
+    btn.disabled = false; btn.textContent = 'إرسال الطلب';
+  }
+});
+
+async function loadDashboardSummaryForAdmin(){
+  if(!isAdmin()) return;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getDashboardSummary', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok) return;
+    const s = json.summary;
+    document.getElementById('adminDashboardKpis').style.display = '';
+    document.getElementById('kpiActiveEmployees').textContent = s.activeEmployees;
+    document.getElementById('kpiPendingRegs').textContent = s.pendingRegistrations;
+    document.getElementById('kpiInProgressTasks').textContent = s.inProgressTasks;
+    document.getElementById('kpiPendingLeaves').textContent = s.pendingLeaveRequests;
+    const onLeaveCard = document.getElementById('onLeaveTodayCard');
+    const onLeaveList = document.getElementById('onLeaveTodayList');
+    if(s.onLeaveToday && s.onLeaveToday.length){
+      onLeaveCard.style.display = '';
+      onLeaveList.textContent = s.onLeaveToday.join('، ');
+    } else {
+      onLeaveCard.style.display = 'none';
+    }
+  }catch(e){ /* تجاهل — ليست حرجة */ }
 }
 
 document.getElementById('btnAssignTask').addEventListener('click', async ()=>{
@@ -1615,6 +1911,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     try{ localStorage.setItem('activeTab', btn.dataset.tab); }catch(e){}
     if(btn.dataset.tab==='dash') renderDashboard();
     if(btn.dataset.tab==='tasks') renderTasksView();
+    if(btn.dataset.tab==='leaves') renderLeavesView();
     if(btn.dataset.tab==='employees') renderEmployeesView();
   });
 });
@@ -2046,6 +2343,7 @@ function renderDashboard(){
   renderBarChart('chartByOffice', countBy(POLES,'office'));
   renderBarChart('chartByManu', countBy(POLES,'manufacturer').slice(0,8));
   renderWarrantySection();
+  loadDashboardSummaryForAdmin();
 }
 
 /* ================= OFFLINE APP SHELL (service worker) =================
