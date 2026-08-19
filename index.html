@@ -105,6 +105,15 @@ main{ padding:20px 24px 60px; max-width:1400px; margin:0 auto;}
 .status-pill.status-done{ background:#86efac33; color:#15803d; }
 .task-item .task-actions{ margin-top:10px; display:flex; gap:8px; }
 
+.assign-row{ border:1px dashed var(--border); border-radius:10px; padding:12px; margin-bottom:10px; background:var(--surface-2); }
+.assign-row .assignRowRemove{ font-size:11.5px; padding:5px 10px; }
+
+.task-equipment{ margin-top:8px; }
+.task-equipment summary{ cursor:pointer; font-size:11.5px; color:var(--s1); font-weight:700; }
+.task-equipment .te-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px 12px; margin-top:8px; padding:10px; border-radius:9px; background:var(--surface-2); }
+.task-equipment .te-field .k{ font-size:10px; color:var(--text-muted); font-weight:600; margin-bottom:2px; }
+.task-equipment .te-field .v{ font-size:12.5px; font-weight:600; direction:ltr; text-align:right; word-break:break-word; }
+
 label{ display:block; font-size:12.5px; color:var(--text-secondary); margin-bottom:6px; font-weight:700;}
 input[type=text], input[type=search], input[type=tel], input[type=email], select, textarea{
   width:100%; padding:11px 14px; border:1.5px solid var(--baseline); border-radius:9px; font-size:13.5px;
@@ -480,23 +489,19 @@ tbody tr:hover{ background:var(--surface-1); }
 <section id="tab-tasks" class="tab-panel">
 
   <div class="card" id="assignTaskCard" style="display:none;">
-    <h3>➕ إسناد مهمة جديدة لموظف</h3>
-    <div class="form-grid">
+    <h3>➕ إسناد مهام جديدة لموظف</h3>
+    <div class="form-grid" style="margin-bottom:6px;">
       <div>
         <label>الموظف</label>
         <select id="assignTechnicianSelect"><option value="">-- اختر الموظف --</option></select>
       </div>
-      <div>
-        <label>رقم العمود (اختياري)</label>
-        <input type="text" id="assignPoleId" placeholder="مثال: BNE4-84-46-11-19-14">
-      </div>
-      <div style="grid-column:1/-1;">
-        <label>وصف المهمة</label>
-        <textarea id="assignDescription" rows="3" placeholder="مثال: افحص المعدة وتأكد من حالتها"></textarea>
-      </div>
+    </div>
+    <div id="assignRowsWrap"></div>
+    <div class="btn-row" style="margin-bottom:10px;">
+      <button type="button" id="btnAddAssignRow">+ إضافة مهمة أخرى لنفس الموظف</button>
     </div>
     <div class="btn-row">
-      <button class="primary" id="btnAssignTask">إسناد المهمة</button>
+      <button class="primary" id="btnAssignTask">إسناد المهام</button>
     </div>
   </div>
 
@@ -1121,6 +1126,76 @@ function statusDisplayLabel(status){
   return 'لم تبدأ';
 }
 
+/* ---- إسناد مهام متعددة دفعة واحدة، مع اختيار العمود من قائمة منسدلة وعرض تفاصيل المعدة مباشرة في المهمة ---- */
+function poleByCode(code){
+  const q = String(code||'').trim().toLowerCase();
+  if(!q) return null;
+  return POLES.find(p=>(p.pole||'').toLowerCase()===q) || null;
+}
+function poleSelectOptionsHtml(selected){
+  return POLES.slice().sort((a,b)=>a.pole.localeCompare(b.pole)).map(p=>
+    `<option value="${escapeHtml(p.pole)}" ${p.pole===selected?'selected':''}>${escapeHtml(p.pole)}${p.office ? (' — ' + escapeHtml(p.office)) : ''}</option>`
+  ).join('');
+}
+function refreshAssignRowPoleOptions(){
+  document.querySelectorAll('#assignRowsWrap .assignRowPole').forEach(sel=>{
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">-- بدون عمود محدد --</option>' + poleSelectOptionsHtml(cur);
+    sel.value = cur;
+  });
+}
+function updateAssignRowRemoveVisibility(){
+  const rows = document.querySelectorAll('#assignRowsWrap .assign-row');
+  rows.forEach(r=>{
+    const btn = r.querySelector('.assignRowRemove');
+    if(btn) btn.style.display = rows.length > 1 ? '' : 'none';
+  });
+}
+function addAssignRow(){
+  const wrap = document.getElementById('assignRowsWrap');
+  const div = document.createElement('div');
+  div.className = 'assign-row';
+  div.innerHTML = `
+    <div class="form-grid" style="margin-bottom:8px;">
+      <div>
+        <label>رقم العمود (اختياري)</label>
+        <select class="assignRowPole">
+          <option value="">-- بدون عمود محدد --</option>
+          ${poleSelectOptionsHtml('')}
+        </select>
+      </div>
+      <div>
+        <label>وصف المهمة</label>
+        <textarea class="assignRowDesc" rows="2" placeholder="مثال: افحص المعدة وتأكد من حالتها"></textarea>
+      </div>
+    </div>
+    <button type="button" class="ghost assignRowRemove">✕ إزالة هذه المهمة</button>
+  `;
+  wrap.appendChild(div);
+  div.querySelector('.assignRowRemove').addEventListener('click', ()=>{
+    div.remove();
+    updateAssignRowRemoveVisibility();
+  });
+  updateAssignRowRemoveVisibility();
+}
+document.getElementById('btnAddAssignRow').addEventListener('click', addAssignRow);
+function equipmentDetailsHtml(pole){
+  if(!pole) return '';
+  const fields = [
+    ['المكتب', pole.office], ['النوع', pole.type], ['الشركة المصنّعة', pole.manufacturer],
+    ['RTU', pole.rtu], ['عنوان IP', pole.ip], ['المحطة', pole.station], ['المغذي', pole.feeder],
+  ];
+  Object.keys(EXTRA_LABELS).forEach(k=>{
+    if(k==='station' || k==='feeder') return; // مُدرجة أعلاه بالفعل
+    if(pole[k]) fields.push([EXTRA_LABELS[k], pole[k]]);
+  });
+  const rows = fields.filter(([,v])=>v).map(([k,v])=>
+    `<div class="te-field"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v)}</div></div>`
+  ).join('');
+  if(!rows) return '';
+  return `<details class="task-equipment"><summary>📋 عرض تفاصيل المعدة (بدون الحاجة للبحث)</summary><div class="te-grid">${rows}</div></details>`;
+}
+
 async function loadTechniciansForAssignment(){
   if(!authToken()) return [];
   try{
@@ -1153,6 +1228,10 @@ async function renderTasksView(){
         `<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)} (${u.role==='admin'?'مدير':'موظف'})</option>`
       ).join('');
   }
+  if(admin){
+    if(!document.querySelector('#assignRowsWrap .assign-row')) addAssignRow();
+    else refreshAssignRowPoleOptions();
+  }
 
   const visibleTasks = admin ? TASKS : TASKS.filter(t=>t.assignedToUsername.toLowerCase() === String(auth&&auth.username||'').toLowerCase());
 
@@ -1173,6 +1252,7 @@ async function renderTasksView(){
       actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
       actionsHtml += `</div>`;
     }
+    const pole = t.poleId ? poleByCode(t.poleId) : null;
     return `<div class="task-item">
       <div class="task-top">
         <div>
@@ -1181,6 +1261,7 @@ async function renderTasksView(){
         </div>
         <span class="status-pill ${statusClass(t.status)}">${escapeHtml(statusLabel)}</span>
       </div>
+      ${equipmentDetailsHtml(pole)}
       ${actionsHtml}
     </div>`;
   }).join('');
@@ -1292,46 +1373,69 @@ async function renderEmployeesView(){
 document.getElementById('btnAssignTask').addEventListener('click', async ()=>{
   const btn = document.getElementById('btnAssignTask');
   const assignedTo = document.getElementById('assignTechnicianSelect').value;
-  const poleId = document.getElementById('assignPoleId').value.trim();
-  const description = document.getElementById('assignDescription').value.trim();
   if(!assignedTo){ toast('يرجى اختيار الموظف'); return; }
-  if(!description){ toast('يرجى كتابة وصف المهمة'); return; }
+
+  const rows = Array.from(document.querySelectorAll('#assignRowsWrap .assign-row')).map(r=>({
+    poleId: r.querySelector('.assignRowPole').value,
+    description: r.querySelector('.assignRowDesc').value.trim()
+  })).filter(r=>r.description);
+  if(!rows.length){ toast('يرجى كتابة وصف مهمة واحدة على الأقل'); return; }
 
   btn.disabled = true;
-  try{
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'assignTask', token: authToken(), assignedTo, poleId, description })
-    });
-    const json = await res.json();
-    if(!json.ok){
-      if(json.error === 'unauthorized'){ forceReLogin(); return; }
-      toast(json.error || 'تعذر إسناد المهمة');
-      return;
+  btn.textContent = 'جارٍ الإسناد...';
+  let successCount = 0;
+  let technicianName = '';
+  let technicianPhone = '';
+  const assignedSummary = [];
+  for(const row of rows){
+    try{
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'assignTask', token: authToken(), assignedTo, poleId: row.poleId, description: row.description })
+      });
+      const json = await res.json();
+      if(!json.ok){
+        if(json.error === 'unauthorized'){ forceReLogin(); return; }
+        toast(json.error || 'تعذر إسناد إحدى المهام');
+        continue;
+      }
+      TASKS.push({
+        id: json.taskId, description: row.description, poleId: row.poleId,
+        assignedToUsername: assignedTo, assignedToName: json.technicianName,
+        assignedBy: currentUserName(), status: 'جديد', assignedAt: new Date().toISOString(), completedAt: ''
+      });
+      technicianName = json.technicianName;
+      technicianPhone = json.technicianPhone || '';
+      assignedSummary.push(row.description + (row.poleId ? ` (العمود: ${row.poleId})` : ''));
+      successCount++;
+    }catch(e){
+      toast('تعذر الاتصال بالخادم لإسناد إحدى المهام');
     }
-    TASKS.push({
-      id: json.taskId, description, poleId,
-      assignedToUsername: assignedTo, assignedToName: json.technicianName,
-      assignedBy: currentUserName(), status: 'جديد', assignedAt: new Date().toISOString(), completedAt: ''
-    });
-    document.getElementById('assignPoleId').value = '';
-    document.getElementById('assignDescription').value = '';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'إسناد المهام';
+
+  if(successCount){
+    document.getElementById('assignRowsWrap').innerHTML = '';
+    addAssignRow();
     document.getElementById('assignTechnicianSelect').value = '';
     renderTasksView();
-    toast('تم إسناد المهمة بنجاح');
+    toast(successCount === 1 ? 'تم إسناد المهمة بنجاح' : `تم إسناد ${successCount} مهام بنجاح`);
 
-    if(json.technicianPhone){
-      const phone = String(json.technicianPhone).replace(/[^0-9]/g, '');
-      const msg = `مرحبًا ${json.technicianName}، تم إسناد مهمة جديدة لك في نظام إدارة المعدات الذكية:\n${description}${poleId ? ('\nرقم العمود: ' + poleId) : ''}`;
+    if(technicianPhone){
+      const phone = String(technicianPhone).replace(/[^0-9]/g, '');
+      const introLine = successCount > 1
+        ? `مرحبًا ${technicianName}، تم إسناد ${successCount} مهام جديدة لك في نظام إدارة المعدات الذكية:`
+        : `مرحبًا ${technicianName}، تم إسناد مهمة جديدة لك في نظام إدارة المعدات الذكية:`;
+      const msg = introLine + '\n' + assignedSummary.map((d,i)=>successCount>1 ? `${i+1}. ${d}` : d).join('\n');
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     } else {
       toast('لا يوجد رقم واتساب مسجل لهذا الموظف — لن يصله إشعار تلقائي');
     }
-  }catch(e){
-    toast('تعذر الاتصال بالخادم لإسناد المهمة');
-  }finally{
-    btn.disabled = false;
+  } else {
+    toast('تعذر إسناد أي مهمة');
   }
 });
 
