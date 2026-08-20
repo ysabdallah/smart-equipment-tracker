@@ -510,16 +510,6 @@ tbody tr:hover{ background:var(--surface-1); }
   </nav>
 
   <div id="subtab-overview" class="subtab-panel active">
-    <div class="kpi-grid" id="adminDashboardKpis" style="display:none;">
-      <div class="kpi-tile accent-2"><div class="label">الموظفون النشطون</div><div class="value" id="kpiActiveEmployees">—</div></div>
-      <div class="kpi-tile accent-3"><div class="label">طلبات تسجيل معلّقة</div><div class="value" id="kpiPendingRegs">—</div></div>
-      <div class="kpi-tile accent-1"><div class="label">مهام قيد التنفيذ</div><div class="value" id="kpiInProgressTasks">—</div></div>
-      <div class="kpi-tile accent-4"><div class="label">طلبات إجازة معلّقة</div><div class="value" id="kpiPendingLeaves">—</div></div>
-    </div>
-    <div class="card" id="onLeaveTodayCard" style="display:none;">
-      <h3 style="margin:0 0 8px;">👤 في إجازة اليوم</h3>
-      <div id="onLeaveTodayList" style="font-size:13px; color:var(--text-secondary);"></div>
-    </div>
     <div class="kpi-grid">
       <div class="kpi-tile accent-1">
         <div class="label">إجمالي المعدات الذكية</div>
@@ -677,6 +667,16 @@ tbody tr:hover{ background:var(--surface-1); }
 
 <!-- ===================== TAB 4: EMPLOYEES (admin only) ===================== -->
 <section id="tab-employees" class="tab-panel">
+  <div class="kpi-grid" id="adminDashboardKpis" style="display:none;">
+    <div class="kpi-tile accent-2"><div class="label">الموظفون النشطون</div><div class="value" id="kpiActiveEmployees">—</div></div>
+    <div class="kpi-tile accent-3"><div class="label">طلبات تسجيل معلّقة</div><div class="value" id="kpiPendingRegs">—</div></div>
+    <div class="kpi-tile accent-1"><div class="label">مهام قيد التنفيذ</div><div class="value" id="kpiInProgressTasks">—</div></div>
+    <div class="kpi-tile accent-4"><div class="label">طلبات إجازة معلّقة</div><div class="value" id="kpiPendingLeaves">—</div></div>
+  </div>
+  <div class="card" id="onLeaveTodayCard" style="display:none;">
+    <h3 style="margin:0 0 8px;">👤 في إجازة اليوم</h3>
+    <div id="onLeaveTodayList" style="font-size:13px; color:var(--text-secondary);"></div>
+  </div>
   <div class="card" id="pendingRegsCard" style="display:none;">
     <h3>🕓 طلبات تسجيل معلّقة</h3>
     <div id="pendingRegsWrap"></div>
@@ -1607,6 +1607,8 @@ async function loadEmployeesForAdmin(){
 }
 async function renderEmployeesView(){
   if(!isAdmin()) return;
+
+  loadDashboardSummaryForAdmin();
 
   const pendingCard = document.getElementById('pendingRegsCard');
   const pendingWrap = document.getElementById('pendingRegsWrap');
@@ -2766,7 +2768,6 @@ function renderDashboard(){
   renderBarChart('chartByOffice', countBy(POLES,'office'));
   renderBarChart('chartByManu', countBy(POLES,'manufacturer').slice(0,8));
   renderWarrantySection();
-  loadDashboardSummaryForAdmin();
   populateExportFilters();
 }
 
