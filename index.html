@@ -2178,6 +2178,62 @@ async function renderFaultyCasesView(){
   }
 }
 
+const SCADA_OUR_OFFICES = ['bbr','uuz','mmb'];
+
+function scadaParseCsvText(text){
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  for (let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; }
+        else { inQuotes = false; }
+      } else field += c;
+    } else {
+      if(c === '"'){ inQuotes = true; }
+      else if(c === ','){ row.push(field); field=''; }
+      else if(c === '\r'){ /* skip, handled by \n */ }
+      else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else field += c;
+    }
+  }
+  if(field.length>0 || row.length>0){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+function scadaCsvEscapeField(v){
+  v = v==null ? '' : String(v);
+  if(/[",\n\r]/.test(v)) return '"' + v.replace(/"/g,'""') + '"';
+  return v;
+}
+
+function scadaRowsToCsv(rows){
+  return rows.map(r => r.map(scadaCsvEscapeField).join(',')).join('\r\n');
+}
+
+// يصفّي ملف SCADA اليومي ليبقي فقط صفوف مكاتبنا (BBR/UUZ/MMB) قبل الرفع،
+// بدل الحاجة لحذف المكاتب الأخرى يدويًا كل يوم — يقلّل حجم الملف المُرسل للخادم كثيرًا.
+function scadaFilterToOurOffices(text){
+  const rows = scadaParseCsvText(text).filter(r => !(r.length===1 && r[0]===''));
+  if(rows.length < 1) return { text, totalRows: 0, filteredRows: 0, filtered: false };
+  const header = rows[0];
+  const officeIdx = header.findIndex(h => (h||'').trim() === 'المكتب');
+  const totalRows = rows.length - 1;
+  if(officeIdx === -1){
+    return { text, totalRows, filteredRows: totalRows, filtered: false };
+  }
+  const kept = [header];
+  for(let i=1;i<rows.length;i++){
+    const r = rows[i];
+    const office = (r[officeIdx]||'').trim().toLowerCase();
+    if(SCADA_OUR_OFFICES.includes(office)) kept.push(r);
+  }
+  return { text: scadaRowsToCsv(kept), totalRows, filteredRows: kept.length - 1, filtered: true };
+}
+
 document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=>{
   const input = document.getElementById('scadaCsvInput');
   const resultBox = document.getElementById('scadaImportResult');
@@ -2186,9 +2242,15 @@ document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=
 
   const btn = document.getElementById('btnImportScadaCsv');
   btn.disabled = true;
-  resultBox.textContent = 'جارٍ قراءة الملف ورفعه...';
+  resultBox.textContent = 'جارٍ قراءة الملف...';
   try{
-    const csvText = await file.text();
+    const rawText = await file.text();
+    resultBox.textContent = 'جارٍ تصفية الملف ليشمل مكاتبنا فقط (BBR/UUZ/MMB)...';
+    const filterResult = scadaFilterToOurOffices(rawText);
+    const csvText = filterResult.text;
+    resultBox.textContent = filterResult.filtered
+      ? `تمت التصفية: ${filterResult.filteredRows} من أصل ${filterResult.totalRows} صف (مكاتبنا فقط) — جارٍ الرفع...`
+      : 'جارٍ رفع الملف...';
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2201,8 +2263,11 @@ document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=
       btn.disabled = false;
       return;
     }
+    const filterNote = filterResult.filtered
+      ? `<br><span style="color:var(--text-muted); font-size:12px;">(تمت تصفية الملف الأصلي من ${filterResult.totalRows} صف إلى ${filterResult.filteredRows} صف لمكاتبنا فقط قبل الرفع)</span>`
+      : '';
     resultBox.innerHTML = `تم الاستيراد بنجاح — إجمالي الصفوف: ${json.totalRows} · معدات مطابقة: ${json.matchedPoles} · غير مطابقة: ${json.unmatchedPoles}<br>
-      مهام أُسندت تلقائيًا: ${json.tasksCreated} · حالات متعطلة جديدة/محدَّثة: ${json.faultyUpserted} · تُترك لفريق سكادا: ${json.skippedNeedScada}`;
+      مهام أُسندت تلقائيًا: ${json.tasksCreated} · حالات متعطلة جديدة/محدَّثة: ${json.faultyUpserted} · تُترك لفريق سكادا: ${json.skippedNeedScada}${filterNote}`;
     toast('تم استيراد ملف SCADA بنجاح');
     input.value = '';
     await attemptReconnect();
