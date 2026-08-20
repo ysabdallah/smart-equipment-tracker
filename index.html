@@ -2131,17 +2131,20 @@ async function renderTicketsView(){
     const priorityBadge = isUrgent ? `<span class="priority-chip urgent">⚡ عاجل</span>` : `<span class="priority-chip normal">عادي</span>`;
     const pole = t.poleId ? poleByCode(t.poleId) : null;
     const hasCoords = pole && pole.lat!=null && pole.lng!=null && !isNaN(pole.lat) && !isNaN(pole.lng);
+    const coordsText = hasCoords ? (pole.lat.toFixed(5)+', '+pole.lng.toFixed(5)) : '—';
     const fieldsHtml = pole ? `
-      <div class="tc-section-title">🔧 بيانات المعدة</div>
+      <div class="tc-section-title">🔧 بيانات المعدة الأساسية</div>
       <div class="pc-fields">
+        <div class="pc-field"><div class="k">رقم العمود</div><div class="v">${escapeHtml(pole.pole||'—')}</div></div>
+        <div class="pc-field"><div class="k">الرقم التسلسلي</div><div class="v">${escapeHtml(pole.serial||'—')}</div></div>
+        <div class="pc-field"><div class="k">سنة الصنع</div><div class="v">${escapeHtml(pole.manufacture_year||'—')}</div></div>
+        <div class="pc-field"><div class="k">كود المادة</div><div class="v">${escapeHtml(pole.material_code||'—')}</div></div>
+        <div class="pc-field"><div class="k">رقم أمر الشراء</div><div class="v">${escapeHtml(pole.po_number||'—')}</div></div>
+        <div class="pc-field"><div class="k">الإحداثيات</div><div class="v">${coordsText}</div></div>
         <div class="pc-field"><div class="k">الشركة المصنّعة</div><div class="v">${escapeHtml(pole.manufacturer||'—')}</div></div>
         <div class="pc-field"><div class="k">RTU</div><div class="v">${escapeHtml(pole.rtu||'—')}</div></div>
         <div class="pc-field"><div class="k">المحطة</div><div class="v">${escapeHtml(pole.station||'—')}</div></div>
         <div class="pc-field"><div class="k">المغذي</div><div class="v">${escapeHtml(pole.feeder||'—')}</div></div>
-        ${pole.serial ? `<div class="pc-field"><div class="k">الرقم التسلسلي</div><div class="v">${escapeHtml(pole.serial)}</div></div>` : ''}
-        ${pole.material_code ? `<div class="pc-field"><div class="k">كود المادة</div><div class="v">${escapeHtml(pole.material_code)}</div></div>` : ''}
-        ${pole.po_number ? `<div class="pc-field"><div class="k">رقم أمر الشراء</div><div class="v">${escapeHtml(pole.po_number)}</div></div>` : ''}
-        ${hasCoords ? `<div class="pc-field"><div class="k">الإحداثيات</div><div class="v">${pole.lat.toFixed(5)+', '+pole.lng.toFixed(5)}</div></div>` : ''}
       </div>
       ${pole.ip ? `<div class="pc-ip"><span class="k">عنوان IP</span>${escapeHtml(pole.ip)}</div>` : ''}
       ${hasCoords ? `<div class="pc-actions" style="margin-bottom:14px;"><button type="button" class="btn-maps" style="flex:1;" onclick="window.open('${mapsLink(pole.lat,pole.lng)}','_blank')">📍 الانتقال إلى خرائط جوجل</button></div>` : ''}
@@ -2193,6 +2196,15 @@ async function exportTicketCardPdf(idx){
   const prevText = btn ? btn.textContent : '';
   if(btn){ btn.disabled = true; btn.textContent = 'جارٍ التجهيز...'; }
   try{
+    // نتأكد أن كل صور البطاقة (صور المشكلة) اكتمل تحميلها/فك ترميزها قبل الالتقاط، وإلا قد تظهر فارغة في PDF
+    const imgs = Array.from(card.querySelectorAll('img'));
+    await Promise.all(imgs.map(img=>{
+      if(img.complete && img.naturalWidth>0) return img.decode ? img.decode().catch(()=>{}) : Promise.resolve();
+      return new Promise(resolve=>{
+        img.addEventListener('load', ()=>resolve(), { once:true });
+        img.addEventListener('error', ()=>resolve(), { once:true });
+      });
+    }));
     const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
     const imgData = canvas.toDataURL('image/jpeg', 0.92);
     const { jsPDF } = window.jspdf;
