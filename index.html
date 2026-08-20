@@ -132,6 +132,9 @@ textarea{ resize:vertical; min-height:70px;}
 #searchInput, #assignPoleSearch, #assignPhone, #f_pole, #f_ip, #f_lat, #f_lng, #f_rtu, #f_office, #f_manu, .pc-title, .pc-field .v, .pc-ip{
   font-family:'JetBrains Mono', monospace;
 }
+#ticketPole, #ticketPole option, .assignRowPole, .assignRowPole option{
+  direction:ltr; text-align:right; font-family:'JetBrains Mono', monospace;
+}
 
 button{ font-family:'IBM Plex Sans Arabic',sans-serif; cursor:pointer; border-radius:9px; border:1px solid var(--baseline); background:var(--surface-2); color:var(--text-primary); padding:10px 18px; font-size:13px; font-weight:700; box-shadow:var(--shadow); transition:border-color .15s, color .15s, background .15s, filter .15s; }
 button:hover{ border-color:var(--s1); color:var(--s1); background:var(--accent-dim); }
@@ -453,6 +456,29 @@ tbody tr:hover{ background:var(--surface-1); }
   </div>
 </div>
 
+<div id="exportFilterModalOverlay" class="profile-modal-overlay">
+  <div class="profile-modal">
+    <button class="close-x" id="closeExportFilterModal" type="button">×</button>
+    <h3>⬇ تصدير ملف إكسل</h3>
+    <div class="login-sub" style="margin:0 0 6px;">يمكنك التصفية بأكثر من طريقة قبل التصدير (اختياري)</div>
+    <label for="exportFilterOffice">المكتب</label>
+    <select id="exportFilterOffice"><option value="">-- الكل --</option></select>
+    <label for="exportFilterType">النوع</label>
+    <select id="exportFilterType"><option value="">-- الكل --</option></select>
+    <label for="exportFilterManu">الشركة المصنّعة</label>
+    <select id="exportFilterManu"><option value="">-- الكل --</option></select>
+    <label for="exportFilterStation">المحطة</label>
+    <select id="exportFilterStation"><option value="">-- الكل --</option></select>
+    <label for="exportFilterFeeder">المغذي</label>
+    <select id="exportFilterFeeder"><option value="">-- الكل --</option></select>
+    <div class="form-msg" id="exportFilterMsg"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button type="button" id="btnResetExportFilters" class="ghost">إعادة تعيين</button>
+      <button type="button" id="btnConfirmExportExcel" class="primary" style="flex:1;">⬇ تصدير الآن</button>
+    </div>
+  </div>
+</div>
+
 <nav class="tabs">
   <button class="tab-btn active" data-tab="coords">📍 الإحداثيات والمعدات</button>
   <button class="tab-btn" data-tab="dash">📊 لوحة المعلومات</button>
@@ -484,16 +510,6 @@ tbody tr:hover{ background:var(--surface-1); }
 
   <div class="card">
     <h3>إدارة البيانات</h3>
-    <div class="form-grid" style="margin-bottom:10px;">
-      <div>
-        <label for="exportFilterManu">تصفية التصدير — الشركة المصنّعة (اختياري)</label>
-        <select id="exportFilterManu"><option value="">-- الكل --</option></select>
-      </div>
-      <div>
-        <label for="exportFilterFeeder">تصفية التصدير — المغذي (اختياري)</label>
-        <select id="exportFilterFeeder"><option value="">-- الكل --</option></select>
-      </div>
-    </div>
     <div class="btn-row">
       <button class="primary" id="btnAddPole">+ إضافة عمود جديد</button>
       <button id="btnExportExcel">⬇ تصدير ملف إكسل</button>
@@ -1395,8 +1411,12 @@ function poleByCode(code){
   if(!q) return null;
   return POLES.find(p=>(p.pole||'').toLowerCase()===q) || null;
 }
+function naturalCompare(a, b){
+  // ترتيب طبيعي يراعي الأرقام داخل النص (مثل رقم العمود) بدل الترتيب الأبجدي الحرفي البسيط
+  return String(a||'').localeCompare(String(b||''), undefined, { numeric: true, sensitivity: 'base' });
+}
 function poleSelectOptionsHtml(selected){
-  return POLES.slice().sort((a,b)=>a.pole.localeCompare(b.pole)).map(p=>
+  return POLES.slice().sort((a,b)=>naturalCompare(a.pole,b.pole)).map(p=>
     `<option value="${escapeHtml(p.pole)}" ${p.pole===selected?'selected':''}>${escapeHtml(p.pole)}${p.office ? (' — ' + escapeHtml(p.office)) : ''}</option>`
   ).join('');
 }
@@ -1442,21 +1462,24 @@ function addAssignRow(){
   updateAssignRowRemoveVisibility();
 }
 document.getElementById('btnAddAssignRow').addEventListener('click', addAssignRow);
-function equipmentDetailsHtml(pole){
+function equipmentDetailsHtml(pole, openByDefault){
   if(!pole) return '';
   const fields = [
-    ['المكتب', pole.office], ['النوع', pole.type], ['الشركة المصنّعة', pole.manufacturer],
+    ['رقم العمود', pole.pole], ['المكتب', pole.office], ['النوع', pole.type], ['الشركة المصنّعة', pole.manufacturer],
     ['RTU', pole.rtu], ['عنوان IP', pole.ip], ['المحطة', pole.station], ['المغذي', pole.feeder],
   ];
   Object.keys(EXTRA_LABELS).forEach(k=>{
     if(k==='station' || k==='feeder') return; // مُدرجة أعلاه بالفعل
     if(pole[k]) fields.push([EXTRA_LABELS[k], pole[k]]);
   });
+  const hasCoords = pole.lat!=null && pole.lng!=null && !isNaN(pole.lat) && !isNaN(pole.lng);
+  if(hasCoords) fields.push(['الإحداثيات', pole.lat.toFixed(5)+', '+pole.lng.toFixed(5)]);
   const rows = fields.filter(([,v])=>v).map(([k,v])=>
     `<div class="te-field"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v)}</div></div>`
   ).join('');
   if(!rows) return '';
-  return `<details class="task-equipment"><summary>📋 عرض تفاصيل المعدة (بدون الحاجة للبحث)</summary><div class="te-grid">${rows}</div></details>`;
+  const mapsBtn = hasCoords ? `<button type="button" class="btn-maps" style="margin-top:10px; width:100%;" onclick="window.open('${mapsLink(pole.lat,pole.lng)}','_blank')">📍 الانتقال إلى خرائط جوجل</button>` : '';
+  return `<details class="task-equipment"${openByDefault ? ' open' : ''}><summary>📋 عرض تفاصيل المعدة الكاملة (بدون الحاجة للبحث)</summary><div class="te-grid">${rows}</div>${mapsBtn}</details>`;
 }
 
 async function loadTechniciansForAssignment(){
@@ -1911,7 +1934,7 @@ function populateTicketPoleSelect(){
 
 document.getElementById('ticketPole').addEventListener('change', ()=>{
   const pole = poleByCode(document.getElementById('ticketPole').value);
-  document.getElementById('ticketEquipmentPreview').innerHTML = equipmentDetailsHtml(pole);
+  document.getElementById('ticketEquipmentPreview').innerHTML = equipmentDetailsHtml(pole, true);
 });
 
 async function loadManufacturerTickets(){
@@ -2604,29 +2627,56 @@ document.addEventListener('click', (e)=>{
   }
 });
 
-/* تصفية التصدير — تُملأ قوائم الشركة المصنّعة والمغذي من بيانات المعدات الفعلية */
+/* تصفية التصدير — تُملأ قوائم الحقول من بيانات المعدات الفعلية، وتظهر عند الضغط على "تصدير ملف إكسل" */
+const EXPORT_FILTER_FIELDS = [
+  { id:'exportFilterOffice', key:'office' },
+  { id:'exportFilterType', key:'type' },
+  { id:'exportFilterManu', key:'manufacturer' },
+  { id:'exportFilterStation', key:'station' },
+  { id:'exportFilterFeeder', key:'feeder' },
+];
 function populateExportFilters(){
-  const manuSel = document.getElementById('exportFilterManu');
-  const feederSel = document.getElementById('exportFilterFeeder');
-  if(!manuSel || !feederSel) return;
-  const manus = Array.from(new Set(POLES.map(p=>p.manufacturer).filter(Boolean))).sort();
-  const feeders = Array.from(new Set(POLES.map(p=>p.feeder).filter(Boolean))).sort();
-  const curManu = manuSel.value, curFeeder = feederSel.value;
-  manuSel.innerHTML = '<option value="">-- الكل --</option>' + manus.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
-  feederSel.innerHTML = '<option value="">-- الكل --</option>' + feeders.map(f=>`<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join('');
-  manuSel.value = curManu; feederSel.value = curFeeder;
+  EXPORT_FILTER_FIELDS.forEach(f=>{
+    const sel = document.getElementById(f.id);
+    if(!sel) return;
+    const cur = sel.value;
+    const values = Array.from(new Set(POLES.map(p=>p[f.key]).filter(Boolean))).sort(naturalCompare);
+    sel.innerHTML = '<option value="">-- الكل --</option>' + values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+    sel.value = cur;
+  });
 }
+function openExportFilterModal(){
+  populateExportFilters();
+  document.getElementById('exportFilterMsg').classList.remove('show');
+  document.getElementById('exportFilterModalOverlay').classList.add('show');
+}
+function closeExportFilterModal(){
+  document.getElementById('exportFilterModalOverlay').classList.remove('show');
+}
+document.getElementById('btnExportExcel').addEventListener('click', openExportFilterModal);
+document.getElementById('closeExportFilterModal').addEventListener('click', closeExportFilterModal);
+document.getElementById('exportFilterModalOverlay').addEventListener('click', (ev)=>{
+  if(ev.target.id === 'exportFilterModalOverlay') closeExportFilterModal();
+});
+document.getElementById('btnResetExportFilters').addEventListener('click', ()=>{
+  EXPORT_FILTER_FIELDS.forEach(f=>{ const sel = document.getElementById(f.id); if(sel) sel.value=''; });
+});
 
-/* Excel export */
-document.getElementById('btnExportExcel').addEventListener('click', ()=>{
+/* Excel export — يجمع كل معايير التصفية المُختارة معًا (AND) قبل التصدير */
+document.getElementById('btnConfirmExportExcel').addEventListener('click', ()=>{
   const headers = ['pole','office','type','manufacturer','rtu','ip','serial','station','feeder','function_location','modem_type','manufacture_year','lat','lng'];
   const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', rtu:'RTU', ip:'عنوان IP', serial:'الرقم التسلسي', station:'المحطة', feeder:'المغذي', function_location:'FUNCTION LOCATION', modem_type:'نوع المودم', manufacture_year:'سنة الصنع', lat:'خط العرض', lng:'خط الطول'};
-  const filterManu = document.getElementById('exportFilterManu').value;
-  const filterFeeder = document.getElementById('exportFilterFeeder').value;
   let filtered = POLES;
-  if(filterManu) filtered = filtered.filter(p=>p.manufacturer === filterManu);
-  if(filterFeeder) filtered = filtered.filter(p=>p.feeder === filterFeeder);
-  if(!filtered.length){ toast('لا توجد معدات مطابقة لهذه التصفية'); return; }
+  EXPORT_FILTER_FIELDS.forEach(f=>{
+    const val = document.getElementById(f.id).value;
+    if(val) filtered = filtered.filter(p=>p[f.key] === val);
+  });
+  const msg = document.getElementById('exportFilterMsg');
+  if(!filtered.length){
+    msg.className = 'form-msg err show';
+    msg.textContent = 'لا توجد معدات مطابقة لهذه التصفية';
+    return;
+  }
   const ws = XLSX.utils.json_to_sheet(filtered.map(p=>{
     const row = {};
     headers.forEach(h=>{ row[headerLabels[h]] = p[h] ?? ''; });
@@ -2636,6 +2686,7 @@ document.getElementById('btnExportExcel').addEventListener('click', ()=>{
   XLSX.utils.book_append_sheet(wb, ws, 'المعدات');
   XLSX.writeFile(wb, 'poles_data.xlsx');
   toast(`تم تصدير ${filtered.length.toLocaleString('en-US')} معدة كملف إكسل`);
+  closeExportFilterModal();
 });
 
 
