@@ -755,6 +755,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   <nav class="subtabs">
     <button class="subtab-btn active" data-subtab="empdata">👥 بيانات الموظفين</button>
     <button class="subtab-btn" data-subtab="empleaves">🏖️ الإجازات</button>
+    <button class="subtab-btn" data-subtab="empscada">📡 SCADA</button>
   </nav>
 
   <div id="subtab-empdata" class="subtab-panel active">
@@ -782,6 +783,38 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
     <div class="card">
       <h3 id="adminLeaveListTitle">كل طلبات الإجازة</h3>
       <div id="adminLeaveRequestsWrap"></div>
+    </div>
+  </div>
+
+  <div id="subtab-empscada" class="subtab-panel">
+    <div class="card">
+      <h3>📡 استيراد ملف SCADA اليومي</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع نسخة CSV من شيت "data" لتحديث حالة الاتصال وإسناد المهام تلقائيًا.</p>
+      <div class="btn-row">
+        <input type="file" id="scadaCsvInput" accept=".csv,text/csv" style="max-width:260px;">
+        <button type="button" class="primary" id="btnImportScadaCsv">⬆ استيراد الملف</button>
+      </div>
+      <div id="scadaImportResult" style="margin-top:12px; font-size:13px; color:var(--text-secondary);"></div>
+    </div>
+
+    <div class="card">
+      <h3>🗂️ تعيين موظف مسؤول لكل مكتب</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">يُستخدم هذا التعيين لإسناد مهام SCADA التلقائية للفريق المسؤول عن كل مكتب.</p>
+      <div class="btn-row">
+        <select id="officeAssignSelect">
+          <option value="bbr">BBR</option>
+          <option value="uuz">UUZ</option>
+          <option value="mmb">MMB</option>
+        </select>
+        <select id="officeAssignEmployeeSelect"><option value="">-- اختر الموظف --</option></select>
+        <button type="button" class="primary" id="btnSaveOfficeAssignment">💾 حفظ</button>
+      </div>
+      <div id="officeAssignmentsWrap" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h3>⚠️ الحالات المتعطلة</h3>
+      <div id="faultyCasesWrap"></div>
     </div>
   </div>
 
@@ -907,7 +940,7 @@ function restoreActiveTab(){
   if(saved==='dash') renderDashboard();
   if(saved==='tasks') renderTasksView();
   if(saved==='tickets') renderTicketsView();
-  if(saved==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
+  if(saved==='employees'){ renderEmployeesView(); renderAdminLeavesView(); renderScadaView(); }
   if(saved==='myprofile') renderMyProfileView();
 }
 async function doLogin(username, password){
@@ -1628,16 +1661,28 @@ async function renderTasksView(){
       actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
       actionsHtml += `</div>`;
     }
+    const isUnassigned = admin && !t.assignedToUsername;
+    let assignHtml = '';
+    if(isUnassigned){
+      assignHtml = `<div class="task-actions">
+        <select class="taskReassignSelect" data-task-id="${escapeHtml(t.id)}">
+          <option value="">-- إسناد إلى موظف --</option>
+          ${(TECHNICIANS_CACHE||[]).map(u=>`<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)}</option>`).join('')}
+        </select>
+        <button type="button" class="primary btnTaskReassign" data-task-id="${escapeHtml(t.id)}">✔ إسناد</button>
+      </div>`;
+    }
     const pole = t.poleId ? poleByCode(t.poleId) : null;
     return `<div class="task-item">
       <div class="task-top">
         <div>
           <div class="task-desc">${escapeHtml(t.description || 'بدون وصف')}</div>
-          <div class="task-meta">${t.poleId ? ('العمود: ' + escapeHtml(t.poleId) + ' · ') : ''}الموظف: ${escapeHtml(t.assignedToName)} · أسندها: ${escapeHtml(t.assignedBy)}</div>
+          <div class="task-meta">${t.poleId ? ('العمود: ' + escapeHtml(t.poleId) + ' · ') : ''}الموظف: ${t.assignedToName ? escapeHtml(t.assignedToName) : '<span style="color:var(--warning-color,#b45309);">غير مسندة</span>'} · أسندها: ${escapeHtml(t.assignedBy)}</div>
         </div>
         <span class="status-pill ${statusClass(t.status)}">${escapeHtml(statusLabel)}</span>
       </div>
       ${equipmentDetailsHtml(pole)}
+      ${assignHtml}
       ${actionsHtml}
     </div>`;
   }).join('');
@@ -1655,6 +1700,26 @@ async function renderTasksView(){
         renderTasksView();
       } else {
         toast('تعذر تحديث حالة المهمة');
+        btn.disabled = false;
+      }
+    });
+  });
+
+  listWrap.querySelectorAll('.btnTaskReassign').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const taskId = btn.dataset.taskId;
+      const select = listWrap.querySelector(`.taskReassignSelect[data-task-id="${CSS.escape(taskId)}"]`);
+      const assignedTo = select ? select.value : '';
+      if(!assignedTo){ toast('اختر الموظف أولًا'); return; }
+      btn.disabled = true;
+      const result = await reassignTaskApi(taskId, assignedTo);
+      if(result){
+        const t = TASKS.find(x=>x.id === taskId);
+        if(t){ t.assignedToUsername = assignedTo; t.assignedToName = result.technicianName || assignedTo; }
+        toast('تم إسناد المهمة');
+        renderTasksView();
+      } else {
+        toast('تعذر إسناد المهمة');
         btn.disabled = false;
       }
     });
@@ -1975,6 +2040,194 @@ async function respondToLeave(requestId, decision){
   }catch(e){
     toast('تعذر الاتصال بالخادم');
   }
+}
+
+/* ===================== استيراد SCADA ومتابعة الحالات المتعطلة ===================== */
+
+async function renderScadaView(){
+  if(!isAdmin()) return;
+  await Promise.all([renderOfficeAssignmentsView(), renderFaultyCasesView()]);
+}
+
+async function renderOfficeAssignmentsView(){
+  if(!TECHNICIANS_CACHE) TECHNICIANS_CACHE = await loadTechniciansForAssignment();
+  const empSelect = document.getElementById('officeAssignEmployeeSelect');
+  if(empSelect && empSelect.options.length <= 1){
+    empSelect.innerHTML = '<option value="">-- اختر الموظف --</option>' +
+      TECHNICIANS_CACHE.map(u=>`<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)}</option>`).join('');
+  }
+
+  const wrap = document.getElementById('officeAssignmentsWrap');
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">جارٍ التحميل...</div>`;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getOfficeAssignments', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">تعذر تحميل التعيينات</div>`;
+      return;
+    }
+    const list = json.assignments || [];
+    if(!list.length){
+      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">لا يوجد تعيين محفوظ بعد لأي مكتب</div>`;
+      return;
+    }
+    wrap.innerHTML = list.map(a=>`<div class="leave-item"><div class="leave-top"><div class="leave-title">${escapeHtml((a.office||'').toUpperCase())}</div></div><div class="leave-meta">المسؤول: ${escapeHtml(a.name||a.username)}</div></div>`).join('');
+  }catch(e){
+    wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">تعذر الاتصال بالخادم</div>`;
+  }
+}
+
+document.getElementById('btnSaveOfficeAssignment').addEventListener('click', async ()=>{
+  const office = document.getElementById('officeAssignSelect').value;
+  const username = document.getElementById('officeAssignEmployeeSelect').value;
+  if(!username){ toast('اختر الموظف أولًا'); return; }
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'setOfficeAssignment', token: authToken(), office, username })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      toast(json.error || 'تعذر الحفظ');
+      return;
+    }
+    toast('تم حفظ التعيين');
+    renderOfficeAssignmentsView();
+  }catch(e){
+    toast('تعذر الاتصال بالخادم');
+  }
+});
+
+const FAULTY_CLOSE_REASONS = ['NEED MANUFACTURE', 'DAMAG', 'NO JUMPER', 'المعدة مزالة', 'تم حذف المعدة مع منظومة التحكم'];
+let FAULTY_CASES_CACHE = [];
+
+async function renderFaultyCasesView(){
+  const wrap = document.getElementById('faultyCasesWrap');
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">جارٍ التحميل...</div>`;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getFaultyCases', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">تعذر تحميل الحالات</div>`;
+      return;
+    }
+    FAULTY_CASES_CACHE = (json.cases || []).filter(c=>c.status === 'مفتوحة');
+    if(!FAULTY_CASES_CACHE.length){
+      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">لا توجد حالات متعطلة مفتوحة حاليًا</div>`;
+      return;
+    }
+    wrap.innerHTML = FAULTY_CASES_CACHE.map(c=>`
+      <div class="leave-item">
+        <div class="leave-top">
+          <div class="leave-title">${escapeHtml(c.pole)} — ${escapeHtml(c.problemType)}</div>
+          <span class="status-pill status-new">${escapeHtml((c.office||'').toUpperCase())}</span>
+        </div>
+        <div class="leave-meta">${c.problemDescription ? escapeHtml(c.problemDescription) : 'بدون وصف'} · آخر رصد: ${escapeHtml(c.lastSeenAt||'')}</div>
+        <div class="leave-actions">
+          <select class="faultyCloseReason" data-id="${escapeHtml(c.id)}">
+            <option value="">-- سبب الإقفال --</option>
+            ${FAULTY_CLOSE_REASONS.map(r=>`<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('')}
+          </select>
+          <button type="button" class="primary btnCloseFaultyCase" data-id="${escapeHtml(c.id)}">✔ إقفال</button>
+        </div>
+      </div>
+    `).join('');
+
+    wrap.querySelectorAll('.btnCloseFaultyCase').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.id;
+        const select = wrap.querySelector(`.faultyCloseReason[data-id="${CSS.escape(id)}"]`);
+        const reason = select ? select.value : '';
+        if(!reason){ toast('اختر سبب الإقفال أولًا'); return; }
+        btn.disabled = true;
+        try{
+          const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'closeFaultyCase', token: authToken(), id, reason })
+          });
+          const json = await res.json();
+          if(!json.ok){
+            if(json.error === 'unauthorized'){ forceReLogin(); return; }
+            toast(json.error || 'تعذر إقفال الحالة');
+            btn.disabled = false;
+            return;
+          }
+          toast('تم إقفال الحالة');
+          renderFaultyCasesView();
+        }catch(e){
+          toast('تعذر الاتصال بالخادم');
+          btn.disabled = false;
+        }
+      });
+    });
+  }catch(e){
+    wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">تعذر الاتصال بالخادم</div>`;
+  }
+}
+
+document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=>{
+  const input = document.getElementById('scadaCsvInput');
+  const resultBox = document.getElementById('scadaImportResult');
+  const file = input.files && input.files[0];
+  if(!file){ toast('اختر ملف CSV أولًا'); return; }
+
+  const btn = document.getElementById('btnImportScadaCsv');
+  btn.disabled = true;
+  resultBox.textContent = 'جارٍ قراءة الملف ورفعه...';
+  try{
+    const csvText = await file.text();
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'importScadaCsv', token: authToken(), csvText })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      resultBox.textContent = 'تعذر الاستيراد: ' + (json.error || 'خطأ غير معروف');
+      btn.disabled = false;
+      return;
+    }
+    resultBox.innerHTML = `تم الاستيراد بنجاح — إجمالي الصفوف: ${json.totalRows} · معدات مطابقة: ${json.matchedPoles} · غير مطابقة: ${json.unmatchedPoles}<br>
+      مهام أُسندت تلقائيًا: ${json.tasksCreated} · حالات متعطلة جديدة/محدَّثة: ${json.faultyUpserted} · تُترك لفريق سكادا: ${json.skippedNeedScada}`;
+    toast('تم استيراد ملف SCADA بنجاح');
+    input.value = '';
+    await attemptReconnect();
+    renderFaultyCasesView();
+  }catch(e){
+    resultBox.textContent = 'تعذر قراءة الملف أو الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
+
+async function reassignTaskApi(taskId, assignedTo){
+  if(!authToken()) return null;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'reassignTask', token: authToken(), taskId, assignedTo })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      return null;
+    }
+    return json;
+  }catch(e){ return null; }
 }
 
 document.getElementById('leaveRequestForm').addEventListener('submit', async (ev)=>{
@@ -2680,7 +2933,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='dash') renderDashboard();
     if(btn.dataset.tab==='tasks') renderTasksView();
     if(btn.dataset.tab==='tickets') renderTicketsView();
-    if(btn.dataset.tab==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
+    if(btn.dataset.tab==='employees'){ renderEmployeesView(); renderAdminLeavesView(); renderScadaView(); }
     if(btn.dataset.tab==='myprofile') renderMyProfileView();
   });
 });
