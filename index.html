@@ -217,6 +217,22 @@ tbody tr:hover{ background:var(--surface-1); }
 .pole-card .pc-actions{ display:flex; gap:8px; flex-wrap:wrap; }
 .btn-maps{ display:flex; align-items:center; justify-content:center; gap:7px; background:var(--brand-gradient); border:none; color:#fff; font-weight:700; box-shadow:none;}
 .btn-maps:hover{ filter:brightness(1.08); color:#fff; }
+
+/* بطاقة تذكرة المصنّع — نفس أسلوب pole-card مع صور وزر تصدير PDF */
+.ticket-card{ background:var(--surface-1); border:1.5px solid var(--border); border-radius:12px; padding:20px; width:100%; margin-bottom:14px;}
+.ticket-card .pc-head{ margin-bottom:12px; padding-bottom:12px; }
+.ticket-card .tc-badges{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.ticket-card .tc-desc{ font-size:13.5px; color:var(--text-primary); background:var(--surface-2); border-radius:9px; padding:10px 12px; margin-bottom:12px; line-height:1.7; }
+.ticket-card .tc-meta{ font-size:11.5px; color:var(--text-muted); margin-bottom:10px; }
+.ticket-photos-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.ticket-photo-thumb{ position:relative; width:76px; height:76px; border-radius:9px; overflow:hidden; border:1.5px solid var(--border); flex-shrink:0; }
+.ticket-photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; cursor:pointer; }
+.ticket-photo-thumb .rm{ position:absolute; top:2px; left:2px; background:rgba(10,20,35,.65); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:18px; padding:0; cursor:pointer; }
+.ticket-photo-add-label{ display:flex; align-items:center; justify-content:center; width:76px; height:76px; border-radius:9px; border:1.5px dashed var(--baseline); color:var(--text-muted); font-size:11px; text-align:center; cursor:pointer; background:var(--surface-2); }
+.ticket-photo-lightbox{ position:fixed; inset:0; z-index:700; display:none; align-items:center; justify-content:center; background:rgba(10,20,35,.82); padding:24px; }
+.ticket-photo-lightbox.show{ display:flex; }
+.ticket-photo-lightbox img{ max-width:100%; max-height:100%; border-radius:10px; }
+.btn-pdf{ background:var(--surface-2); border:1.5px dashed var(--baseline); color:var(--critical); font-weight:700;}
 .search-hero{ max-width:680px; margin:0 auto; }
 .search-hero input{ font-size:15px; padding:14px 42px 14px 16px; letter-spacing:.4px;}
 .top-gradient-bar{ display:none; }
@@ -318,6 +334,8 @@ tbody tr:hover{ background:var(--surface-1); }
 .profile-modal .form-msg.ok{ background:rgba(0,214,143,0.12); color:#00875c; display:block; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -666,6 +684,12 @@ tbody tr:hover{ background:var(--surface-1); }
       <div id="ticketEquipmentPreview"></div>
       <label for="ticketDescription">وصف المشكلة</label>
       <textarea id="ticketDescription" rows="3" placeholder="مثال: عطل في RTU يستدعي تدخل المصنّع" required></textarea>
+      <label>صور المشكلة (اختياري — حتى 3 صور)</label>
+      <div class="ticket-photos-row" id="ticketPhotosRow">
+        <label class="ticket-photo-add-label" id="ticketPhotoAddLabel">+ إضافة<br>صورة
+          <input type="file" id="ticketPhotoInput" accept="image/*" multiple style="display:none;">
+        </label>
+      </div>
       <div class="form-msg" id="ticketFormMsg"></div>
       <button type="submit" class="primary" style="margin-top:12px;">إرسال التذكرة</button>
     </form>
@@ -677,6 +701,10 @@ tbody tr:hover{ background:var(--surface-1); }
       <button id="btnExportTicketsExcel">⬇ تصدير التذاكر إلى إكسل</button>
     </div>
     <div id="ticketsListWrap"></div>
+  </div>
+
+  <div class="ticket-photo-lightbox" id="ticketPhotoLightbox">
+    <img id="ticketPhotoLightboxImg" src="">
   </div>
 
 </section>
@@ -1924,17 +1952,91 @@ function ticketStatusClass(status){
   return 'status-new';
 }
 
+/* المكتب على اليسار ثم رقم العمود (بدل رقم العمود ثم المكتب) — تنسيق مخصص لتذاكر المصنعين */
+function ticketPoleOptionsHtml(selected){
+  return POLES.slice().sort((a,b)=>naturalCompare(a.pole,b.pole)).map(p=>
+    `<option value="${escapeHtml(p.pole)}" ${p.pole===selected?'selected':''}>${p.office ? (escapeHtml(p.office) + ' — ') : ''}${escapeHtml(p.pole)}</option>`
+  ).join('');
+}
 function populateTicketPoleSelect(){
   const sel = document.getElementById('ticketPole');
   if(!sel) return;
   const cur = sel.value;
-  sel.innerHTML = '<option value="">-- اختر رقم العمود --</option>' + poleSelectOptionsHtml(cur);
+  sel.innerHTML = '<option value="">-- اختر رقم العمود --</option>' + ticketPoleOptionsHtml(cur);
   sel.value = cur;
 }
 
 document.getElementById('ticketPole').addEventListener('change', ()=>{
   const pole = poleByCode(document.getElementById('ticketPole').value);
   document.getElementById('ticketEquipmentPreview').innerHTML = equipmentDetailsHtml(pole, true);
+});
+
+/* ================= صور تذكرة المصنّع — ضغط وتصغير قبل الإرسال (حد أقصى 3 صور) ================= */
+const TICKET_MAX_PHOTOS = 3;
+let TICKET_PHOTOS_PENDING = [];
+
+function compressImageFile(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=>reject(new Error('read failed'));
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=>reject(new Error('image decode failed'));
+      img.onload = ()=>{
+        const maxDim = 900;
+        let { width, height } = img;
+        if(width > maxDim || height > maxDim){
+          const ratio = Math.min(maxDim/width, maxDim/height);
+          width = Math.round(width*ratio); height = Math.round(height*ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderTicketPhotosRow(){
+  const row = document.getElementById('ticketPhotosRow');
+  const addLabel = document.getElementById('ticketPhotoAddLabel');
+  row.querySelectorAll('.ticket-photo-thumb').forEach(el=>el.remove());
+  TICKET_PHOTOS_PENDING.forEach((dataUrl, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'ticket-photo-thumb';
+    div.innerHTML = `<img src="${dataUrl}"><button type="button" class="rm" data-idx="${idx}">✕</button>`;
+    div.querySelector('img').addEventListener('click', ()=>openPhotoLightbox(dataUrl));
+    div.querySelector('.rm').addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      TICKET_PHOTOS_PENDING.splice(idx,1);
+      renderTicketPhotosRow();
+    });
+    row.insertBefore(div, addLabel);
+  });
+  addLabel.style.display = TICKET_PHOTOS_PENDING.length >= TICKET_MAX_PHOTOS ? 'none' : 'flex';
+}
+
+document.getElementById('ticketPhotoInput').addEventListener('change', async (ev)=>{
+  const files = Array.from(ev.target.files || []).slice(0, TICKET_MAX_PHOTOS - TICKET_PHOTOS_PENDING.length);
+  for(const file of files){
+    try{
+      const dataUrl = await compressImageFile(file);
+      TICKET_PHOTOS_PENDING.push(dataUrl);
+    }catch(e){ /* تجاهل الصورة التي تعذّرت معالجتها */ }
+  }
+  renderTicketPhotosRow();
+  ev.target.value = '';
+});
+
+function openPhotoLightbox(dataUrl){
+  document.getElementById('ticketPhotoLightboxImg').src = dataUrl;
+  document.getElementById('ticketPhotoLightbox').classList.add('show');
+}
+document.getElementById('ticketPhotoLightbox').addEventListener('click', ()=>{
+  document.getElementById('ticketPhotoLightbox').classList.remove('show');
 });
 
 async function loadManufacturerTickets(){
@@ -1966,24 +2068,45 @@ async function renderTicketsView(){
   }
   const admin = isAdmin();
   const sorted = TICKETS.slice().sort((a,b)=> String(b.openedAt||'').localeCompare(String(a.openedAt||'')));
-  wrap.innerHTML = sorted.map(t=>{
+  wrap.innerHTML = sorted.map((t,idx)=>{
     const pillClass = ticketStatusClass(t.status);
     const priorityBadge = t.priority === 'عاجل' ? `<span class="status-pill status-rejected">عاجل</span>` : `<span class="status-pill status-new">عادي</span>`;
     const pole = t.poleId ? poleByCode(t.poleId) : null;
+    const hasCoords = pole && pole.lat!=null && pole.lng!=null && !isNaN(pole.lat) && !isNaN(pole.lng);
+    const fieldsHtml = pole ? `
+      <div class="pc-fields">
+        <div class="pc-field"><div class="k">الشركة المصنّعة</div><div class="v">${escapeHtml(pole.manufacturer||'—')}</div></div>
+        <div class="pc-field"><div class="k">RTU</div><div class="v">${escapeHtml(pole.rtu||'—')}</div></div>
+        <div class="pc-field"><div class="k">المحطة</div><div class="v">${escapeHtml(pole.station||'—')}</div></div>
+        <div class="pc-field"><div class="k">المغذي</div><div class="v">${escapeHtml(pole.feeder||'—')}</div></div>
+        ${pole.serial ? `<div class="pc-field"><div class="k">الرقم التسلسلي</div><div class="v">${escapeHtml(pole.serial)}</div></div>` : ''}
+        ${hasCoords ? `<div class="pc-field"><div class="k">الإحداثيات</div><div class="v">${pole.lat.toFixed(5)+', '+pole.lng.toFixed(5)}</div></div>` : ''}
+      </div>
+      ${pole.ip ? `<div class="pc-ip"><span class="k">عنوان IP</span>${escapeHtml(pole.ip)}</div>` : ''}
+      ${hasCoords ? `<div class="pc-actions" style="margin-bottom:12px;"><button type="button" class="btn-maps" style="flex:1;" onclick="window.open('${mapsLink(pole.lat,pole.lng)}','_blank')">📍 الانتقال إلى خرائط جوجل</button></div>` : ''}
+    ` : '';
+    const photosHtml = (t.photos && t.photos.length) ? `<div class="ticket-photos-row">${t.photos.map(p=>`<div class="ticket-photo-thumb"><img src="${p}" onclick="openPhotoLightbox('${p}')"></div>`).join('')}</div>` : '';
     const statusControls = admin ? `
       <div class="leave-actions">
         ${t.status !== 'قيد المتابعة' ? `<button type="button" class="btnTicketStatus" data-id="${escapeHtml(t.id)}" data-status="قيد المتابعة">قيد المتابعة</button>` : ''}
         ${t.status !== 'مغلقة' ? `<button type="button" class="primary btnTicketStatus" data-id="${escapeHtml(t.id)}" data-status="مغلقة">✔ إغلاق التذكرة</button>` : ''}
         ${t.status !== 'مفتوحة' ? `<button type="button" class="ghost btnTicketStatus" data-id="${escapeHtml(t.id)}" data-status="مفتوحة">إعادة فتح</button>` : ''}
       </div>` : '';
-    return `<div class="leave-item">
-      <div class="leave-top">
-        <div class="leave-title">العمود: ${escapeHtml(t.poleId)} — ${escapeHtml(t.name||t.username)} ${priorityBadge}</div>
-        <span class="status-pill ${pillClass}">${escapeHtml(t.status)}</span>
+    return `<div class="ticket-card" id="ticketCard_${idx}">
+      <div class="pc-head">
+        <div class="pc-title">${escapeHtml(pole && pole.office ? (pole.office + ' — ') : '')}${escapeHtml(t.poleId)}</div>
+        <div class="tc-badges">
+          ${priorityBadge}
+          <span class="status-pill ${pillClass}">${escapeHtml(t.status)}</span>
+        </div>
       </div>
-      <div class="leave-meta">${escapeHtml(t.description)}</div>
-      <div class="leave-meta">تاريخ الفتح: ${escapeHtml(formatTimestampNice(t.openedAt))}</div>
-      ${equipmentDetailsHtml(pole)}
+      <div class="tc-desc">${escapeHtml(t.description)}</div>
+      <div class="tc-meta">مقدّم الطلب: ${escapeHtml(t.name||t.username)} · تاريخ الفتح: ${escapeHtml(formatTimestampNice(t.openedAt))}</div>
+      ${fieldsHtml}
+      ${photosHtml}
+      <div class="pc-actions" style="margin-bottom:10px;">
+        <button type="button" class="ghost btn-pdf btnTicketPdf" data-idx="${idx}">⬇ تصدير كملف PDF</button>
+      </div>
       ${statusControls}
     </div>`;
   }).join('');
@@ -1991,6 +2114,32 @@ async function renderTicketsView(){
   wrap.querySelectorAll('.btnTicketStatus').forEach(btn=>{
     btn.addEventListener('click', ()=>updateTicketStatus(btn.dataset.id, btn.dataset.status));
   });
+  wrap.querySelectorAll('.btnTicketPdf').forEach(btn=>{
+    btn.addEventListener('click', ()=>exportTicketCardPdf(btn.dataset.idx));
+  });
+}
+
+async function exportTicketCardPdf(idx){
+  const card = document.getElementById('ticketCard_'+idx);
+  if(!card || !window.html2canvas || !window.jspdf) { toast('تعذر تجهيز أدوات تصدير PDF'); return; }
+  const btn = card.querySelector('.btnTicketPdf');
+  const prevText = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = 'جارٍ التجهيز...'; }
+  try{
+    const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const { jsPDF } = window.jspdf;
+    const pageWidth = 210, margin = 10;
+    const imgWidth = pageWidth - margin*2;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+    pdf.save('ticket_'+idx+'.pdf');
+  }catch(e){
+    toast('تعذر تصدير التذكرة كملف PDF');
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = prevText; }
+  }
 }
 
 async function updateTicketStatus(ticketId, status){
@@ -2030,7 +2179,7 @@ document.getElementById('ticketForm').addEventListener('submit', async (ev)=>{
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'submitManufacturerTicket', token: authToken(), poleId, priority, description })
+      body: JSON.stringify({ action: 'submitManufacturerTicket', token: authToken(), poleId, priority, description, photos: TICKET_PHOTOS_PENDING })
     });
     const json = await res.json();
     if(!json.ok){
@@ -2041,6 +2190,8 @@ document.getElementById('ticketForm').addEventListener('submit', async (ev)=>{
     msg.className = 'form-msg ok'; msg.textContent = 'تم إرسال التذكرة بنجاح';
     document.getElementById('ticketForm').reset();
     document.getElementById('ticketEquipmentPreview').innerHTML = '';
+    TICKET_PHOTOS_PENDING = [];
+    renderTicketPhotosRow();
     renderTicketsView();
     if(json.adminPhones && json.adminPhones.length){
       const phone = String(json.adminPhones[0]).replace(/[^0-9]/g, '');
