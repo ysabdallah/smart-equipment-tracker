@@ -216,7 +216,7 @@ tbody tr:hover{ background:var(--surface-1); }
 .pole-card .pc-ip .k{ font-size:10.5px; color:var(--text-muted); font-weight:600; direction:rtl; text-align:right; display:block; margin-bottom:3px; font-family:'IBM Plex Sans Arabic',sans-serif;}
 .pole-card .pc-actions{ display:flex; gap:8px; flex-wrap:wrap; }
 .btn-maps{ display:flex; align-items:center; justify-content:center; gap:7px; background:var(--brand-gradient); border:none; color:#fff; font-weight:700; box-shadow:none;}
-.btn-maps:hover{ filter:brightness(1.08); color:#fff; }
+.btn-maps:hover{ filter:brightness(1.08); color:#fff; background:var(--brand-gradient); border-color:transparent; }
 
 /* بطاقة تذكرة المصنّع — نفس أسلوب pole-card مع صور وزر تصدير PDF */
 .ticket-card{ background:var(--surface-1); border:1.5px solid var(--border); border-radius:12px; padding:20px; width:100%; margin-bottom:14px;}
@@ -1191,7 +1191,7 @@ async function apiSave(sheetName, data){
 }
 // extra (non-essential) columns — key: exact Google Sheet header text
 const EXTRA_COLS = {
-  serial: 'الرقم التسلسي',
+  serial: 'الرقم التسلسلي',
   station: 'المحطة',
   feeder: 'المغذي',
   function_location: 'FUNCTION LOCATION',
@@ -1199,7 +1199,7 @@ const EXTRA_COLS = {
   manufacture_year: 'سنة الصنع',
 };
 const EXTRA_LABELS = {
-  serial: 'الرقم التسلسي',
+  serial: 'الرقم التسلسلي',
   station: 'المحطة',
   feeder: 'المغذي',
   function_location: 'FUNCTION LOCATION',
@@ -2660,7 +2660,7 @@ function renderPoleDetailForm(p, idx){
         <div class="col"><label>عنوان IP</label><input type="text" id="f_ip" value="${escapeHtml(p?.ip||'')}"></div>
       </div>
       <div class="row">
-        <div class="col"><label>الرقم التسلسي</label><input type="text" id="f_serial" value="${escapeHtml(p?.serial||'')}"></div>
+        <div class="col"><label>الرقم التسلسلي</label><input type="text" id="f_serial" value="${escapeHtml(p?.serial||'')}"></div>
         <div class="col">
           <label>المحطة</label>
           <select id="f_station_select" onchange="handleSelectOrNew(this,'f_station_new')">${buildSelectOptions('station', p?.station)}</select>
@@ -2816,7 +2816,7 @@ document.getElementById('btnResetExportFilters').addEventListener('click', ()=>{
 /* Excel export — يجمع كل معايير التصفية المُختارة معًا (AND) قبل التصدير */
 document.getElementById('btnConfirmExportExcel').addEventListener('click', ()=>{
   const headers = ['pole','office','type','manufacturer','rtu','ip','serial','station','feeder','function_location','modem_type','manufacture_year','lat','lng'];
-  const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', rtu:'RTU', ip:'عنوان IP', serial:'الرقم التسلسي', station:'المحطة', feeder:'المغذي', function_location:'FUNCTION LOCATION', modem_type:'نوع المودم', manufacture_year:'سنة الصنع', lat:'خط العرض', lng:'خط الطول'};
+  const headerLabels = {pole:'رقم العمود', office:'المكتب', type:'النوع', manufacturer:'الشركة المصنّعة', rtu:'RTU', ip:'عنوان IP', serial:'الرقم التسلسلي', station:'المحطة', feeder:'المغذي', function_location:'FUNCTION LOCATION', modem_type:'نوع المودم', manufacture_year:'سنة الصنع', lat:'خط العرض', lng:'خط الطول'};
   let filtered = POLES;
   EXPORT_FILTER_FIELDS.forEach(f=>{
     const val = document.getElementById(f.id).value;
