@@ -1,0 +1,30 @@
+    if (body.action === 'importScadaCsv') {
+      if (session.role !== 'admin') return jsonOut({ ok: false, error: 'unauthorized' });
+      return jsonOut(importScadaCsv(body, session));
+    }
+
+    if (body.action === 'getOfficeAssignments') {
+      if (session.role !== 'admin') return jsonOut({ ok: false, error: 'unauthorized' });
+      return jsonOut({ ok: true, assignments: getOfficeAssignments() });
+    }
+
+    if (body.action === 'setOfficeAssignment') {
+      if (session.role !== 'admin') return jsonOut({ ok: false, error: 'unauthorized' });
+      return jsonOut(setOfficeAssignment(body));
+    }
+
+    if (body.action === 'getFaultyCases') {
+      if (session.role !== 'admin') return jsonOut({ ok: false, error: 'unauthorized' });
+      return jsonOut({ ok: true, cases: getFaultyCases() });
+    }
+
+    if (body.action === 'closeFaultyCase') {
+      if (session.role !== 'admin') return jsonOut({ ok: false, error: 'unauthorized' });
+      return jsonOut(closeFaultyCase(body, session));
+    }
+
+    if (body.action === 'reassignTask') {
+      if (session.role !== 'admin') return jsonOut({ ok: false, error: 'unauthorized' });
+      return jsonOut(reassignTask(body, session));
+    }
+

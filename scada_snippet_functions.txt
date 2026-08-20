@@ -1,0 +1,286 @@
+
+
+/* ===================== استيراد SCADA ومتابعة الحالات المتعطلة ===================== */
+
+const FAULTY_PROBLEM_TYPES = ['NEED MANUFACTURE', 'DAMAG', 'NO JUMPER', 'المعدة مزالة', 'تم حذف المعدة مع منظومة التحكم'];
+const SCADA_TASK_MARKER = '[SCADA] ';
+
+function ensureOfficeAssignmentsHeader(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['المكتب', 'اسم المستخدم', 'اسم الموظف']);
+  }
+}
+
+function getOfficeAssignments() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getOrCreateSheet(ss, 'OfficeAssignments');
+  ensureOfficeAssignmentsHeader(sheet);
+  return sheetToJson(sheet).map(function (r) {
+    return { office: String(r['المكتب'] || ''), username: String(r['اسم المستخدم'] || ''), name: String(r['اسم الموظف'] || '') };
+  });
+}
+
+function setOfficeAssignment(body) {
+  const office = String(body.office || '').trim();
+  const username = String(body.username || '').trim();
+  if (!office || !username) return { ok: false, error: 'بيانات ناقصة' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const usersSheet = ss.getSheetByName('Users');
+  const users = usersSheet ? sheetToJson(usersSheet) : [];
+  const emp = users.find(function (u) { return String(u['اسم المستخدم'] || '').toLowerCase() === username.toLowerCase(); });
+  if (!emp) return { ok: false, error: 'الموظف غير موجود' };
+
+  const sheet = getOrCreateSheet(ss, 'OfficeAssignments');
+  ensureOfficeAssignmentsHeader(sheet);
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0] || '').toLowerCase() === office.toLowerCase()) {
+      sheet.getRange(i + 1, 2).setValue(emp['اسم المستخدم']);
+      sheet.getRange(i + 1, 3).setValue(emp['الاسم الكامل'] || emp['اسم المستخدم']);
+      return { ok: true };
+    }
+  }
+  sheet.appendRow([office, emp['اسم المستخدم'], emp['الاسم الكامل'] || emp['اسم المستخدم']]);
+  return { ok: true };
+}
+
+function ensureFaultyCasesHeader(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['المعرف', 'رقم العمود', 'المكتب', 'نوع المشكلة', 'شرح المشكلة', 'أول رصد', 'آخر رصد', 'الحالة', 'سبب الإقفال', 'ملاحظة الإقفال', 'أُقفلت بواسطة', 'تاريخ الإقفال']);
+  }
+}
+
+function getFaultyCases() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getOrCreateSheet(ss, 'FaultyCases');
+  ensureFaultyCasesHeader(sheet);
+  return sheetToJson(sheet).map(function (r) {
+    return {
+      id: String(r['المعرف'] || ''),
+      pole: String(r['رقم العمود'] || ''),
+      office: String(r['المكتب'] || ''),
+      problemType: String(r['نوع المشكلة'] || ''),
+      problemDescription: String(r['شرح المشكلة'] || ''),
+      firstSeenAt: String(r['أول رصد'] || ''),
+      lastSeenAt: String(r['آخر رصد'] || ''),
+      status: String(r['الحالة'] || ''),
+      closeReason: String(r['سبب الإقفال'] || ''),
+      closeNote: String(r['ملاحظة الإقفال'] || ''),
+      closedBy: String(r['أُقفلت بواسطة'] || ''),
+      closedAt: String(r['تاريخ الإقفال'] || '')
+    };
+  });
+}
+
+function closeFaultyCase(body, session) {
+  const id = body.id;
+  const reason = String(body.reason || '').trim();
+  const note = String(body.note || '').trim();
+  if (!id || FAULTY_PROBLEM_TYPES.indexOf(reason) === -1) return { ok: false, error: 'سبب الإقفال مطلوب' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getOrCreateSheet(ss, 'FaultyCases');
+  ensureFaultyCasesHeader(sheet);
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === String(id)) {
+      sheet.getRange(i + 1, 8).setValue('مغلقة');
+      sheet.getRange(i + 1, 9).setValue(reason);
+      sheet.getRange(i + 1, 10).setValue(note);
+      sheet.getRange(i + 1, 11).setValue(session.name || session.username);
+      sheet.getRange(i + 1, 12).setValue(new Date().toISOString());
+      return { ok: true };
+    }
+  }
+  return { ok: false, error: 'الحالة غير موجودة' };
+}
+
+function reassignTask(body, session) {
+  const taskId = body.taskId;
+  const assignedToUsername = String(body.assignedTo || '').trim();
+  if (!taskId || !assignedToUsername) return { ok: false, error: 'بيانات ناقصة' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const usersSheet = ss.getSheetByName('Users');
+  const users = usersSheet ? sheetToJson(usersSheet) : [];
+  const tech = users.find(function (u) {
+    return String(u['اسم المستخدم'] || '').toLowerCase() === assignedToUsername.toLowerCase() && u['نشط'] !== false;
+  });
+  if (!tech) return { ok: false, error: 'الفني غير موجود أو غير مفعّل' };
+
+  const sheet = ss.getSheetByName('Tasks');
+  if (!sheet) return { ok: false, error: 'لا يوجد جدول مهام' };
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === taskId) {
+      sheet.getRange(i + 1, 4).setValue(tech['اسم المستخدم']);
+      sheet.getRange(i + 1, 5).setValue(tech['الاسم الكامل'] || tech['اسم المستخدم']);
+      return { ok: true, technicianName: tech['الاسم الكامل'] || tech['اسم المستخدم'], technicianPhone: tech['رقم الواتساب'] || '' };
+    }
+  }
+  return { ok: false, error: 'المهمة غير موجودة' };
+}
+
+function autoCreateScadaTask(poleId, office, description, existingOpenPoles) {
+  const key = String(poleId).trim().toLowerCase();
+  if (existingOpenPoles[key]) return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const officeMap = getOfficeAssignments();
+  const match = officeMap.find(function (o) { return String(o.office || '').toLowerCase() === String(office || '').toLowerCase(); });
+
+  let assignedToUsername = '', assignedToName = '';
+  if (match) {
+    const usersSheet = ss.getSheetByName('Users');
+    const users = usersSheet ? sheetToJson(usersSheet) : [];
+    const tech = users.find(function (u) { return String(u['اسم المستخدم'] || '').toLowerCase() === String(match.username || '').toLowerCase() && u['نشط'] !== false; });
+    if (tech) { assignedToUsername = tech['اسم المستخدم']; assignedToName = tech['الاسم الكامل'] || tech['اسم المستخدم']; }
+  }
+
+  const tasksSheet = getOrCreateSheet(ss, 'Tasks');
+  ensureTasksHeader(tasksSheet);
+  const taskId = Utilities.getUuid();
+  const now = new Date().toISOString();
+  tasksSheet.appendRow([taskId, SCADA_TASK_MARKER + description, poleId, assignedToUsername, assignedToName, 'نظام SCADA (تلقائي)', 'جديد', now, '']);
+  existingOpenPoles[key] = true;
+}
+
+function upsertFaultyCase(poleId, office, problemType, problemDescription, existingOpenCases) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getOrCreateSheet(ss, 'FaultyCases');
+  ensureFaultyCasesHeader(sheet);
+  const now = new Date().toISOString();
+  const key = String(poleId).trim().toLowerCase() + '|' + String(problemType).trim().toUpperCase();
+  const existingRow = existingOpenCases[key];
+  if (existingRow) {
+    sheet.getRange(existingRow, 7).setValue(now);
+    sheet.getRange(existingRow, 5).setValue(problemDescription);
+    return;
+  }
+  sheet.appendRow([Utilities.getUuid(), poleId, office, problemType, problemDescription, now, now, 'مفتوحة', '', '', '', '']);
+  existingOpenCases[key] = sheet.getLastRow();
+}
+
+function importScadaCsv(body, session) {
+  const csvText = body.csvText;
+  if (!csvText) return { ok: false, error: 'لم يتم إرفاق ملف' };
+
+  let rows;
+  try {
+    rows = Utilities.parseCsv(csvText);
+  } catch (e) {
+    return { ok: false, error: 'تعذّرت قراءة الملف: ' + String(e) };
+  }
+  if (!rows || rows.length < 2) return { ok: false, error: 'الملف فارغ' };
+
+  const headers = rows[0].map(function (h) { return String(h || '').trim(); });
+  function findIdx(name) {
+    for (let i = 0; i < headers.length; i++) {
+      if (headers[i].toLowerCase() === name.toLowerCase()) return i;
+    }
+    return -1;
+  }
+
+  const idxOffice = findIdx('المكتب');
+  const idxStation = findIdx('اسم المحطة');
+  const idxFeeder = findIdx('رقم المغذي');
+  const idxEquipName = findIdx('اسم المعدة');
+  const idxType = findIdx('نوع المعدة');
+  const idxStatus = findIdx('آخر حالة مسجلة للمعدة');
+  const idxProblemType = findIdx('نوع المشكلة');
+  const idxProblemDesc = findIdx('شرح المشكلة');
+
+  if (idxEquipName === -1 || idxStatus === -1) {
+    return { ok: false, error: 'تنسيق الملف غير متوقع — تأكد من أعمدة "اسم المعدة" و"آخر حالة مسجلة للمعدة"' };
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const polesSheet = ss.getSheetByName('Poles');
+  const poles = polesSheet ? sheetToJson(polesSheet) : [];
+  const poleSet = {};
+  poles.forEach(function (p) { if (p.pole) poleSet[String(p.pole).trim().toLowerCase()] = true; });
+
+  const tasksSheet = getOrCreateSheet(ss, 'Tasks');
+  ensureTasksHeader(tasksSheet);
+  const taskValues = tasksSheet.getDataRange().getValues();
+  const existingOpenPoles = {};
+  for (let i = 1; i < taskValues.length; i++) {
+    const desc = String(taskValues[i][1] || '');
+    const status = String(taskValues[i][6] || '');
+    const poleId = String(taskValues[i][2] || '').trim().toLowerCase();
+    if (desc.indexOf(SCADA_TASK_MARKER) === 0 && status !== 'مكتملة' && poleId) {
+      existingOpenPoles[poleId] = true;
+    }
+  }
+
+  const faultySheet = getOrCreateSheet(ss, 'FaultyCases');
+  ensureFaultyCasesHeader(faultySheet);
+  const faultyValues = faultySheet.getDataRange().getValues();
+  const existingOpenCases = {};
+  for (let i = 1; i < faultyValues.length; i++) {
+    const poleId = String(faultyValues[i][1] || '').trim().toLowerCase();
+    const problemType = String(faultyValues[i][3] || '').trim().toUpperCase();
+    const status = String(faultyValues[i][7] || '');
+    if (status === 'مفتوحة' && poleId) {
+      existingOpenCases[poleId + '|' + problemType] = i + 1;
+    }
+  }
+
+  let totalRows = 0, matchedPoles = 0, unmatchedPoles = 0, tasksCreated = 0, faultyUpserted = 0, skippedNeedScada = 0, skippedOnline = 0;
+
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.every(function (c) { return String(c || '').trim() === ''; })) continue;
+
+    const equipNameRaw = String(row[idxEquipName] || '').trim();
+    if (!equipNameRaw) continue;
+    totalRows++;
+
+    const parts = equipNameRaw.split('_');
+    const poleId = parts.length >= 3 ? parts.slice(2).join('_') : equipNameRaw;
+    const poleKey = poleId.trim().toLowerCase();
+    const office = idxOffice !== -1 ? String(row[idxOffice] || '').trim() : (parts.length >= 2 ? parts[1] : '');
+    const station = idxStation !== -1 ? String(row[idxStation] || '').trim() : '';
+    const feeder = idxFeeder !== -1 ? String(row[idxFeeder] || '').trim() : '';
+    const equipType = idxType !== -1 ? String(row[idxType] || '').trim() : '';
+
+    if (poleSet[poleKey]) matchedPoles++; else unmatchedPoles++;
+
+    const status = String(row[idxStatus] || '').trim().toUpperCase();
+    if (status !== 'OFFLINE') { skippedOnline++; continue; }
+
+    const problemTypeRaw = idxProblemType !== -1 ? String(row[idxProblemType] || '').trim() : '';
+    const problemDesc = idxProblemDesc !== -1 ? String(row[idxProblemDesc] || '').trim() : '';
+    const problemTypeNorm = problemTypeRaw.toUpperCase();
+
+    const contextSuffix = (station || feeder || equipType)
+      ? (' — المحطة: ' + (station || '—') + '، المغذي: ' + (feeder || '—') + '، النوع: ' + (equipType || '—'))
+      : '';
+
+    if (problemTypeNorm === '') {
+      autoCreateScadaTask(poleId, office, 'انقطاع اتصال بالمعدة — حالة جديدة غير مصنّفة' + contextSuffix, existingOpenPoles);
+      tasksCreated++;
+    } else if (problemTypeNorm === 'SOLVED') {
+      autoCreateScadaTask(poleId, office, 'انقطاع اتصال بالمعدة — مسجّلة "تم الحل" لكنها لا تزال غير متصلة، يلزم تحقق ميداني' + contextSuffix, existingOpenPoles);
+      tasksCreated++;
+    } else if (problemTypeNorm === 'NEED SCADA') {
+      skippedNeedScada++;
+    } else {
+      const matchedType = FAULTY_PROBLEM_TYPES.find(function (t) { return t.toUpperCase() === problemTypeNorm; }) || problemTypeRaw;
+      upsertFaultyCase(poleId, office, matchedType, problemDesc, existingOpenCases);
+      faultyUpserted++;
+    }
+  }
+
+  return {
+    ok: true,
+    totalRows: totalRows,
+    matchedPoles: matchedPoles,
+    unmatchedPoles: unmatchedPoles,
+    tasksCreated: tasksCreated,
+    faultyUpserted: faultyUpserted,
+    skippedNeedScada: skippedNeedScada,
+    skippedOnline: skippedOnline
+  };
+}
