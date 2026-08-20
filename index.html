@@ -682,9 +682,24 @@ tbody tr:hover{ background:var(--surface-1); }
         </div>
       </div>
       <div id="ticketEquipmentPreview"></div>
+      <div id="ticketMissingSerialSection" style="display:none; margin:10px 0; padding:12px; border:1px dashed #f59e0b; border-radius:10px; background:rgba(245,158,11,0.08);">
+        <div style="font-weight:700; margin-bottom:8px; color:#b45309;">⚠️ هذه المعدة لا تحتوي على رقم تسلسلي مسجّل بقاعدة البيانات — يرجى إدخاله يدويًا ليتم تسجيله في بيانات المعدة</div>
+        <div class="form-grid">
+          <div>
+            <label for="ticketSerialInput">الرقم التسلسلي *</label>
+            <input type="text" id="ticketSerialInput" placeholder="أدخل الرقم التسلسلي من لوحة بيانات المعدة">
+          </div>
+          <div>
+            <label for="ticketMaterialCodeInput">كود المادة (اختياري)</label>
+            <input type="text" id="ticketMaterialCodeInput" placeholder="كود المادة">
+          </div>
+        </div>
+        <label for="ticketPoNumberInput">رقم أمر الشراء (اختياري)</label>
+        <input type="text" id="ticketPoNumberInput" placeholder="رقم أمر الشراء">
+      </div>
       <label for="ticketDescription">وصف المشكلة</label>
       <textarea id="ticketDescription" rows="3" placeholder="مثال: عطل في RTU يستدعي تدخل المصنّع" required></textarea>
-      <label>صور المشكلة (اختياري — حتى 3 صور)</label>
+      <label>📷 صورة البلتة (لوحة بيانات المعدة) * — إجباري، صورة واحدة على الأقل (حتى 3 صور)</label>
       <div class="ticket-photos-row" id="ticketPhotosRow">
         <label class="ticket-photo-add-label" id="ticketPhotoAddLabel">+ إضافة<br>صورة
           <input type="file" id="ticketPhotoInput" accept="image/*" multiple style="display:none;">
@@ -1197,6 +1212,8 @@ const EXTRA_COLS = {
   function_location: 'FUNCTION LOCATION',
   modem_type: 'نوع المودم',
   manufacture_year: 'سنة الصنع',
+  material_code: 'كود المادة',
+  po_number: 'رقم أمر الشراء',
 };
 const EXTRA_LABELS = {
   serial: 'الرقم التسلسلي',
@@ -1205,6 +1222,8 @@ const EXTRA_LABELS = {
   function_location: 'FUNCTION LOCATION',
   modem_type: 'نوع المودم',
   manufacture_year: 'سنة الصنع',
+  material_code: 'كود المادة',
+  po_number: 'رقم أمر الشراء',
 };
 function normalizePoles(arr){
   return (arr||[]).map(p=>{
@@ -1969,6 +1988,14 @@ function populateTicketPoleSelect(){
 document.getElementById('ticketPole').addEventListener('change', ()=>{
   const pole = poleByCode(document.getElementById('ticketPole').value);
   document.getElementById('ticketEquipmentPreview').innerHTML = equipmentDetailsHtml(pole, true);
+  const missingSerial = !!pole && !pole.serial;
+  const section = document.getElementById('ticketMissingSerialSection');
+  section.style.display = missingSerial ? 'block' : 'none';
+  if(!missingSerial){
+    document.getElementById('ticketSerialInput').value = '';
+    document.getElementById('ticketMaterialCodeInput').value = '';
+    document.getElementById('ticketPoNumberInput').value = '';
+  }
 });
 
 /* ================= صور تذكرة المصنّع — ضغط وتصغير قبل الإرسال (حد أقصى 3 صور) ================= */
@@ -2080,6 +2107,8 @@ async function renderTicketsView(){
         <div class="pc-field"><div class="k">المحطة</div><div class="v">${escapeHtml(pole.station||'—')}</div></div>
         <div class="pc-field"><div class="k">المغذي</div><div class="v">${escapeHtml(pole.feeder||'—')}</div></div>
         ${pole.serial ? `<div class="pc-field"><div class="k">الرقم التسلسلي</div><div class="v">${escapeHtml(pole.serial)}</div></div>` : ''}
+        ${pole.material_code ? `<div class="pc-field"><div class="k">كود المادة</div><div class="v">${escapeHtml(pole.material_code)}</div></div>` : ''}
+        ${pole.po_number ? `<div class="pc-field"><div class="k">رقم أمر الشراء</div><div class="v">${escapeHtml(pole.po_number)}</div></div>` : ''}
         ${hasCoords ? `<div class="pc-field"><div class="k">الإحداثيات</div><div class="v">${pole.lat.toFixed(5)+', '+pole.lng.toFixed(5)}</div></div>` : ''}
       </div>
       ${pole.ip ? `<div class="pc-ip"><span class="k">عنوان IP</span>${escapeHtml(pole.ip)}</div>` : ''}
@@ -2173,6 +2202,19 @@ document.getElementById('ticketForm').addEventListener('submit', async (ev)=>{
     msg.className = 'form-msg err'; msg.textContent = 'يرجى اختيار رقم العمود وكتابة وصف المشكلة';
     return;
   }
+  const pole = poleByCode(poleId);
+  const missingSerial = !!pole && !pole.serial;
+  const serialInput = document.getElementById('ticketSerialInput').value.trim();
+  const materialCodeInput = document.getElementById('ticketMaterialCodeInput').value.trim();
+  const poNumberInput = document.getElementById('ticketPoNumberInput').value.trim();
+  if(missingSerial && !serialInput){
+    msg.className = 'form-msg err'; msg.textContent = 'هذه المعدة لا تحتوي على رقم تسلسلي مسجّل — يرجى إدخاله يدويًا';
+    return;
+  }
+  if(!TICKET_PHOTOS_PENDING.length){
+    msg.className = 'form-msg err'; msg.textContent = 'يرجى إرفاق صورة واحدة على الأقل لبلتة (لوحة بيانات) المعدة';
+    return;
+  }
   const btn = document.getElementById('ticketForm').querySelector('button[type="submit"]');
   btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
   try{
@@ -2187,9 +2229,17 @@ document.getElementById('ticketForm').addEventListener('submit', async (ev)=>{
       msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر إرسال التذكرة';
       return;
     }
+    if(missingSerial && serialInput && pole){
+      pole.serial = serialInput;
+      if(materialCodeInput) pole.material_code = materialCodeInput;
+      if(poNumberInput) pole.po_number = poNumberInput;
+      cachePolesLocally();
+      persistPoles();
+    }
     msg.className = 'form-msg ok'; msg.textContent = 'تم إرسال التذكرة بنجاح';
     document.getElementById('ticketForm').reset();
     document.getElementById('ticketEquipmentPreview').innerHTML = '';
+    document.getElementById('ticketMissingSerialSection').style.display = 'none';
     TICKET_PHOTOS_PENDING = [];
     renderTicketPhotosRow();
     renderTicketsView();
@@ -2718,6 +2768,11 @@ function savePole(idx){
     lat: parseFloat(document.getElementById('f_lat').value) || null,
     lng: parseFloat(document.getElementById('f_lng').value) || null,
   };
+  // كود المادة ورقم أمر الشراء يُدخلان فقط عبر نموذج فتح تذكرة المصنّع — نحافظ عليهما هنا لتفادي فقدانهما عند أي تعديل عادي للعمود
+  if(idx!==null && idx!==undefined && POLES[idx]){
+    rec.material_code = POLES[idx].material_code || '';
+    rec.po_number = POLES[idx].po_number || '';
+  }
   if(!rec.pole){ toast('يرجى إدخال رقم العمود'); return; }
   if(idx===null || idx===undefined){
     POLES.push(rec);
