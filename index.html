@@ -516,12 +516,33 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   </div>
 </div>
 
+<div id="inspectionModalOverlay" class="profile-modal-overlay">
+  <div class="profile-modal">
+    <button class="close-x" id="closeInspectionModal" type="button">×</button>
+    <h3>🛠️ نموذج الفحص الدوري</h3>
+    <div class="login-sub" id="inspectionModalPoleSub" style="margin:0 0 10px;"></div>
+    <div id="inspectionChecklistItems"></div>
+    <label style="margin-top:10px;">📷 صورة قبل الفحص *</label>
+    <input type="file" id="inspectionPhotoBeforeInput" accept="image/*">
+    <div id="inspectionPhotoBeforePreview" style="margin:6px 0;"></div>
+    <label>📷 صورة بعد الفحص *</label>
+    <input type="file" id="inspectionPhotoAfterInput" accept="image/*">
+    <div id="inspectionPhotoAfterPreview" style="margin:6px 0;"></div>
+    <label for="inspectionNotes">ملاحظات (اختياري)</label>
+    <textarea id="inspectionNotes" rows="2" placeholder="أي ملاحظات إضافية عن حالة المعدة"></textarea>
+    <div class="form-msg" id="inspectionModalMsg"></div>
+    <button type="button" id="btnSubmitInspection" class="primary" style="width:100%; margin-top:14px;">✔ حفظ وإنهاء الفحص</button>
+  </div>
+</div>
+
 <nav class="tabs">
   <button class="tab-btn active" data-tab="coords">📍 الإحداثيات والمعدات</button>
   <button class="tab-btn" data-tab="dash">📊 لوحة المعلومات</button>
   <button class="tab-btn" data-tab="tasks">🧾 المهام</button>
   <button class="tab-btn" data-tab="tickets">🎫 تذاكر المصنعين</button>
   <button class="tab-btn" data-tab="employees" id="employeesTabBtn" style="display:none;">👥 الموظفون</button>
+  <button class="tab-btn" data-tab="inspection" id="inspectionTabBtn" style="display:none;">🛠️ الفحص الدوري</button>
+  <button class="tab-btn" data-tab="reports" id="reportsTabBtn" style="display:none;">📊 المتابعة والتقارير</button>
   <button class="tab-btn" data-tab="myprofile" id="myProfileTabBtn" style="display:none;">🗂️ ملفي</button>
 </nav>
 
@@ -679,6 +700,15 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
     <div id="myProfileCardWrap" class="employees-grid"></div>
   </div>
 
+  <div class="card" id="myStatsCard">
+    <h3>📊 إحصائيات أدائي</h3>
+    <div class="kpi-grid">
+      <div class="kpi-tile accent-3"><div class="label">مهام مكتملة</div><div class="value" id="myStatCompleted">—</div></div>
+      <div class="kpi-tile accent-1"><div class="label">قيد التنفيذ</div><div class="value" id="myStatInProgress">—</div></div>
+      <div class="kpi-tile accent-2"><div class="label">متوسط وقت الإنجاز</div><div class="value" id="myStatAvgHours">—</div></div>
+    </div>
+  </div>
+
   <div class="card" id="leaveBalanceCard">
     <h3>🏖️ رصيد الإجازة السنوية</h3>
     <div class="kpi-grid" id="leaveBalanceKpis">
@@ -829,6 +859,73 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 
 </section>
 
+<!-- ===================== TAB: الفحص الدوري (admin only) ===================== -->
+<section id="tab-inspection" class="tab-panel">
+
+  <div class="kpi-grid" id="inspectionKpis">
+    <div class="kpi-tile accent-4"><div class="label">معدات متأخرة عن الفحص</div><div class="value" id="kpiOverdueInspections">—</div></div>
+  </div>
+
+  <div class="card" id="overdueInspectionsCard">
+    <h3 style="margin:0 0 8px;">⏰ المعدات المتأخرة عن موعد فحصها</h3>
+    <div id="overdueInspectionsWrap" style="font-size:13px; color:var(--text-secondary);"></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+      <h3 style="margin:0;">➕ جدولة فحص دوري لعمود</h3>
+      <button type="button" id="btnRunInspectionCheck">🔄 تشغيل فحص المواعيد المستحقة الآن</button>
+    </div>
+    <div class="form-grid">
+      <div class="search-box" style="position:relative;">
+        <label for="inspSchedulePoleSearch">رقم العمود</label>
+        <input type="search" id="inspSchedulePoleSearch" placeholder="ابحث برقم العمود" autocomplete="off">
+        <div class="suggestions" id="inspSchedulePoleSuggestions"></div>
+        <input type="hidden" id="inspSchedulePole">
+      </div>
+      <div>
+        <label for="inspScheduleFrequency">الدورية</label>
+        <select id="inspScheduleFrequency">
+          <option value="أسبوعي">أسبوعي</option>
+          <option value="شهري">شهري</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-msg" id="inspScheduleMsg"></div>
+    <button type="button" id="btnSaveInspSchedule" class="primary" style="margin-top:8px;">💾 حفظ الجدولة</button>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">📋 كل الجدولات الحالية</h3>
+    <div id="inspSchedulesWrap" style="font-size:13px; color:var(--text-secondary);"></div>
+  </div>
+
+</section>
+
+<!-- ===================== TAB: المتابعة والتقارير (admin only) ===================== -->
+<section id="tab-reports" class="tab-panel">
+
+  <div class="kpi-grid" id="networkReportKpis">
+    <div class="kpi-tile accent-2"><div class="label">إجمالي المعدات</div><div class="value" id="kpiTotalEquipment">—</div></div>
+    <div class="kpi-tile accent-3"><div class="label">مهام مكتملة هذا الأسبوع</div><div class="value" id="kpiCompletedWeek">—</div></div>
+    <div class="kpi-tile accent-1"><div class="label">مهام مفتوحة</div><div class="value" id="kpiOpenTasks">—</div></div>
+    <div class="kpi-tile accent-4"><div class="label">مهام متأخرة (+3 أيام)</div><div class="value" id="kpiOverdueTasks">—</div></div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-tile accent-3"><div class="label">حالات متعطلة مفتوحة</div><div class="value" id="kpiFaultyOpen">—</div></div>
+    <div class="kpi-tile accent-4"><div class="label">معدات متأخرة عن الفحص</div><div class="value" id="kpiOverdueInspections2">—</div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+      <h3 style="margin:0;">👥 إحصائيات أداء الموظفين</h3>
+      <button type="button" id="btnExportReportText">⬇ تصدير تقرير نصي</button>
+    </div>
+    <div id="employeeStatsWrap"></div>
+  </div>
+
+</section>
+
 <footer class="app-footer">
   البيانات المُعدَّلة تُصبح النسخة الحالية أثناء هذه الجلسة
   <div class="credit">Created by <b>YOUSIF S ABDALLAH</b></div>
@@ -934,6 +1031,10 @@ function showAppShell(){
   if(exportTasksBtn) exportTasksBtn.style.display = admin ? '' : 'none';
   const scadaSubtabBtn = document.getElementById('scadaSubtabBtn');
   if(scadaSubtabBtn) scadaSubtabBtn.style.display = admin ? '' : 'none';
+  const inspectionTabBtn = document.getElementById('inspectionTabBtn');
+  if(inspectionTabBtn) inspectionTabBtn.style.display = admin ? '' : 'none';
+  const reportsTabBtn = document.getElementById('reportsTabBtn');
+  if(reportsTabBtn) reportsTabBtn.style.display = admin ? '' : 'none';
   restoreActiveTab();
 }
 function restoreActiveTab(){
@@ -952,6 +1053,8 @@ function restoreActiveTab(){
   if(saved==='tasks'){ renderTasksView(); renderScadaView(); }
   if(saved==='tickets') renderTicketsView();
   if(saved==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
+  if(saved==='inspection') renderInspectionView();
+  if(saved==='reports') renderReportsView();
   if(saved==='myprofile') renderMyProfileView();
 }
 async function doLogin(username, password){
@@ -1183,6 +1286,102 @@ function resizeImageToDataUrl(file, maxW, maxH, quality){
     reader.readAsDataURL(file);
   });
 }
+
+/* ================= الفحص الدوري: نموذج تعبئة الفحص (checklist) ================= */
+const INSPECTION_CHECKLIST_ITEMS_FRONT = ['حالة الكابل', 'الطاقة', 'الإشارة', 'حالة الهيكل الخارجي', 'نظافة المعدة'];
+let INSPECTION_MODAL_TASK_ID = null;
+let INSPECTION_PHOTO_BEFORE_DATAURL = null;
+let INSPECTION_PHOTO_AFTER_DATAURL = null;
+
+function openInspectionModal(taskId){
+  const t = TASKS.find(x=>x.id === taskId);
+  if(!t) return;
+  INSPECTION_MODAL_TASK_ID = taskId;
+  INSPECTION_PHOTO_BEFORE_DATAURL = null;
+  INSPECTION_PHOTO_AFTER_DATAURL = null;
+  document.getElementById('inspectionModalPoleSub').textContent = t.poleId ? ('العمود: ' + t.poleId) : '';
+  document.getElementById('inspectionChecklistItems').innerHTML = INSPECTION_CHECKLIST_ITEMS_FRONT.map((item,i)=>`
+    <label style="display:flex; align-items:center; gap:8px; font-weight:400; margin:6px 0;">
+      <input type="checkbox" class="inspectionChecklistCheckbox" data-item="${escapeHtml(item)}">
+      ${escapeHtml(item)} سليمة
+    </label>`).join('');
+  document.getElementById('inspectionPhotoBeforeInput').value = '';
+  document.getElementById('inspectionPhotoAfterInput').value = '';
+  document.getElementById('inspectionPhotoBeforePreview').innerHTML = '';
+  document.getElementById('inspectionPhotoAfterPreview').innerHTML = '';
+  document.getElementById('inspectionNotes').value = '';
+  const msg = document.getElementById('inspectionModalMsg');
+  msg.className = 'form-msg'; msg.textContent = '';
+  document.getElementById('inspectionModalOverlay').classList.add('show');
+}
+function closeInspectionModalFn(){
+  document.getElementById('inspectionModalOverlay').classList.remove('show');
+}
+document.getElementById('closeInspectionModal').addEventListener('click', closeInspectionModalFn);
+document.getElementById('inspectionModalOverlay').addEventListener('click', (ev)=>{
+  if(ev.target.id === 'inspectionModalOverlay') closeInspectionModalFn();
+});
+document.getElementById('inspectionPhotoBeforeInput').addEventListener('change', async (ev)=>{
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  try{
+    INSPECTION_PHOTO_BEFORE_DATAURL = await resizeImageToDataUrl(file, 1000, 1000, 0.7);
+    document.getElementById('inspectionPhotoBeforePreview').innerHTML = `<img src="${INSPECTION_PHOTO_BEFORE_DATAURL}" style="max-width:120px; max-height:120px; border-radius:8px;">`;
+  }catch(e){ toast('تعذر معالجة الصورة'); }
+});
+document.getElementById('inspectionPhotoAfterInput').addEventListener('change', async (ev)=>{
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  try{
+    INSPECTION_PHOTO_AFTER_DATAURL = await resizeImageToDataUrl(file, 1000, 1000, 0.7);
+    document.getElementById('inspectionPhotoAfterPreview').innerHTML = `<img src="${INSPECTION_PHOTO_AFTER_DATAURL}" style="max-width:120px; max-height:120px; border-radius:8px;">`;
+  }catch(e){ toast('تعذر معالجة الصورة'); }
+});
+document.getElementById('btnSubmitInspection').addEventListener('click', async ()=>{
+  const msg = document.getElementById('inspectionModalMsg');
+  const checklist = {};
+  let allChecked = true;
+  document.querySelectorAll('.inspectionChecklistCheckbox').forEach(cb=>{
+    checklist[cb.dataset.item] = cb.checked;
+    if(!cb.checked) allChecked = false;
+  });
+  if(!allChecked){ msg.className = 'form-msg show error'; msg.textContent = 'يجب تعبئة كل بنود الفحص'; return; }
+  if(!INSPECTION_PHOTO_BEFORE_DATAURL || !INSPECTION_PHOTO_AFTER_DATAURL){
+    msg.className = 'form-msg show error'; msg.textContent = 'صورتا قبل/بعد الفحص إجباريتان'; return;
+  }
+  const btn = document.getElementById('btnSubmitInspection');
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'submitInspectionChecklist',
+        token: authToken(),
+        taskId: INSPECTION_MODAL_TASK_ID,
+        checklist,
+        photoBefore: INSPECTION_PHOTO_BEFORE_DATAURL,
+        photoAfter: INSPECTION_PHOTO_AFTER_DATAURL,
+        notes: document.getElementById('inspectionNotes').value.trim()
+      })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      msg.className = 'form-msg show error'; msg.textContent = json.error || 'تعذر حفظ الفحص';
+      btn.disabled = false;
+      return;
+    }
+    const t = TASKS.find(x=>x.id === INSPECTION_MODAL_TASK_ID);
+    if(t) t.status = 'مكتمل';
+    toast('تم حفظ نموذج الفحص وإنهاء المهمة');
+    closeInspectionModalFn();
+    renderTasksView();
+  }catch(e){
+    msg.className = 'form-msg show error'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
 
 document.getElementById('btnChoosePhoto').addEventListener('click', ()=>{
   document.getElementById('profilePhotoInput').click();
@@ -1525,6 +1724,7 @@ function normalizeTasks(arr){
     status: String(t['الحالة']||'جديد'),
     assignedAt: String(t['تاريخ الإسناد']||''),
     completedAt: String(t['تاريخ الإكمال']||''),
+    type: String(t['نوع المهمة']||''),
   })).filter(t=>t.id);
 }
 
@@ -1663,13 +1863,18 @@ async function renderTasksView(){
   listWrap.innerHTML = visibleTasks.slice().reverse().map(t=>{
     const canUpdate = admin || t.assignedToUsername.toLowerCase() === String(auth&&auth.username||'').toLowerCase();
     const statusLabel = statusDisplayLabel(t.status);
+    const isInspection = t.type === 'فحص دوري';
     let actionsHtml = '';
     if(canUpdate && t.status !== 'مكتمل'){
       actionsHtml = `<div class="task-actions">`;
       if(t.status !== 'قيد التنفيذ'){
         actionsHtml += `<button data-task-status="قيد التنفيذ" data-task-id="${escapeHtml(t.id)}">بدء التنفيذ</button>`;
       }
-      actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
+      if(isInspection){
+        actionsHtml += `<button class="primary btnOpenInspectionModal" data-task-id="${escapeHtml(t.id)}">📷 تعبئة نموذج الفحص وإنهاء المهمة</button>`;
+      } else {
+        actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
+      }
       actionsHtml += `</div>`;
     }
     const isUnassigned = admin && !t.assignedToUsername;
@@ -1687,7 +1892,7 @@ async function renderTasksView(){
     return `<div class="task-item">
       <div class="task-top">
         <div>
-          <div class="task-desc">${escapeHtml(t.description || 'بدون وصف')}</div>
+          <div class="task-desc">${isInspection ? '<span style="display:inline-block; margin-left:6px; padding:2px 8px; border-radius:8px; font-size:11px; background:rgba(99,102,241,0.15); color:#6366f1;">🛠️ فحص دوري</span>' : ''}${escapeHtml(t.description || 'بدون وصف')}</div>
           <div class="task-meta">${t.poleId ? ('العمود: ' + escapeHtml(t.poleId) + ' · ') : ''}الموظف: ${t.assignedToName ? escapeHtml(t.assignedToName) : '<span style="color:var(--warning-color,#b45309);">غير مسندة</span>'} · أسندها: ${escapeHtml(t.assignedBy)}</div>
         </div>
         <span class="status-pill ${statusClass(t.status)}">${escapeHtml(statusLabel)}</span>
@@ -1713,6 +1918,12 @@ async function renderTasksView(){
         toast('تعذر تحديث حالة المهمة');
         btn.disabled = false;
       }
+    });
+  });
+
+  listWrap.querySelectorAll('.btnOpenInspectionModal').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openInspectionModal(btn.dataset.taskId);
     });
   });
 
@@ -2424,6 +2635,14 @@ async function renderMyProfileView(){
   const profile = await loadMyProfile();
   wrap.innerHTML = profile ? myProfileCardHtml(profile) : `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">تعذر تحميل بياناتك</div>`;
   renderMyLeavesView();
+
+  const statsRes = await apiCall('getEmployeeStats');
+  if(statsRes.ok){
+    const s = statsRes.stats;
+    document.getElementById('myStatCompleted').textContent = s.completedCount;
+    document.getElementById('myStatInProgress').textContent = s.inProgressCount;
+    document.getElementById('myStatAvgHours').textContent = s.avgCompletionHours!==null ? (s.avgCompletionHours + ' ساعة') : '—';
+  }
 }
 
 /* ================= تذاكر المصنعين (Manufacturer Tickets) ================= */
@@ -2480,6 +2699,189 @@ document.getElementById('ticketPoleSearch').addEventListener('input', (e)=>{
 });
 document.getElementById('ticketPoleSearch').addEventListener('focus', (e)=>{
   if(e.target.value) renderTicketPoleSuggestions(e.target.value);
+});
+
+/* ================= الفحص الدوري: تبويب الإدارة (admin) ================= */
+function selectInspSchedulePole(pole){
+  document.getElementById('inspSchedulePole').value = pole ? pole.pole : '';
+  document.getElementById('inspSchedulePoleSearch').value = pole ? (pole.office ? (pole.office + ' — ') : '') + pole.pole : '';
+  document.getElementById('inspSchedulePoleSuggestions').classList.remove('show');
+}
+function renderInspSchedulePoleSuggestions(q){
+  const box = document.getElementById('inspSchedulePoleSuggestions');
+  if(!q || q.trim().length<1){ box.classList.remove('show'); box.innerHTML=''; return; }
+  const ql = q.trim().toLowerCase();
+  const matches = POLES.filter(p=>(p.pole||'').toLowerCase().includes(ql) || (p.office||'').toLowerCase().includes(ql)).slice(0,12);
+  if(matches.length===0){ box.classList.remove('show'); box.innerHTML = '<div class="suggestion-item" style="cursor:default;">لا توجد نتائج مطابقة</div>'; box.classList.add('show'); return; }
+  box.innerHTML = matches.map(p=>{
+    const label = p.pole.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'), '<b>$1</b>');
+    return `<div class="suggestion-item" data-pole="${escapeHtml(p.pole)}">${p.office ? (escapeHtml(p.office) + ' — ') : ''}${label}</div>`;
+  }).join('');
+  box.classList.add('show');
+  box.querySelectorAll('.suggestion-item[data-pole]').forEach(el=>{
+    el.addEventListener('click', ()=>selectInspSchedulePole(poleByCode(el.dataset.pole)));
+  });
+}
+document.getElementById('inspSchedulePoleSearch').addEventListener('input', (e)=>{
+  document.getElementById('inspSchedulePole').value = '';
+  renderInspSchedulePoleSuggestions(e.target.value);
+});
+document.getElementById('inspSchedulePoleSearch').addEventListener('focus', (e)=>{
+  if(e.target.value) renderInspSchedulePoleSuggestions(e.target.value);
+});
+
+async function apiCall(action, extra){
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ action, token: authToken() }, extra||{}))
+  });
+  const json = await res.json();
+  if(!json.ok && json.error === 'unauthorized'){ forceReLogin(); }
+  return json;
+}
+
+async function renderInspectionView(){
+  if(!isAdmin()) return;
+  const [overdueRes, schedulesRes] = await Promise.all([
+    apiCall('getOverdueInspections'),
+    apiCall('getInspectionSchedules')
+  ]);
+
+  const overdue = (overdueRes.ok && overdueRes.overdue) ? overdueRes.overdue : [];
+  document.getElementById('kpiOverdueInspections').textContent = overdue.length;
+  const overdueWrap = document.getElementById('overdueInspectionsWrap');
+  overdueWrap.innerHTML = overdue.length
+    ? overdue.map(o=>`<div style="padding:8px 0; border-bottom:1px solid var(--border-color);">🔴 العمود <b>${escapeHtml(o.pole)}</b> — المكتب: ${escapeHtml(o.office||'—')} — الموعد كان: ${o.nextDue ? new Date(o.nextDue).toLocaleDateString('ar') : '—'}</div>`).join('')
+    : '<div style="color:var(--text-muted);">لا توجد معدات متأخرة عن موعد فحصها 👍</div>';
+
+  const schedules = (schedulesRes.ok && schedulesRes.schedules) ? schedulesRes.schedules : [];
+  const schedWrap = document.getElementById('inspSchedulesWrap');
+  schedWrap.innerHTML = schedules.length
+    ? `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <thead><tr style="text-align:right; color:var(--text-muted);"><th style="padding:6px;">العمود</th><th>المكتب</th><th>الدورية</th><th>آخر فحص</th><th>الموعد القادم</th><th>الحالة</th><th></th></tr></thead>
+        <tbody>${schedules.map(s=>`<tr style="border-top:1px solid var(--border-color);">
+          <td style="padding:6px;">${escapeHtml(s.pole)}</td>
+          <td>${escapeHtml(s.office||'—')}</td>
+          <td>${escapeHtml(s.frequency||'—')}</td>
+          <td>${s.lastDate ? new Date(s.lastDate).toLocaleDateString('ar') : '—'}</td>
+          <td>${s.nextDue ? new Date(s.nextDue).toLocaleDateString('ar') : '—'}</td>
+          <td>${s.active ? '<span style="color:#16a34a;">نشط</span>' : '<span style="color:var(--text-muted);">متوقف</span>'}</td>
+          <td>${s.active ? `<button type="button" class="ghost btnDeactivateInspSchedule" data-pole="${escapeHtml(s.pole)}" style="font-size:11px; padding:4px 8px;">إيقاف</button>` : ''}</td>
+        </tr>`).join('')}</tbody>
+      </table>`
+    : '<div style="color:var(--text-muted);">لا توجد جدولات فحص دوري بعد</div>';
+
+  schedWrap.querySelectorAll('.btnDeactivateInspSchedule').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      btn.disabled = true;
+      const res = await apiCall('deactivateInspectionSchedule', { pole: btn.dataset.pole });
+      if(res.ok){ toast('تم إيقاف الجدولة'); renderInspectionView(); }
+      else { toast(res.error || 'تعذر الإيقاف'); btn.disabled = false; }
+    });
+  });
+}
+
+document.getElementById('btnSaveInspSchedule').addEventListener('click', async ()=>{
+  const pole = document.getElementById('inspSchedulePole').value.trim();
+  const frequency = document.getElementById('inspScheduleFrequency').value;
+  const msg = document.getElementById('inspScheduleMsg');
+  if(!pole){ msg.className = 'form-msg show error'; msg.textContent = 'اختر رقم العمود أولًا من قائمة الاقتراحات'; return; }
+  const btn = document.getElementById('btnSaveInspSchedule');
+  btn.disabled = true;
+  const res = await apiCall('saveInspectionSchedule', { pole, frequency });
+  btn.disabled = false;
+  if(res.ok){
+    msg.className = 'form-msg show success'; msg.textContent = 'تم حفظ الجدولة بنجاح';
+    document.getElementById('inspSchedulePoleSearch').value = '';
+    document.getElementById('inspSchedulePole').value = '';
+    renderInspectionView();
+  } else {
+    msg.className = 'form-msg show error'; msg.textContent = res.error || 'تعذر الحفظ';
+  }
+});
+
+document.getElementById('btnRunInspectionCheck').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnRunInspectionCheck');
+  btn.disabled = true;
+  const res = await apiCall('runInspectionCheck');
+  btn.disabled = false;
+  if(res.ok){
+    toast('تم الفحص — أُنشئت ' + res.created + ' مهمة فحص جديدة');
+    renderInspectionView();
+  } else {
+    toast(res.error || 'تعذر تشغيل الفحص');
+  }
+});
+
+/* ================= المتابعة والتقارير: تبويب الإدارة (admin) ================= */
+let LAST_NETWORK_REPORT = null;
+let LAST_EMPLOYEE_STATS = null;
+
+async function renderReportsView(){
+  if(!isAdmin()) return;
+  const [reportRes, statsRes] = await Promise.all([
+    apiCall('getNetworkReport'),
+    apiCall('getAllEmployeeStats')
+  ]);
+
+  if(reportRes.ok){
+    const r = reportRes.report;
+    LAST_NETWORK_REPORT = r;
+    document.getElementById('kpiTotalEquipment').textContent = r.totalEquipment;
+    document.getElementById('kpiCompletedWeek').textContent = r.completedThisWeek;
+    document.getElementById('kpiOpenTasks').textContent = r.openTasksCount;
+    document.getElementById('kpiOverdueTasks').textContent = r.overdueTasksCount;
+    document.getElementById('kpiFaultyOpen').textContent = r.faultyOpenCount;
+    document.getElementById('kpiOverdueInspections2').textContent = r.overdueInspectionsCount;
+  }
+
+  const wrap = document.getElementById('employeeStatsWrap');
+  if(statsRes.ok){
+    const stats = statsRes.stats || [];
+    LAST_EMPLOYEE_STATS = stats;
+    wrap.innerHTML = stats.length
+      ? `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead><tr style="text-align:right; color:var(--text-muted);"><th style="padding:6px;">الموظف</th><th>مكتملة</th><th>قيد التنفيذ</th><th>الإجمالي</th><th>متوسط وقت الإنجاز</th></tr></thead>
+          <tbody>${stats.map(s=>`<tr style="border-top:1px solid var(--border-color);">
+            <td style="padding:6px;">${escapeHtml(s.name)}</td>
+            <td>${s.completedCount}</td>
+            <td>${s.inProgressCount}</td>
+            <td>${s.totalCount}</td>
+            <td>${s.avgCompletionHours!==null ? (s.avgCompletionHours + ' ساعة') : '—'}</td>
+          </tr>`).join('')}</tbody>
+        </table>`
+      : '<div style="color:var(--text-muted);">لا يوجد موظفون نشطون</div>';
+  }
+}
+
+document.getElementById('btnExportReportText').addEventListener('click', ()=>{
+  if(!LAST_NETWORK_REPORT){ toast('يرجى الانتظار حتى يكتمل تحميل التقرير'); return; }
+  const r = LAST_NETWORK_REPORT;
+  const now = new Date().toLocaleString('ar');
+  let lines = [];
+  lines.push('تقرير حالة الشبكة والمهام — ' + now);
+  lines.push('====================================');
+  lines.push('إجمالي المعدات: ' + r.totalEquipment);
+  lines.push('مهام مكتملة هذا الأسبوع: ' + r.completedThisWeek);
+  lines.push('مهام مفتوحة: ' + r.openTasksCount);
+  lines.push('مهام متأخرة (+3 أيام): ' + r.overdueTasksCount);
+  lines.push('حالات متعطلة مفتوحة: ' + r.faultyOpenCount);
+  lines.push('معدات متأخرة عن موعد الفحص الدوري: ' + r.overdueInspectionsCount);
+  lines.push('');
+  lines.push('أداء الموظفين:');
+  (LAST_EMPLOYEE_STATS||[]).forEach(s=>{
+    lines.push('- ' + s.name + ': مكتملة ' + s.completedCount + '، قيد التنفيذ ' + s.inProgressCount + '، متوسط الإنجاز ' + (s.avgCompletionHours!==null ? (s.avgCompletionHours+' ساعة') : '—'));
+  });
+  const blob = new Blob([lines.join(String.fromCharCode(10))], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'تقرير_الشبكة_' + new Date().toISOString().slice(0,10) + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 });
 
 /* ================= صور تذكرة المصنّع — ضغط وتصغير قبل الإرسال (حد أقصى 3 صور) ================= */
@@ -3045,6 +3447,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='tasks'){ renderTasksView(); renderScadaView(); }
     if(btn.dataset.tab==='tickets') renderTicketsView();
     if(btn.dataset.tab==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
+    if(btn.dataset.tab==='inspection') renderInspectionView();
+    if(btn.dataset.tab==='reports') renderReportsView();
     if(btn.dataset.tab==='myprofile') renderMyProfileView();
   });
 });
