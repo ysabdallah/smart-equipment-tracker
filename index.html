@@ -4057,6 +4057,15 @@ function renderDashboard(){
    عبر تخزين نسخة من الصفحة نفسها في ذاكرة تخزين المتصفح. لا علاقة له بالبيانات
    (البيانات تُدار عبر localStorage في القسم أعلاه) — هذا فقط لتحميل الصفحة نفسها. */
 if('serviceWorker' in navigator){
+  let swRefreshing = false;
+  // عند نشر نسخة جديدة من الموقع، يتولى Service Worker الجديد التحكم تلقائيًا (skipWaiting + clients.claim
+  // في sw.js) — هذا المستمع يعيد تحميل الصفحة تلقائيًا مرة واحدة عندئذ، حتى لا يضطر المستخدم لتفريغ
+  // الذاكرة المؤقتة يدويًا لرؤية أي تحديث مستقبلي.
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(swRefreshing) return;
+    swRefreshing = true;
+    window.location.reload();
+  });
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW registration failed', e));
   });
