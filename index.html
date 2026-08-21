@@ -917,6 +917,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
       <button type="button" class="subtab-btn active" data-subtab="scopepole">🔧 عمود واحد</button>
       <button type="button" class="subtab-btn" data-subtab="scopeoffice">🏢 حسب المكتب</button>
       <button type="button" class="subtab-btn" data-subtab="scopestation">⚡ حسب المحطة</button>
+      <button type="button" class="subtab-btn" data-subtab="scopemanufacturer">🏭 حسب المصنع</button>
     </div>
 
     <div id="subtab-scopepole" class="subtab-panel active">
@@ -936,6 +937,11 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
       <label for="inspScopeStationSelect">المحطة</label>
       <select id="inspScopeStationSelect"><option value="">— اختر محطة —</option></select>
       <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">سيتم جدولة الفحص الدوري لكل المعدات التابعة لهذه المحطة دفعة واحدة</div>
+    </div>
+    <div id="subtab-scopemanufacturer" class="subtab-panel">
+      <label for="inspScopeManufacturerSelect">المصنع</label>
+      <select id="inspScopeManufacturerSelect"><option value="">— اختر مصنعًا —</option></select>
+      <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">سيتم جدولة الفحص الدوري لكل المعدات التابعة لهذا المصنع دفعة واحدة</div>
     </div>
 
     <div class="form-grid" style="margin-top:16px;">
@@ -2839,11 +2845,14 @@ async function renderInspectionView(){
 
   const officeSel = document.getElementById('inspScopeOfficeSelect');
   const stationSel = document.getElementById('inspScopeStationSelect');
-  const curOffice = officeSel.value, curStation = stationSel.value;
+  const manufacturerSel = document.getElementById('inspScopeManufacturerSelect');
+  const curOffice = officeSel.value, curStation = stationSel.value, curManufacturer = manufacturerSel.value;
   officeSel.innerHTML = '<option value="">— اختر مكتبًا —</option>' + distinctValues('office').map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
-  stationSel.innerHTML = '<option value="">— اختر محطة —</option>' + distinctValues('station').map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+  stationSel.innerHTML = '<option value="">— اختر محطة —</option>' + distinctValues('المحطة').map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+  manufacturerSel.innerHTML = '<option value="">— اختر مصنعًا —</option>' + distinctValues('manufacturer').map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
   if(curOffice) officeSel.value = curOffice;
   if(curStation) stationSel.value = curStation;
+  if(curManufacturer) manufacturerSel.value = curManufacturer;
 }
 
 document.getElementById('btnSaveInspSchedule').addEventListener('click', async ()=>{
@@ -2870,13 +2879,12 @@ document.getElementById('btnSaveInspSchedule').addEventListener('click', async (
     return;
   }
 
-  const scopeType = scope === 'scopeoffice' ? 'office' : 'station';
-  const scopeValue = scopeType === 'office'
-    ? document.getElementById('inspScopeOfficeSelect').value
-    : document.getElementById('inspScopeStationSelect').value;
+  const scopeType = scope === 'scopeoffice' ? 'office' : (scope === 'scopestation' ? 'station' : 'manufacturer');
+  const scopeSelectId = scopeType === 'office' ? 'inspScopeOfficeSelect' : (scopeType === 'station' ? 'inspScopeStationSelect' : 'inspScopeManufacturerSelect');
+  const scopeValue = document.getElementById(scopeSelectId).value;
   if(!scopeValue){
     msg.className = 'form-msg show error';
-    msg.textContent = scopeType === 'office' ? 'اختر مكتبًا أولًا' : 'اختر محطة أولًا';
+    msg.textContent = scopeType === 'office' ? 'اختر مكتبًا أولًا' : (scopeType === 'station' ? 'اختر محطة أولًا' : 'اختر مصنعًا أولًا');
     return;
   }
   btn.disabled = true;
