@@ -2848,7 +2848,7 @@ async function renderInspectionView(){
   const manufacturerSel = document.getElementById('inspScopeManufacturerSelect');
   const curOffice = officeSel.value, curStation = stationSel.value, curManufacturer = manufacturerSel.value;
   officeSel.innerHTML = '<option value="">— اختر مكتبًا —</option>' + distinctValues('office').map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
-  stationSel.innerHTML = '<option value="">— اختر محطة —</option>' + distinctValues('المحطة').map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+  stationSel.innerHTML = '<option value="">— اختر محطة —</option>' + distinctValues('station').map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
   manufacturerSel.innerHTML = '<option value="">— اختر مصنعًا —</option>' + distinctValues('manufacturer').map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
   if(curOffice) officeSel.value = curOffice;
   if(curStation) stationSel.value = curStation;
