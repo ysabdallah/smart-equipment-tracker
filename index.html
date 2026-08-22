@@ -351,48 +351,48 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 @media (prefers-color-scheme: dark){
   :root:where(:not([data-theme="light"])){
     color-scheme: dark;
-    --surface-1:#54524D; --surface-2:#5E5C56; --plane:#4A4844;
-    --text-primary:#FBFAF7; --text-secondary:#D2D0C8; --text-muted:#A6A399;
-    --grid:#6B685F; --grid-soft:#57544E; --baseline:#726F65; --border:rgba(255,255,255,0.14);
-    --accent-dim:#38445c; --accent-line:#4f6f96; --warning-dim:#4a3c22; --critical-dim:#4a2626;
+    --surface-1:#334160; --surface-2:#3C4B71; --plane:#2A3648;
+    --text-primary:#F5F8FF; --text-secondary:#C7D2E6; --text-muted:#8FA0BC;
+    --grid:#48567c; --grid-soft:#3d4a6c; --baseline:#52608a; --border:rgba(255,255,255,0.11);
+    --accent-dim:#33456b; --accent-line:#5a83c2; --warning-dim:#4a3c22; --critical-dim:#4a2626;
     --s1:#3987e5; --s2:#1fb8cc; --s3:#22c98f; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
     --good:#22c98f; --warning:#e0a53a; --serious:#ec835a; --critical:#e66767;
-    --glass-bg:rgba(94,92,86,.65); --glass-border:rgba(255,255,255,.14);
+    --glass-bg:rgba(51,65,96,.65); --glass-border:rgba(255,255,255,.11);
   }
   :root:where(:not([data-theme="light"])) body{
     background:
-      radial-gradient(circle at 88% -8%, rgba(255,255,255,.07) 0%, transparent 42%),
-      radial-gradient(circle at 6% 108%, rgba(34,201,143,.10) 0%, transparent 40%),
+      radial-gradient(circle at 88% -8%, rgba(89,155,240,.22) 0%, transparent 45%),
+      radial-gradient(circle at 6% 108%, rgba(31,184,204,.16) 0%, transparent 42%),
       repeating-linear-gradient(180deg, transparent 0 27px, var(--grid-soft) 27px 28px),
       var(--plane);
   }
   :root:where(:not([data-theme="light"])) .auth-screen{
     background:
-      radial-gradient(circle at 88% -8%, rgba(255,255,255,.07) 0%, transparent 42%),
-      radial-gradient(circle at 6% 108%, rgba(34,201,143,.10) 0%, transparent 40%),
+      radial-gradient(circle at 88% -8%, rgba(89,155,240,.22) 0%, transparent 45%),
+      radial-gradient(circle at 6% 108%, rgba(31,184,204,.16) 0%, transparent 42%),
       var(--plane);
   }
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --surface-1:#54524D; --surface-2:#5E5C56; --plane:#4A4844;
-  --text-primary:#FBFAF7; --text-secondary:#D2D0C8; --text-muted:#A6A399;
-  --grid:#6B685F; --grid-soft:#57544E; --baseline:#726F65; --border:rgba(255,255,255,0.14);
-  --accent-dim:#38445c; --accent-line:#4f6f96; --warning-dim:#4a3c22; --critical-dim:#4a2626;
+  --surface-1:#334160; --surface-2:#3C4B71; --plane:#2A3648;
+  --text-primary:#F5F8FF; --text-secondary:#C7D2E6; --text-muted:#8FA0BC;
+  --grid:#48567c; --grid-soft:#3d4a6c; --baseline:#52608a; --border:rgba(255,255,255,0.11);
+  --accent-dim:#33456b; --accent-line:#5a83c2; --warning-dim:#4a3c22; --critical-dim:#4a2626;
   --s1:#3987e5; --s2:#1fb8cc; --s3:#22c98f; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
-  --glass-bg:rgba(94,92,86,.65); --glass-border:rgba(255,255,255,.14);
+  --glass-bg:rgba(51,65,96,.65); --glass-border:rgba(255,255,255,.11);
 }
 :root[data-theme="dark"] body{
   background:
-    radial-gradient(circle at 88% -8%, rgba(255,255,255,.07) 0%, transparent 42%),
-    radial-gradient(circle at 6% 108%, rgba(34,201,143,.10) 0%, transparent 40%),
+    radial-gradient(circle at 88% -8%, rgba(89,155,240,.22) 0%, transparent 45%),
+    radial-gradient(circle at 6% 108%, rgba(31,184,204,.16) 0%, transparent 42%),
     repeating-linear-gradient(180deg, transparent 0 27px, var(--grid-soft) 27px 28px),
     var(--plane);
 }
 :root[data-theme="dark"] .auth-screen{
   background:
-    radial-gradient(circle at 88% -8%, rgba(255,255,255,.07) 0%, transparent 42%),
-    radial-gradient(circle at 6% 108%, rgba(34,201,143,.10) 0%, transparent 40%),
+    radial-gradient(circle at 88% -8%, rgba(89,155,240,.22) 0%, transparent 45%),
+    radial-gradient(circle at 6% 108%, rgba(31,184,204,.16) 0%, transparent 42%),
     var(--plane);
 }
 .theme-toggle{ display:flex; align-items:center; gap:8px; }
