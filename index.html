@@ -373,6 +373,10 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
       radial-gradient(circle at 6% 108%, rgba(31,184,204,.16) 0%, transparent 42%),
       var(--plane);
   }
+  :root:where(:not([data-theme="light"])) header.app-header h1{
+    background:none; -webkit-background-clip:initial; background-clip:initial;
+    color:var(--text-primary);
+  }
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
@@ -396,6 +400,10 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
     radial-gradient(circle at 88% -8%, rgba(89,155,240,.22) 0%, transparent 45%),
     radial-gradient(circle at 6% 108%, rgba(31,184,204,.16) 0%, transparent 42%),
     var(--plane);
+}
+:root[data-theme="dark"] header.app-header h1{
+  background:none; -webkit-background-clip:initial; background-clip:initial;
+  color:var(--text-primary);
 }
 .theme-toggle{ display:flex; align-items:center; gap:8px; }
 .notif-wrap{ position:relative; }
