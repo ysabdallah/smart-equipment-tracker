@@ -30,6 +30,7 @@
   --radius:14px;
   --shadow:0 1px 2px rgba(16,27,43,.04), 0 8px 24px -12px rgba(16,27,43,.10);
   --font-display:'Cairo','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --glass-bg:rgba(255,255,255,.55); --glass-border:rgba(255,255,255,.6);
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
@@ -55,10 +56,21 @@ button:focus-visible, a:focus-visible, .tab-btn:focus-visible, .subtab-btn:focus
   outline:2px solid var(--brand-blue); outline-offset:2px; border-radius:6px;
 }
 header.app-header{
-  background:var(--surface-2); border:1px solid var(--border); box-shadow:var(--shadow);
-  border-radius:var(--radius); margin:16px 24px 0;
-  padding:16px 22px; display:flex; align-items:center; justify-content:space-between;
+  background:var(--glass-bg); border:1px solid var(--glass-border); box-shadow:var(--shadow);
+  backdrop-filter:blur(16px) saturate(160%); -webkit-backdrop-filter:blur(16px) saturate(160%);
+  border-radius:16px; margin:16px 24px 0;
+  padding:13px 22px; display:flex; align-items:center; justify-content:space-between;
 }
+header.app-header .badge-icons-row button.ghost{
+  background:color-mix(in srgb, var(--surface-2) 55%, transparent);
+  border:1px solid var(--glass-border); backdrop-filter:blur(4px);
+}
+.hdr-ico{ width:15px; height:15px; display:inline-block; vertical-align:-2.5px; flex-shrink:0; }
+.hdr-ico svg{ width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.logo-mark .hdr-ico{ width:16px; height:16px; vertical-align:0; }
+.logo-mark .hdr-ico svg{ stroke:none; fill:currentColor; }
+:root[data-theme="dark"] .theme-icon-moon{ display:none !important; }
+:root[data-theme="dark"] .theme-icon-sun{ display:inline-block !important; }
 header.app-header h1{
   font-size:17px; margin:0; font-weight:800; font-family:var(--font-display);
   background:var(--brand-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -333,6 +345,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
     --accent-dim:#12263f; --accent-line:#2a4a72; --warning-dim:#3a2c0f; --critical-dim:#3a1414;
     --s1:#3987e5; --s2:#1fb8cc; --s3:#22c98f; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
     --good:#22c98f; --warning:#e0a53a; --serious:#ec835a; --critical:#e66767;
+    --glass-bg:rgba(26,26,25,.55); --glass-border:rgba(255,255,255,.08);
   }
 }
 :root[data-theme="dark"]{
@@ -342,6 +355,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   --grid:#2c2c2a; --grid-soft:#242422; --baseline:#383835; --border:rgba(255,255,255,0.10);
   --accent-dim:#12263f; --accent-line:#2a4a72; --warning-dim:#3a2c0f; --critical-dim:#3a1414;
   --s1:#3987e5; --s2:#1fb8cc; --s3:#22c98f; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --glass-bg:rgba(26,26,25,.55); --glass-border:rgba(255,255,255,.08);
 }
 .theme-toggle{ display:flex; align-items:center; gap:8px; }
 .notif-wrap{ position:relative; }
@@ -547,7 +561,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 
 <header class="app-header">
   <div class="header-title-row">
-    <span class="logo-mark" aria-hidden="true">⚡</span>
+    <span class="logo-mark" aria-hidden="true"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-13h-6l1-7z"/></svg></span></span>
     <div>
       <h1>نظام إدارة المعدات الذكية</h1>
       <div class="sub">EQUIPMENT ASSET LOCATOR · قاعدة بيانات المعدات · لوحة المتابعة</div>
@@ -557,13 +571,16 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
     <div class="status-badge disconnected" id="statusBadge">غير متصل</div>
     <button id="syncPendingBtn" class="ghost sync-pending-btn" style="display:none;" title="يوجد تغييرات محلية لم تتم مزامنتها بعد — اضغط للمحاولة الآن">⏳ بانتظار المزامنة</button>
     <div class="badge-icons-row">
-      <button id="profileBtn" class="ghost user-chip" title="حسابي — تعديل كلمة المرور والصورة الشخصية">👤 <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></button>
-      <button id="logoutBtn" class="ghost" style="padding:2px 8px; font-size:11px;" title="تسجيل الخروج">🚪 خروج</button>
+      <button id="profileBtn" class="ghost user-chip" title="حسابي — تعديل كلمة المرور والصورة الشخصية"><span class="hdr-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.4"/><path d="M4.8 19.5c1.2-3.8 3.8-5.8 7.2-5.8s6 2 7.2 5.8"/></svg></span> <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></button>
+      <button id="logoutBtn" class="ghost" style="padding:2px 8px; font-size:11px;" title="تسجيل الخروج"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M10 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H10"/><path d="M14.5 8 19 12l-4.5 4"/><path d="M19 12H9.5"/></svg></span> خروج</button>
       <div class="notif-wrap">
-        <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات">🔔<span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
+        <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M12 4a5 5 0 0 0-5 5v3.1c0 .5-.16 1-.46 1.4L5 15.5h14l-1.54-2c-.3-.4-.46-.9-.46-1.4V9a5 5 0 0 0-5-5Z"/><path d="M9.5 18.5a2.5 2.5 0 0 0 5 0"/></svg></span><span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
         <div class="notif-panel" id="notifPanel"></div>
       </div>
-      <button id="themeBtn" class="ghost" style="padding:2px 6px; font-size:11px;" title="تبديل الوضع الليلي">🌙 / ☀️</button>
+      <button id="themeBtn" class="ghost" style="padding:2px 6px; font-size:11px;" title="تبديل الوضع الليلي">
+        <span class="hdr-ico theme-icon-moon"><svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg></span>
+        <span class="hdr-ico theme-icon-sun" style="display:none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.6"/><path d="M12 3v2.2M12 18.8V21M4.2 12H2M22 12h-2.2M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M5.6 18.4l1.5-1.5M16.9 7.1l1.5-1.5"/></svg></span>
+      </button>
     </div>
   </div>
 </header>
