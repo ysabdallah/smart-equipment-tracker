@@ -414,6 +414,38 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 .profile-modal .form-msg{ margin-top:10px; padding:8px 10px; border-radius:8px; font-size:12px; font-weight:600; display:none; }
 .profile-modal .form-msg.err{ background:var(--critical-dim); color:var(--critical); display:block; }
 .profile-modal .form-msg.ok{ background:rgba(0,214,143,0.12); color:#00875c; display:block; }
+
+/* ===== الفحص الدوري + المتابعة والتقارير (widgets جديدة) ===== */
+.overdue-days{ font-family:'JetBrains Mono',monospace; font-weight:800; }
+.ticket-card.overdue::before{ background:var(--critical); }
+.ticket-card.due-soon::before{ background:var(--warning); }
+.checklist{ display:grid; grid-template-columns:1fr; gap:10px; }
+.checklist-item{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; background:var(--surface-1); border:1px solid var(--border); border-radius:10px; flex-wrap:wrap; }
+.checklist-item .ci-name{ font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.ci-options{ display:flex; gap:6px; flex-wrap:wrap; }
+.ci-opt{ padding:5px 12px; border-radius:999px; font-size:11.5px; font-weight:700; border:1.5px solid var(--border); background:var(--surface-2); color:var(--text-secondary); cursor:pointer; }
+.ci-opt.ok.picked{ background:rgba(0,214,143,0.14); border-color:var(--good); color:#00875c; }
+.ci-opt.warn.picked{ background:var(--warning-dim); border-color:var(--warning); color:var(--warning); }
+.ci-opt.bad.picked{ background:var(--critical-dim); border-color:var(--critical); color:var(--critical); }
+.freq-row{ display:flex; align-items:center; gap:10px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:var(--surface-1); margin-bottom:8px; flex-wrap:wrap; }
+.freq-row .fr-name{ font-weight:700; font-size:13px; flex:1; min-width:160px; direction:ltr; text-align:right; font-family:'JetBrains Mono',monospace; }
+.freq-select{ width:auto !important; min-width:120px; }
+.emp-perf-row{ display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--surface-1); border:1px solid var(--border); border-radius:12px; flex-wrap:wrap; margin-bottom:10px; }
+.emp-perf-row .ep-name{ font-weight:800; font-size:13.5px; min-width:150px; }
+.ep-stats{ display:flex; gap:18px; flex-wrap:wrap; margin-inline-start:auto; }
+.ep-stat{ text-align:center; }
+.ep-stat .v{ font-family:'JetBrains Mono',monospace; font-weight:800; font-size:16px; }
+.ep-stat .k{ font-size:10px; color:var(--text-muted); font-weight:700; }
+.schedule-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 16px; background:var(--surface-1); border:1px solid var(--border); border-radius:12px; }
+.switch{ position:relative; display:inline-block; width:40px; height:22px; flex-shrink:0; }
+.switch input{ opacity:0; width:0; height:0; }
+.switch .slider{ position:absolute; inset:0; background:var(--baseline); border-radius:999px; transition:.2s; cursor:pointer; }
+.switch .slider::before{ content:''; position:absolute; height:16px; width:16px; right:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+.switch input:checked + .slider{ background:var(--brand-gradient); }
+.switch input:checked + .slider::before{ transform:translateX(-18px); }
+.report-preview{ background:var(--surface-1); border:1.5px dashed var(--baseline); border-radius:12px; padding:18px 20px; font-size:12.5px; line-height:2; }
+.report-preview b{ color:var(--s1); }
+.stat-tile-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:16px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -582,6 +614,33 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   </div>
 </div>
 
+<!-- ===== نموذج فحص دوري — يُفتح من بطاقة المهمة عندما تكون المهمة "فحص دوري" ===== -->
+<div id="checklistModalOverlay" class="profile-modal-overlay">
+  <div class="profile-modal" style="max-width:480px;">
+    <button class="close-x" id="closeChecklistModal" type="button">×</button>
+    <h3>✅ نموذج الفحص الدوري</h3>
+    <div class="login-sub" id="checklistModalSub" style="margin:0 0 12px;"></div>
+    <div class="checklist" id="checklistItemsWrap"></div>
+    <label for="checklistNotes" style="margin-top:14px;">ملاحظات (اختياري)</label>
+    <textarea id="checklistNotes" rows="2" placeholder="أي ملاحظات إضافية عن الفحص"></textarea>
+    <div class="btn-row" style="margin-top:10px;">
+      <div>
+        <label for="checklistPhotoBefore" style="font-weight:600;">📷 صورة قبل الفحص (اختياري)</label>
+        <input type="file" id="checklistPhotoBefore" accept="image/*">
+      </div>
+      <div>
+        <label for="checklistPhotoAfter" style="font-weight:600;">📷 صورة بعد الفحص (اختياري)</label>
+        <input type="file" id="checklistPhotoAfter" accept="image/*">
+      </div>
+    </div>
+    <div class="form-msg" id="checklistFormMsg"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button type="button" id="btnCancelChecklist" class="ghost">إلغاء</button>
+      <button type="button" id="btnSubmitChecklist" class="primary" style="flex:1;">✔ إنهاء الفحص وحفظه</button>
+    </div>
+  </div>
+</div>
+
 <nav class="tabs">
   <button class="tab-btn active" data-tab="coords">📍 الإحداثيات والمعدات</button>
   <button class="tab-btn" data-tab="dash">📊 لوحة المعلومات</button>
@@ -589,6 +648,8 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   <button class="tab-btn" data-tab="tickets">🎫 تذاكر المصنعين</button>
   <button class="tab-btn" data-tab="employees" id="employeesTabBtn" style="display:none;">👥 الموظفون</button>
   <button class="tab-btn" data-tab="myprofile" id="myProfileTabBtn" style="display:none;">🗂️ ملفي</button>
+  <button class="tab-btn" data-tab="inspection" id="inspectionTabBtn" style="display:none;">🛠️ الفحص الدوري</button>
+  <button class="tab-btn" data-tab="reports" id="reportsTabBtn" style="display:none;">📈 المتابعة والتقارير</button>
 </nav>
 
 <main>
@@ -916,6 +977,139 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 
 </section>
 
+<!-- ===================== TAB: الفحص الدوري (admin only) ===================== -->
+<section id="tab-inspection" class="tab-panel">
+
+  <nav class="subtabs">
+    <button class="subtab-btn active" data-subtab="inspOverview">📈 نظرة عامة</button>
+    <button class="subtab-btn" data-subtab="inspSchedule">📅 الجدولة</button>
+  </nav>
+
+  <div id="subtab-inspOverview" class="subtab-panel active">
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <h3 style="margin:0;">⏰ المعدات المتأخرة عن موعد فحصها</h3>
+        <button type="button" class="primary" id="btnRunInspectionCheck">🔍 تشغيل فحص الآن</button>
+      </div>
+      <div class="form-msg" id="inspectionRunMsg"></div>
+      <div id="overdueInspectionsWrap"></div>
+    </div>
+  </div>
+
+  <div id="subtab-inspSchedule" class="subtab-panel">
+    <div class="card">
+      <h3>📅 جدولة الفحص الدوري لعمود واحد</h3>
+      <div class="form-grid">
+        <div>
+          <label for="schedPoleInput">رقم العمود</label>
+          <input type="text" id="schedPoleInput" placeholder="مثال: BNE4-84-46-11-19-14">
+        </div>
+        <div>
+          <label for="schedFrequencySelect">تكرار الفحص</label>
+          <select id="schedFrequencySelect">
+            <option value="أسبوعي">أسبوعي</option>
+            <option value="شهري">شهري</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-msg" id="schedFormMsg"></div>
+      <div class="btn-row">
+        <button type="button" class="primary" id="btnSaveSchedule">💾 حفظ الجدولة</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>➕ جدولة دفعة معدات دفعة واحدة</h3>
+      <div class="form-grid">
+        <div>
+          <label for="schedBulkScopeType">النطاق</label>
+          <select id="schedBulkScopeType">
+            <option value="office">مكتب</option>
+            <option value="station">محطة</option>
+            <option value="manufacturer">الشركة المصنّعة</option>
+          </select>
+        </div>
+        <div>
+          <label for="schedBulkScopeValue">قيمة النطاق</label>
+          <input type="text" id="schedBulkScopeValue" placeholder="مثال: BBR">
+        </div>
+      </div>
+      <label for="schedBulkFrequencySelect">تكرار الفحص</label>
+      <select id="schedBulkFrequencySelect">
+        <option value="أسبوعي">أسبوعي</option>
+        <option value="شهري">شهري</option>
+      </select>
+      <div class="form-msg" id="schedBulkFormMsg"></div>
+      <div class="btn-row">
+        <button type="button" class="primary" id="btnSaveScheduleBulk">💾 جدولة الدفعة</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🗓️ جداول الفحص الحالية</h3>
+      <div id="inspectionSchedulesWrap"></div>
+    </div>
+  </div>
+
+</section>
+<!-- ===================== END TAB: الفحص الدوري ===================== -->
+
+<!-- ===================== TAB: المتابعة والتقارير (admin only) ===================== -->
+<section id="tab-reports" class="tab-panel">
+
+  <nav class="subtabs">
+    <button class="subtab-btn active" data-subtab="repPerformance">👥 أداء الموظفين</button>
+    <button class="subtab-btn" data-subtab="repPeriodic">📧 التقارير الدورية</button>
+  </nav>
+
+  <div id="subtab-repPerformance" class="subtab-panel active">
+    <div class="card">
+      <h3>👥 أداء الموظفين</h3>
+      <div id="employeeStatsWrap"></div>
+    </div>
+  </div>
+
+  <div id="subtab-repPeriodic" class="subtab-panel">
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <h3 style="margin:0;">📊 تقرير حالة الشبكة</h3>
+        <button type="button" class="primary" id="btnSendNetworkReport">📧 إرسال التقرير الآن</button>
+      </div>
+      <div class="form-msg" id="sendReportMsg"></div>
+      <div class="stat-tile-grid" id="networkReportWrap"></div>
+    </div>
+
+    <div class="card">
+      <h3>⏱️ جدولة الإرسال التلقائي</h3>
+      <div class="schedule-row">
+        <label class="switch"><input type="checkbox" id="reportScheduleEnabled"><span class="slider"></span></label>
+        <div style="flex:1; min-width:180px;">
+          <div style="font-weight:700; font-size:13.5px;">تفعيل الإرسال التلقائي</div>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:14px;">
+        <div>
+          <label for="reportScheduleFrequency">دورية الإرسال</label>
+          <select id="reportScheduleFrequency">
+            <option value="weekly">أسبوعي</option>
+            <option value="monthly">شهري</option>
+          </select>
+        </div>
+        <div>
+          <label for="reportScheduleRecipient">البريد المستلم</label>
+          <input type="text" id="reportScheduleRecipient" placeholder="manager@example.com">
+        </div>
+      </div>
+      <div class="form-msg" id="reportScheduleMsg"></div>
+      <div class="btn-row">
+        <button type="button" class="primary" id="btnSaveReportSchedule">💾 حفظ إعداد الجدولة</button>
+      </div>
+    </div>
+  </div>
+
+</section>
+<!-- ===================== END TAB: المتابعة والتقارير ===================== -->
+
 <footer class="app-footer">
   البيانات المُعدَّلة تُصبح النسخة الحالية أثناء هذه الجلسة
   <div class="credit">Created by <b>YOUSIF S ABDALLAH</b></div>
@@ -1021,6 +1215,10 @@ function showAppShell(){
   if(exportTasksBtn) exportTasksBtn.style.display = admin ? '' : 'none';
   const scadaSubtabBtn = document.getElementById('scadaSubtabBtn');
   if(scadaSubtabBtn) scadaSubtabBtn.style.display = admin ? '' : 'none';
+  const inspectionTabBtn = document.getElementById('inspectionTabBtn');
+  if(inspectionTabBtn) inspectionTabBtn.style.display = admin ? '' : 'none';
+  const reportsTabBtn = document.getElementById('reportsTabBtn');
+  if(reportsTabBtn) reportsTabBtn.style.display = admin ? '' : 'none';
   restoreActiveTab();
 }
 function restoreActiveTab(){
@@ -1040,6 +1238,8 @@ function restoreActiveTab(){
   if(saved==='tickets') renderTicketsView();
   if(saved==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
   if(saved==='myprofile') renderMyProfileView();
+  if(saved==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); }
+  if(saved==='reports'){ renderEmployeeStats(); renderNetworkReport(); loadReportScheduleConfig(); }
 }
 async function doLogin(username, password){
   const res = await fetch(API_URL, {
@@ -1751,12 +1951,17 @@ async function renderTasksView(){
     const canUpdate = admin || t.assignedToUsername.toLowerCase() === String(auth&&auth.username||'').toLowerCase();
     const statusLabel = statusDisplayLabel(t.status);
     let actionsHtml = '';
+    const isInspectionTask = t.description === 'فحص دوري';
     if(canUpdate && t.status !== 'مكتمل'){
       actionsHtml = `<div class="task-actions">`;
       if(t.status !== 'قيد التنفيذ'){
         actionsHtml += `<button data-task-status="قيد التنفيذ" data-task-id="${escapeHtml(t.id)}">بدء التنفيذ</button>`;
       }
-      actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
+      if(isInspectionTask){
+        actionsHtml += `<button type="button" class="primary btnOpenChecklist" data-task-id="${escapeHtml(t.id)}" data-pole-id="${escapeHtml(t.poleId||'')}">📋 تعبئة نموذج الفحص وإنهاء</button>`;
+      } else {
+        actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
+      }
       actionsHtml += `</div>`;
     }
     const isUnassigned = admin && !t.assignedToUsername;
@@ -1822,7 +2027,112 @@ async function renderTasksView(){
       }
     });
   });
+
+  listWrap.querySelectorAll('.btnOpenChecklist').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openInspectionChecklistModal(btn.dataset.taskId, btn.dataset.poleId);
+    });
+  });
 }
+
+/* ===== نموذج الفحص الدوري — يُفتح من بطاقة المهمة عندما تكون المهمة "فحص دوري" ===== */
+/* المفاتيح هنا يجب أن تطابق حرفيًا INSPECTION_CHECKLIST_ITEMS في الباك-إند (Code.gs) */
+const INSPECTION_CHECKLIST_ITEMS = [
+  { key:'حالة المعدة', name:'🧰 حالة المعدة', options:[['ok','سليم'],['warn','يحتاج صيانة'],['bad','تالف']] },
+  { key:'مستوى الغاز', name:'🧪 مستوى الغاز', conditional:true, options:[['ok','أخضر'],['bad','أحمر'],['na','تعذر الرؤية']] },
+  { key:'حالة السلسلة', name:'⛓️ حالة السلسلة', conditional:true, options:[['ok','سليمة'],['warn','تحتاج مراجعة']] },
+  { key:'حالة البطارية', name:'🔋 حالة البطارية', options:[['ok','ممتازة'],['warn','ضعيفة']] },
+];
+let CHECKLIST_ACTIVE_TASK_ID = null;
+function openInspectionChecklistModal(taskId, poleId){
+  CHECKLIST_ACTIVE_TASK_ID = taskId;
+  document.getElementById('checklistModalSub').textContent = poleId ? ('العمود: ' + poleId) : '';
+  const wrap = document.getElementById('checklistItemsWrap');
+  wrap.innerHTML = INSPECTION_CHECKLIST_ITEMS.map(item=>`
+    <div class="checklist-item" data-item-key="${escapeHtml(item.key)}">
+      <div class="ci-name">${escapeHtml(item.name)}${item.conditional ? '<span class="ci-conditional">إن وجد</span>' : ''}</div>
+      <div class="ci-options">
+        ${item.options.map(([val,label])=>`<span class="ci-opt ${val}" data-value="${escapeHtml(label)}">${escapeHtml(label)}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.ci-opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      opt.parentElement.querySelectorAll('.ci-opt').forEach(s=>s.classList.remove('picked'));
+      opt.classList.add('picked');
+    });
+  });
+  document.getElementById('checklistNotes').value = '';
+  document.getElementById('checklistPhotoBefore').value = '';
+  document.getElementById('checklistPhotoAfter').value = '';
+  const msg = document.getElementById('checklistFormMsg');
+  msg.className = 'form-msg'; msg.textContent = '';
+  document.getElementById('checklistModalOverlay').classList.add('show');
+}
+function closeChecklistModalFn(){
+  document.getElementById('checklistModalOverlay').classList.remove('show');
+  CHECKLIST_ACTIVE_TASK_ID = null;
+}
+document.getElementById('closeChecklistModal').addEventListener('click', closeChecklistModalFn);
+document.getElementById('btnCancelChecklist').addEventListener('click', closeChecklistModalFn);
+document.getElementById('checklistModalOverlay').addEventListener('click', (ev)=>{
+  if(ev.target.id === 'checklistModalOverlay') closeChecklistModalFn();
+});
+document.getElementById('btnSubmitChecklist').addEventListener('click', async ()=>{
+  const taskId = CHECKLIST_ACTIVE_TASK_ID;
+  const msg = document.getElementById('checklistFormMsg');
+  if(!taskId){ return; }
+  msg.className = 'form-msg'; msg.textContent = '';
+  const checklist = {};
+  document.querySelectorAll('#checklistItemsWrap .checklist-item').forEach(row=>{
+    const key = row.dataset.itemKey;
+    const picked = row.querySelector('.ci-opt.picked');
+    if(picked) checklist[key] = picked.dataset.value;
+  });
+  const missing = INSPECTION_CHECKLIST_ITEMS.filter(item=>!checklist[item.key]);
+  if(missing.length){
+    msg.className = 'form-msg err';
+    msg.textContent = 'يجب تعبئة كل بنود الفحص: ' + missing.map(m=>m.key).join('، ');
+    return;
+  }
+  const btn = document.getElementById('btnSubmitChecklist');
+  btn.disabled = true;
+  try{
+    const payload = { action: 'submitInspectionChecklist', token: authToken(), taskId, checklist };
+    const notes = document.getElementById('checklistNotes').value.trim();
+    if(notes) payload.notes = notes;
+    const beforeFile = document.getElementById('checklistPhotoBefore').files[0];
+    const afterFile = document.getElementById('checklistPhotoAfter').files[0];
+    if(beforeFile){
+      payload.photoBefore = await resizeImageToDataUrl(beforeFile, 1280, 1280, 0.8);
+      payload.photoBeforeMime = 'image/jpeg';
+    }
+    if(afterFile){
+      payload.photoAfter = await resizeImageToDataUrl(afterFile, 1280, 1280, 0.8);
+      payload.photoAfterMime = 'image/jpeg';
+    }
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر حفظ الفحص — حاول مرة أخرى';
+      btn.disabled = false;
+      return;
+    }
+    const t = TASKS.find(x=>x.id === taskId);
+    if(t) t.status = 'مكتمل';
+    toast('تم إنهاء الفحص وحفظه');
+    closeChecklistModalFn();
+    renderTasksView();
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
 
 async function updateTaskStatusApi(taskId, status){
   if(!authToken()) return false;
@@ -1840,6 +2150,331 @@ async function updateTaskStatusApi(taskId, status){
     return true;
   }catch(e){ return false; }
 }
+
+/* ============================================================
+   TAB: الفحص الدوري (admin only)
+   ============================================================ */
+
+async function renderOverdueInspections(){
+  const wrap = document.getElementById('overdueInspectionsWrap');
+  if(!wrap) return;
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:16px 0;">جارٍ التحميل...</div>`;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getOverdueInspections', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      wrap.innerHTML = `<div class="empty-state">تعذر تحميل قائمة المعدات المتأخرة</div>`;
+      return;
+    }
+    const overdue = json.overdue || [];
+    if(!overdue.length){
+      wrap.innerHTML = `<div class="empty-state">لا توجد معدات متأخرة عن موعد فحصها 🎉</div>`;
+      return;
+    }
+    wrap.innerHTML = overdue.map(o=>{
+      const days = o.nextDue ? Math.floor((Date.now() - new Date(o.nextDue).getTime()) / 86400000) : null;
+      const daysHtml = (days!==null && !isNaN(days) && days>=0) ? `<span class="badge" style="background:var(--critical-dim); color:var(--critical);">متأخر <span class="overdue-days">${days}</span> يوم</span>` : '';
+      return `<div class="ticket-card overdue">
+        <div class="pc-head">
+          <div class="pc-title">🗼 عمود ${escapeHtml(o.pole)}${o.office ? (' — ' + escapeHtml(o.office)) : ''}</div>
+          ${daysHtml}
+        </div>
+        <div class="tc-meta">
+          <span>موعد الفحص: ${escapeHtml(o.nextDue || '—')}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    wrap.innerHTML = `<div class="empty-state">تعذر الاتصال بالخادم</div>`;
+  }
+}
+
+document.getElementById('btnRunInspectionCheck').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnRunInspectionCheck');
+  const msg = document.getElementById('inspectionRunMsg');
+  msg.className = 'form-msg'; msg.textContent = '';
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'runInspectionCheck', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر تشغيل الفحص';
+    } else {
+      msg.className = 'form-msg ok'; msg.textContent = `تم إنشاء ${json.created||0} مهمة فحص جديدة`;
+      renderOverdueInspections();
+    }
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
+
+async function renderInspectionSchedules(){
+  const wrap = document.getElementById('inspectionSchedulesWrap');
+  if(!wrap) return;
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:16px 0;">جارٍ التحميل...</div>`;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getInspectionSchedules', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      wrap.innerHTML = `<div class="empty-state">تعذر تحميل جداول الفحص</div>`;
+      return;
+    }
+    const schedules = json.schedules || [];
+    if(!schedules.length){
+      wrap.innerHTML = `<div class="empty-state">لا توجد جداول فحص محددة بعد</div>`;
+      return;
+    }
+    wrap.innerHTML = schedules.map(s=>`
+      <div class="freq-row">
+        <div class="fr-name">🗼 ${escapeHtml(s.pole)}${s.office ? (' — ' + escapeHtml(s.office)) : ''}</div>
+        <span style="font-size:12px; color:var(--text-secondary);">${escapeHtml(s.frequency||'—')}</span>
+        <span style="font-size:11px; color:var(--text-muted);">آخر فحص: ${escapeHtml(s.lastDate||'—')} · القادم: ${escapeHtml(s.nextDue||'—')}</span>
+        <span class="badge" style="background:${s.active ? 'rgba(0,214,143,0.14)' : 'var(--critical-dim)'}; color:${s.active ? '#00875c' : 'var(--critical)'};">${s.active ? 'مفعّل' : 'متوقف'}</span>
+        <button type="button" class="ghost btnDeactivateSchedule" data-pole="${escapeHtml(s.pole)}">🗑️ إيقاف</button>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('.btnDeactivateSchedule').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        btn.disabled = true;
+        try{
+          const res2 = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'deactivateInspectionSchedule', token: authToken(), pole: btn.dataset.pole })
+          });
+          const json2 = await res2.json();
+          if(json2.ok){
+            toast('تم إيقاف جدولة الفحص لهذا العمود');
+            renderInspectionSchedules();
+          } else {
+            toast(json2.error || 'تعذر إيقاف الجدولة');
+            btn.disabled = false;
+          }
+        }catch(e){
+          toast('تعذر الاتصال بالخادم');
+          btn.disabled = false;
+        }
+      });
+    });
+  }catch(e){
+    wrap.innerHTML = `<div class="empty-state">تعذر الاتصال بالخادم</div>`;
+  }
+}
+
+document.getElementById('btnSaveSchedule').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnSaveSchedule');
+  const msg = document.getElementById('schedFormMsg');
+  const pole = document.getElementById('schedPoleInput').value.trim();
+  const frequency = document.getElementById('schedFrequencySelect').value;
+  msg.className = 'form-msg'; msg.textContent = '';
+  if(!pole){ msg.className = 'form-msg err'; msg.textContent = 'يرجى إدخال رقم العمود'; return; }
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'saveInspectionSchedule', token: authToken(), pole, frequency })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر حفظ الجدولة';
+    } else {
+      msg.className = 'form-msg ok'; msg.textContent = 'تم حفظ جدولة الفحص';
+      document.getElementById('schedPoleInput').value = '';
+      renderInspectionSchedules();
+    }
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('btnSaveScheduleBulk').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnSaveScheduleBulk');
+  const msg = document.getElementById('schedBulkFormMsg');
+  const scopeType = document.getElementById('schedBulkScopeType').value;
+  const scopeValue = document.getElementById('schedBulkScopeValue').value.trim();
+  const frequency = document.getElementById('schedBulkFrequencySelect').value;
+  msg.className = 'form-msg'; msg.textContent = '';
+  if(!scopeValue){ msg.className = 'form-msg err'; msg.textContent = 'يرجى إدخال قيمة النطاق'; return; }
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'saveInspectionScheduleBulk', token: authToken(), scopeType, scopeValue, frequency })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر جدولة الدفعة';
+    } else {
+      msg.className = 'form-msg ok'; msg.textContent = `تمت جدولة ${json.count||0} معدة`;
+      document.getElementById('schedBulkScopeValue').value = '';
+      renderInspectionSchedules();
+    }
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
+
+/* ============================================================
+   TAB: المتابعة والتقارير (admin only)
+   ============================================================ */
+
+async function renderEmployeeStats(){
+  const wrap = document.getElementById('employeeStatsWrap');
+  if(!wrap) return;
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:16px 0;">جارٍ التحميل...</div>`;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getAllEmployeeStats', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      wrap.innerHTML = `<div class="empty-state">تعذر تحميل أداء الموظفين</div>`;
+      return;
+    }
+    const stats = json.stats || [];
+    if(!stats.length){
+      wrap.innerHTML = `<div class="empty-state">لا توجد بيانات أداء بعد</div>`;
+      return;
+    }
+    wrap.innerHTML = stats.map(s=>{
+      const avg = (s.avgCompletionHours!==null && s.avgCompletionHours!==undefined) ? (Number(s.avgCompletionHours).toFixed(1) + ' ساعة') : '—';
+      return `<div class="emp-perf-row">
+        <div><div class="ep-name">${escapeHtml(s.name||s.username)}</div></div>
+        <div class="ep-stats">
+          <div class="ep-stat"><div class="v">${escapeHtml(s.completedCount)}</div><div class="k">مكتملة</div></div>
+          <div class="ep-stat"><div class="v">${escapeHtml(s.inProgressCount)}</div><div class="k">قيد التنفيذ</div></div>
+          <div class="ep-stat"><div class="v">${escapeHtml(s.totalCount)}</div><div class="k">الإجمالي</div></div>
+          <div class="ep-stat"><div class="v">${escapeHtml(avg)}</div><div class="k">متوسط الإنجاز</div></div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    wrap.innerHTML = `<div class="empty-state">تعذر الاتصال بالخادم</div>`;
+  }
+}
+
+async function renderNetworkReport(){
+  const wrap = document.getElementById('networkReportWrap');
+  if(!wrap) return;
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:16px 0;">جارٍ التحميل...</div>`;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getNetworkReport', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      wrap.innerHTML = `<div class="empty-state">تعذر تحميل تقرير الشبكة</div>`;
+      return;
+    }
+    const r = json.report || {};
+    const tiles = [
+      ['إجمالي المعدات', r.totalEquipment],
+      ['مهام مكتملة هذا الأسبوع', r.completedThisWeek],
+      ['مهام مفتوحة', r.openTasksCount],
+      ['مهام متأخرة', r.overdueTasksCount],
+      ['حالات معطوبة مفتوحة', r.faultyOpenCount],
+      ['فحوصات دورية متأخرة', r.overdueInspectionsCount],
+    ];
+    wrap.innerHTML = tiles.map(([label,val])=>`
+      <div class="kpi-tile accent-1"><div class="label">${escapeHtml(label)}</div><div class="value">${val===undefined||val===null ? '—' : escapeHtml(val)}</div></div>
+    `).join('') + (r.generatedAt ? `<div style="grid-column:1/-1; font-size:11px; color:var(--text-muted); text-align:center;">تم إنشاء التقرير في: ${escapeHtml(r.generatedAt)}</div>` : '');
+  }catch(e){
+    wrap.innerHTML = `<div class="empty-state">تعذر الاتصال بالخادم</div>`;
+  }
+}
+
+document.getElementById('btnSendNetworkReport').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnSendNetworkReport');
+  const msg = document.getElementById('sendReportMsg');
+  msg.className = 'form-msg'; msg.textContent = '';
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'sendNetworkReportEmail', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر إرسال التقرير';
+    } else {
+      msg.className = 'form-msg ok'; msg.textContent = 'تم إرسال التقرير بنجاح';
+    }
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
+
+async function loadReportScheduleConfig(){
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getReportScheduleConfig', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized') forceReLogin();
+      return;
+    }
+    const c = json.config || {};
+    document.getElementById('reportScheduleEnabled').checked = !!c.enabled;
+    document.getElementById('reportScheduleFrequency').value = c.frequency === 'monthly' ? 'monthly' : 'weekly';
+    document.getElementById('reportScheduleRecipient').value = c.recipient || '';
+  }catch(e){ /* تجاهل — ليست حرجة */ }
+}
+
+document.getElementById('btnSaveReportSchedule').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnSaveReportSchedule');
+  const msg = document.getElementById('reportScheduleMsg');
+  const enabled = document.getElementById('reportScheduleEnabled').checked;
+  const frequency = document.getElementById('reportScheduleFrequency').value;
+  const recipient = document.getElementById('reportScheduleRecipient').value.trim();
+  msg.className = 'form-msg'; msg.textContent = '';
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'saveReportScheduleConfig', token: authToken(), enabled, frequency, recipient })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر حفظ إعداد الجدولة';
+    } else {
+      msg.className = 'form-msg ok'; msg.textContent = 'تم حفظ إعداد الجدولة';
+    }
+  }catch(e){
+    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
 
 document.getElementById('btnExportTasksExcel').addEventListener('click', ()=>{
   if(!TASKS.length){ toast('لا توجد مهام لتصديرها'); return; }
@@ -3193,6 +3828,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='tickets') renderTicketsView();
     if(btn.dataset.tab==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
     if(btn.dataset.tab==='myprofile') renderMyProfileView();
+    if(btn.dataset.tab==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); }
+    if(btn.dataset.tab==='reports'){ renderEmployeeStats(); renderNetworkReport(); loadReportScheduleConfig(); }
   });
 });
 document.querySelectorAll('.subtab-btn').forEach(btn=>{
