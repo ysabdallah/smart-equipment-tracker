@@ -1,5 +1,5 @@
 // نسخة ذاكرة التخزين المؤقت — تتغيّر تلقائيًا مع أي تحديث للصفحة حتى لا يبقى المستخدم على نسخة قديمة
-const CACHE_NAME = 'oh-smart-equipment-8f8e9f25e4';
+const CACHE_NAME = 'oh-smart-equipment-5576509095';
 const APP_SHELL = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {
@@ -31,18 +31,16 @@ self.addEventListener('fetch', (event) => {
   const isSameOrigin = url.origin === self.location.origin;
 
   if(req.mode === 'navigate' || isSameOrigin){
-    // شكل التطبيق نفسه: نعرض النسخة المخزّنة فورًا (سريع + يعمل بدون إنترنت)، ونحدّثها في الخلفية
+    // شكل التطبيق نفسه: نحاول الشبكة أولًا كي يظهر أي تحديث فور نشره من أول تحميل
+    // (بدل الاعتماد على نسخة مخزّنة قد تكون قديمة)، وإن تعذّر الاتصال نستخدم النسخة المخزّنة للعمل بدون إنترنت
     event.respondWith(
-      caches.match(req).then(cached => {
-        const fetchPromise = fetch(req).then(res => {
-          if(res && res.ok){
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
-          }
-          return res;
-        }).catch(() => cached);
-        return cached || fetchPromise;
-      })
+      fetch(req).then(res => {
+        if(res && res.ok){
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
+        }
+        return res;
+      }).catch(() => caches.match(req))
     );
     return;
   }
