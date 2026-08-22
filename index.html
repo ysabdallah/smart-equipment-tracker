@@ -141,13 +141,7 @@ main > .tab-panel{
 .warranty-stat .k{ font-size:11px; color:var(--text-muted); font-weight:700; margin-bottom:4px;}
 .warranty-stat .v{ font-size:22px; font-weight:800; font-family:'JetBrains Mono',monospace;}
 
-.tab-panel{ counter-reset:panel-num; }
-.card{ background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:22px; margin-bottom:16px; box-shadow:var(--shadow); position:relative; counter-increment:panel-num;}
-.card::after{
-  content:'PANEL ' counter(panel-num,decimal-leading-zero); position:absolute; top:-9px; inset-inline-start:16px;
-  background:var(--brand-gradient); border-radius:4px; padding:1px 8px;
-  font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1px; color:#fff;
-}
+.card{ background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:22px; margin-bottom:16px; box-shadow:var(--shadow); position:relative;}
 .card h2{ font-size:15px; margin:0 0 12px; font-weight:800; font-family:var(--font-display);}
 .card h3{ font-size:13px; margin:0 0 10px; font-weight:700; color:var(--text-secondary); font-family:var(--font-display);}
 
