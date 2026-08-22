@@ -377,6 +377,9 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
     background:none; -webkit-background-clip:initial; background-clip:initial;
     color:var(--text-primary);
   }
+  :root:where(:not([data-theme="light"])) header.app-header .badge-icons-row button.ghost:not(.sync-pending-btn){
+    color:var(--text-primary);
+  }
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
@@ -403,6 +406,9 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 }
 :root[data-theme="dark"] header.app-header h1{
   background:none; -webkit-background-clip:initial; background-clip:initial;
+  color:var(--text-primary);
+}
+:root[data-theme="dark"] header.app-header .badge-icons-row button.ghost:not(.sync-pending-btn){
   color:var(--text-primary);
 }
 .theme-toggle{ display:flex; align-items:center; gap:8px; }
