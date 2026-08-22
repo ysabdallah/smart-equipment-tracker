@@ -860,9 +860,9 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   <div id="subtab-taskscada" class="subtab-panel">
     <div class="card">
       <h3>📡 استيراد ملف SCADA اليومي</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع نسخة CSV من شيت "data" لتحديث حالة الاتصال وإسناد المهام تلقائيًا.</p>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع نسخة CSV أو Excel (xlsx) من شيت "data" لتحديث حالة الاتصال وإسناد المهام تلقائيًا.</p>
       <div class="btn-row">
-        <input type="file" id="scadaCsvInput" accept=".csv,text/csv" style="max-width:260px;">
+        <input type="file" id="scadaCsvInput" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="max-width:260px;">
         <button type="button" class="primary" id="btnImportScadaCsv">⬆ استيراد الملف</button>
       </div>
       <div id="scadaImportResult" style="margin-top:12px; font-size:13px; color:var(--text-secondary);"></div>
@@ -3077,17 +3077,28 @@ function scadaFilterToOurOffices(text){
   return { text: scadaRowsToCsv(kept), totalRows: totalDataRows, filteredRows, filtered: true, stoppedEarly };
 }
 
+// يحوّل ملف Excel (xlsx/xls) إلى نص CSV مطابق لتنسيق شيت "data" الأول في الملف،
+// عبر مكتبة SheetJS المحمّلة مسبقًا في الصفحة (نفس المكتبة المستخدمة لتصدير التقارير).
+async function scadaReadExcelAsCsv(file){
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const sheetName = wb.SheetNames.find(n => n.trim().toLowerCase() === 'data') || wb.SheetNames[0];
+  const sheet = wb.Sheets[sheetName];
+  return XLSX.utils.sheet_to_csv(sheet);
+}
+
 document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=>{
   const input = document.getElementById('scadaCsvInput');
   const resultBox = document.getElementById('scadaImportResult');
   const file = input.files && input.files[0];
-  if(!file){ toast('اختر ملف CSV أولًا'); return; }
+  if(!file){ toast('اختر ملف CSV أو Excel أولًا'); return; }
+  const isExcel = /\.(xlsx|xls)$/i.test(file.name);
 
   const btn = document.getElementById('btnImportScadaCsv');
   btn.disabled = true;
   resultBox.textContent = 'جارٍ قراءة الملف...';
   try{
-    const rawText = await file.text();
+    const rawText = isExcel ? await scadaReadExcelAsCsv(file) : await file.text();
     resultBox.textContent = 'جارٍ تصفية الملف ليشمل مكاتبنا فقط (BBR/UUZ/MMB)...';
     const filterResult = scadaFilterToOurOffices(rawText);
     const csvText = filterResult.text;
