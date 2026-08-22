@@ -352,7 +352,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   :root:where(:not([data-theme="light"])){
     color-scheme: dark;
     --surface-1:#334160; --surface-2:#3C4B71; --plane:#2A3648;
-    --text-primary:#F5F8FF; --text-secondary:#C7D2E6; --text-muted:#8FA0BC;
+    --text-primary:#FFFFFF; --text-secondary:#FFFFFF; --text-muted:#E4E9F5;
     --grid:#48567c; --grid-soft:#3d4a6c; --baseline:#52608a; --border:rgba(255,255,255,0.11);
     --accent-dim:#33456b; --accent-line:#5a83c2; --warning-dim:#4a3c22; --critical-dim:#4a2626;
     --s1:#3987e5; --s2:#1fb8cc; --s3:#22c98f; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
@@ -365,6 +365,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
       radial-gradient(circle at 6% 108%, rgba(31,184,204,.16) 0%, transparent 42%),
       repeating-linear-gradient(180deg, transparent 0 27px, var(--grid-soft) 27px 28px),
       var(--plane);
+    font-weight:600;
   }
   :root:where(:not([data-theme="light"])) .auth-screen{
     background:
@@ -376,7 +377,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 :root[data-theme="dark"]{
   color-scheme: dark;
   --surface-1:#334160; --surface-2:#3C4B71; --plane:#2A3648;
-  --text-primary:#F5F8FF; --text-secondary:#C7D2E6; --text-muted:#8FA0BC;
+  --text-primary:#FFFFFF; --text-secondary:#FFFFFF; --text-muted:#E4E9F5;
   --grid:#48567c; --grid-soft:#3d4a6c; --baseline:#52608a; --border:rgba(255,255,255,0.11);
   --accent-dim:#33456b; --accent-line:#5a83c2; --warning-dim:#4a3c22; --critical-dim:#4a2626;
   --s1:#3987e5; --s2:#1fb8cc; --s3:#22c98f; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
@@ -388,6 +389,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
     radial-gradient(circle at 6% 108%, rgba(31,184,204,.16) 0%, transparent 42%),
     repeating-linear-gradient(180deg, transparent 0 27px, var(--grid-soft) 27px 28px),
     var(--plane);
+  font-weight:600;
 }
 :root[data-theme="dark"] .auth-screen{
   background:
