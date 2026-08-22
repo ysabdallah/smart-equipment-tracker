@@ -57,7 +57,7 @@ button:focus-visible, a:focus-visible, .tab-btn:focus-visible, .subtab-btn:focus
 }
 header.app-header{
   background:var(--surface-2); border:1px solid var(--border); box-shadow:var(--shadow);
-  border-radius:var(--radius); margin:16px 24px 0; max-width:1452px; margin-inline:auto;
+  border-radius:var(--radius); margin:16px 24px 0;
   padding:16px 22px; display:flex; align-items:center; justify-content:space-between;
 }
 header.app-header h1{ font-size:17px; margin:0; font-weight:800; font-family:var(--font-display);}
@@ -80,26 +80,17 @@ header.app-header .sub{ font-size:10.5px; color:var(--text-secondary); margin-to
   margin-inline-end:10px;
 }
 .header-title-row{ display:flex; align-items:center; }
-.app-body{ display:flex; align-items:flex-start; gap:18px; padding:18px 24px 0; max-width:1500px; margin:0 auto;}
-.tabs{
-  display:flex; flex-direction:column; gap:4px; background:var(--surface-2);
-  border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
-  padding:12px; width:220px; flex-shrink:0; position:sticky; top:18px;
-}
+.tabs{ display:flex; gap:8px; background:transparent; padding:14px 24px 0; overflow-x:auto;}
 .tab-btn{
-  border:1px solid transparent; background:transparent; box-shadow:none;
-  padding:10px 14px; font-size:13px; font-weight:700; border-radius:8px;
+  border:1px solid var(--border); background:var(--surface-2); box-shadow:var(--shadow);
+  padding:10px 18px; font-size:13px; font-weight:700; border-radius:9px;
   color:var(--text-primary); cursor:pointer; white-space:nowrap;
-  font-family:'IBM Plex Sans Arabic',sans-serif; text-align:right; width:100%;
+  font-family:'IBM Plex Sans Arabic',sans-serif;
   transition:border-color .15s, color .15s, background .15s;
 }
 .tab-btn.active{ color:#fff; border-color:transparent; background:var(--brand-gradient);}
 .tab-btn:hover:not(.active){ border-color:var(--s1); color:var(--s1); background:var(--accent-dim);}
-main{ padding:0 0 60px; flex:1; min-width:0;}
-@media (max-width:900px){
-  .app-body{ flex-direction:column; padding:14px 16px 0;}
-  .tabs{ flex-direction:row; width:100%; overflow-x:auto; position:static; }
-}
+main{ padding:20px 24px 60px; max-width:1400px; margin:0 auto;}
 .tab-panel{ display:none; }
 .tab-panel.active{ display:block; }
 .subtabs{ display:flex; gap:6px; margin-bottom:16px; overflow-x:auto;}
@@ -208,6 +199,18 @@ tbody tr:hover{ background:var(--surface-1); }
 .kpi-tile{ background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);}
 .kpi-tile .label{ font-size:12px; color:var(--text-secondary); font-weight:700; margin-bottom:10px;}
 .kpi-tile .value{ font-size:30px; font-weight:800; line-height:1; font-family:'JetBrains Mono',monospace;}
+.kpi-tile .sparkline-wrap{ margin-top:10px; }
+.kpi-tile canvas.sparkline{ width:100%; height:34px; display:block; }
+.kpi-tile .sparkline-label{ font-size:10px; color:var(--text-muted); margin-top:4px; font-family:'JetBrains Mono',monospace; }
+.warranty-ring-row{ display:flex; align-items:center; gap:24px; flex-wrap:wrap; margin-bottom:16px; }
+.warranty-ring-wrap{ position:relative; width:120px; height:120px; flex-shrink:0; }
+.warranty-ring{ width:100%; height:100%; transform:rotate(-90deg); }
+.warranty-ring .ring-track{ fill:none; stroke:var(--grid-soft); stroke-width:9; }
+.warranty-ring .ring-fill{ fill:none; stroke:var(--good); stroke-width:9; stroke-linecap:round; stroke-dasharray:264; stroke-dashoffset:264; transition:stroke-dashoffset 1s ease; }
+.warranty-ring-label{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.warranty-ring-label .v{ font-size:20px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--good); }
+.warranty-ring-label .k{ font-size:10px; color:var(--text-secondary); font-weight:700; margin-top:2px; }
+.warranty-stats-row{ flex:1; min-width:220px; }
 .kpi-tile .value small{ font-size:12px; font-weight:600; color:var(--text-muted); margin-right:4px; font-family:'IBM Plex Sans Arabic',sans-serif;}
 .kpi-tile.accent-1 .value{ color:var(--s1);}
 .kpi-tile.accent-2 .value{ color:var(--s2);}
@@ -571,7 +574,6 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   </div>
 </div>
 
-<div class="app-body">
 <nav class="tabs">
   <button class="tab-btn active" data-tab="coords">📍 الإحداثيات والمعدات</button>
   <button class="tab-btn" data-tab="dash">📊 لوحة المعلومات</button>
@@ -623,6 +625,10 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
       <div class="kpi-tile accent-1">
         <div class="label">إجمالي المعدات الذكية</div>
         <div class="value" id="kpiTotalPoles">0</div>
+        <div class="sparkline-wrap">
+          <canvas id="activitySparkline" class="sparkline"></canvas>
+          <div class="sparkline-label" id="activitySparklineLabel">لا توجد تعديلات بعد</div>
+        </div>
       </div>
     </div>
 
@@ -653,7 +659,19 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
         <h3 style="margin:0;">حالة الضمان — تُحسب تلقائيًا من سنة الصنع (مدة الضمان 5 سنوات)</h3>
         <button id="btnExportWarranty">⬇ تصدير المعدات المتأثرة (قاربت/انتهى ضمانها)</button>
       </div>
-      <div class="warranty-stats-row" id="warrantyStatsRow"></div>
+      <div class="warranty-ring-row">
+        <div class="warranty-ring-wrap">
+          <svg viewBox="0 0 100 100" class="warranty-ring">
+            <circle cx="50" cy="50" r="42" class="ring-track"/>
+            <circle cx="50" cy="50" r="42" class="ring-fill" id="warrantyRingFill"/>
+          </svg>
+          <div class="warranty-ring-label">
+            <div class="v" id="warrantyRingPct">0%</div>
+            <div class="k">ضمن الضمان</div>
+          </div>
+        </div>
+        <div class="warranty-stats-row" id="warrantyStatsRow"></div>
+      </div>
       <div id="chartByWarranty"></div>
       <div id="warrantyTableWrap"></div>
       <div class="warranty-note" id="warrantyUnknownNote"></div>
@@ -896,7 +914,6 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 </footer>
 
 </main>
-</div><!-- /.app-body -->
 
 </div><!-- /#appShell -->
 
@@ -2984,6 +3001,7 @@ function renderNotifBadge(){
     else{ badge.style.display='none'; }
   }
   renderLiveActivityFeed();
+  renderActivitySparkline();
 }
 /* بطاقة "النشاط المباشر" — تعرض نفس بيانات التعديلات الحقيقية (ACTIVITY_LOG) المستخدمة في جرس الإشعارات،
    وليست بيانات وهمية توضيحية؛ فقط عرض دائم لآخر التعديلات الفعلية على النظام. */
@@ -3004,6 +3022,43 @@ function renderLiveActivityFeed(){
       </div>
     </div>
   `).join('');
+}
+/* رسم مصغّر (sparkline) لعدد التعديلات الفعلية على مدى آخر 7 أيام — مبني على ACTIVITY_LOG الحقيقي،
+   وليس بيانات توضيحية وهمية. */
+function renderActivitySparkline(){
+  const canvas = document.getElementById('activitySparkline');
+  if(!canvas || !canvas.getContext) return;
+  const days = 7;
+  const counts = new Array(days).fill(0);
+  const now = new Date();
+  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  ACTIVITY_LOG.forEach(a=>{
+    const d = new Date(a.timestamp);
+    if(isNaN(d.getTime())) return;
+    const diffDays = Math.floor((dayStart - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000);
+    if(diffDays >= 0 && diffDays < days) counts[days-1-diffDays]++;
+  });
+  const w = canvas.width = canvas.clientWidth * (window.devicePixelRatio||1);
+  const h = canvas.height = canvas.clientHeight * (window.devicePixelRatio||1);
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,w,h);
+  const max = Math.max(1, ...counts);
+  const stepX = w / (days - 1);
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--brand-blue').trim() || '#0066FF';
+  ctx.beginPath();
+  counts.forEach((c,i)=>{
+    const x = i * stepX;
+    const y = h - (c / max) * (h - 6) - 3;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = accent; ctx.lineWidth = 2 * (window.devicePixelRatio||1); ctx.lineJoin='round'; ctx.lineCap='round';
+  ctx.stroke();
+  const lastX = (days-1) * stepX, lastY = h - (counts[days-1]/max) * (h-6) - 3;
+  ctx.beginPath(); ctx.arc(lastX, lastY, 3*(window.devicePixelRatio||1), 0, Math.PI*2);
+  ctx.fillStyle = accent; ctx.fill();
+  const totalWeek = counts.reduce((a,b)=>a+b,0);
+  const label = document.getElementById('activitySparklineLabel');
+  if(label) label.textContent = totalWeek + ' تعديل خلال آخر 7 أيام';
 }
 async function approveUserApi(username, status){
   if(!authToken()) return false;
@@ -3531,6 +3586,13 @@ function renderWarrantySection(){
   const counts = { ok:0, warning:0, expired:0, unknown:0 };
   withStatus.forEach(p=>counts[p.status]++);
 
+  const totalForRing = withStatus.length || 1;
+  const okPct = Math.round((counts.ok / totalForRing) * 100);
+  const ringFill = document.getElementById('warrantyRingFill');
+  const ringPctLabel = document.getElementById('warrantyRingPct');
+  if(ringFill){ const circumference = 264; ringFill.style.strokeDashoffset = String(circumference - (okPct/100)*circumference); }
+  if(ringPctLabel) ringPctLabel.textContent = okPct + '%';
+
   const statsRow = document.getElementById('warrantyStatsRow');
   statsRow.innerHTML = `
     <div class="warranty-stat"><div class="k">ضمن الضمان</div><div class="v" style="color:var(--good);">${counts.ok.toLocaleString('en-US')}</div></div>
@@ -3623,9 +3685,6 @@ function renderDashboard(){
    (البيانات تُدار عبر localStorage في القسم أعلاه) — هذا فقط لتحميل الصفحة نفسها. */
 if('serviceWorker' in navigator){
   let swRefreshing = false;
-  // عند نشر نسخة جديدة من الموقع، يتولى Service Worker الجديد التحكم تلقائيًا (skipWaiting + clients.claim
-  // في sw.js) — هذا المستمع يعيد تحميل الصفحة تلقائيًا مرة واحدة عندئذ، حتى لا يضطر المستخدم لتفريغ
-  // الذاكرة المؤقتة يدويًا لرؤية أي تحديث مستقبلي.
   navigator.serviceWorker.addEventListener('controllerchange', ()=>{
     if(swRefreshing) return;
     swRefreshing = true;
