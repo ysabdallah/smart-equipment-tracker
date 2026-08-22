@@ -1,5 +1,5 @@
 // نسخة ذاكرة التخزين المؤقت — تتغيّر تلقائيًا مع أي تحديث للصفحة حتى لا يبقى المستخدم على نسخة قديمة
-const CACHE_NAME = 'oh-smart-equipment-87b78f7891';
+const CACHE_NAME = 'oh-smart-equipment-8f8e9f25e4';
 const APP_SHELL = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {

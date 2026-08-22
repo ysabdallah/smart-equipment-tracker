@@ -1229,7 +1229,7 @@ function showAppShell(){
 }
 function restoreActiveTab(){
   let saved = null;
-  try{ saved = localStorage.getItem('activeTab'); }catch(e){}
+  try{ saved = sessionStorage.getItem('activeTab'); }catch(e){}
   if(!saved) return;
   const btn = document.querySelector('.tab-btn[data-tab="'+saved+'"]');
   // لا تُفعّل تبويبًا مخفيًا (مثل "الموظفون" لغير المدير، أو "ملفي" للمدير) — يبقى التبويب الافتراضي
@@ -3832,7 +3832,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-    try{ localStorage.setItem('activeTab', btn.dataset.tab); }catch(e){}
+    try{ sessionStorage.setItem('activeTab', btn.dataset.tab); }catch(e){}
     if(btn.dataset.tab==='dash') renderDashboard();
     if(btn.dataset.tab==='tasks'){ renderTasksView(); renderScadaView(); }
     if(btn.dataset.tab==='tickets') renderTicketsView();
