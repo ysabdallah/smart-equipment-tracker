@@ -3540,7 +3540,7 @@ async function updateTicketStatus(ticketId, status){
       toast(json.error || 'تعذر تحديث حالة التذكرة');
       return;
     }
-    toast('تم تحديث حالة التذكرة');
+    const t_uts = TICKETS.find(x=>x.id===ticketId); logActivity(t_uts ? t_uts.poleId : ticketId, 'تحديث حالة تذكرة مصنّع إلى: ' + status); toast('تم تحديث حالة التذكرة');
     renderTicketsView();
   }catch(e){
     toast('تعذر الاتصال بالخادم');
@@ -3592,7 +3592,7 @@ document.getElementById('ticketForm').addEventListener('submit', async (ev)=>{
       cachePolesLocally();
       persistPoles();
     }
-    msg.className = 'form-msg ok'; msg.textContent = 'تم إرسال التذكرة بنجاح';
+    msg.className = 'form-msg ok'; msg.textContent = 'تم إرسال التذكرة بنجاح'; logActivity(poleId, 'فتح تذكرة مصنّع جديدة');
     document.getElementById('ticketForm').reset();
     document.getElementById('ticketEquipmentPreview').innerHTML = '';
     document.getElementById('ticketMissingSerialSection').style.display = 'none';
@@ -3790,7 +3790,7 @@ function renderLiveActivityFeed(){
     return;
   }
   feed.innerHTML = sorted.map(a=>`
-    <div class="live-feed-item">
+    <div class="live-feed-item${a.action==='فتح تذكرة مصنّع جديدة' ? ' is-new-ticket' : ''}">
       <span class="live-feed-dot" aria-hidden="true"></span>
       <div class="live-feed-body">
         <div class="live-feed-top"><span>${escapeHtml(a.action)} — ${escapeHtml(a.pole)}</span><span class="na-meta">${timeAgo(a.timestamp)}</span></div>
