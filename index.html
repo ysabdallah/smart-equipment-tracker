@@ -812,7 +812,7 @@ button:active{ transform:scale(.96); }
         </div>
       </div>
       <div class="kpi-tile accent-2">
-        <div class="label">نسبة الاتصال (آخر استيراد SCADA)</div>
+        <div class="label">نسبة اتصال المعدات</div>
         <div class="value" id="kpiScadaConnPct">—</div>
         <div class="kpi-sub" id="kpiScadaConnSub"></div>
       </div>
@@ -4459,7 +4459,7 @@ function animateCountUp(el, target){
   requestAnimationFrame(step);
 }
 function renderDashboard(){
-  animateCountUp(document.getElementById('kpiTotalPoles'), POLES.length);
+  animateCountUp(document.getElementById('kpiTotalPoles'), (SCADA_CONN_STATUS && SCADA_CONN_STATUS.hasData && SCADA_CONN_STATUS.totalCount) ? SCADA_CONN_STATUS.totalCount : POLES.length);
   renderScadaConnKpi();
 
   renderBarChart('chartByType', countBy(POLES,'type'));
