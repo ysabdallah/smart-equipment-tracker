@@ -509,6 +509,50 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 .report-preview{ background:var(--surface-1); border:1.5px dashed var(--baseline); border-radius:12px; padding:18px 20px; font-size:12.5px; line-height:2; }
 .report-preview b{ color:var(--s1); }
 .stat-tile-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:16px; }
+/* ==== إضافة: مؤثرات وتفاعلات بصرية خفيفة (بموافقة المستخدم) — UI micro-interactions ==== */
+header.app-header{ position:relative; overflow:hidden; }
+header.app-header::after{
+  content:''; position:absolute; inset-block:0; width:55%; pointer-events:none; left:-60%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+  animation:sheenFx 6s ease-in-out infinite;
+}
+@keyframes sheenFx{ 0%{ left:-60%; } 55%,100%{ left:130%; } }
+.logo-mark{ animation:logoGlowFx 3.2s ease-in-out infinite; }
+@keyframes logoGlowFx{ 0%,100%{ box-shadow:0 0 0 0 rgba(0,102,255,0); } 50%{ box-shadow:0 0 18px 3px rgba(0,102,255,.45); } }
+.status-badge.connected{ overflow:visible; }
+.status-badge.connected::after{
+  content:''; position:absolute; right:14px; top:50%; width:7px; height:7px; margin-top:-3.5px; border-radius:2px;
+  background:currentColor; animation:pingFx 1.8s cubic-bezier(0,.5,.5,1) infinite;
+}
+@keyframes pingFx{ 0%{ transform:scale(1); opacity:.55; } 100%{ transform:scale(3.2); opacity:0; } }
+.tab-btn{ overflow:hidden; position:relative; }
+   .tab-btn.active{ animation:tabPopFx .35s ease; }
+@keyframes tabPopFx{ 0%{ transform:scale(.96); } 60%{ transform:scale(1.015); } 100%{ transform:scale(1); } }
+.tab-btn:not(.active):hover .tab-ico{ animation:iconWiggleFx .5s ease; }
+@keyframes iconWiggleFx{ 0%,100%{ transform:translateX(0); } 30%{ transform:translateX(-2px); } 60%{ transform:translateX(1px); } }
+.kpi-tile{ animation:kpiRiseFx .5s ease backwards; position:relative; overflow:hidden; }
+.kpi-tile:nth-child(1){ animation-delay:.02s; } .kpi-tile:nth-child(2){ animation-delay:.08s; }
+.kpi-tile:nth-child(3){ animation-delay:.14s; } .kpi-tile:nth-child(4){ animation-delay:.2s; }
+@keyframes kpiRiseFx{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+.kpi-tile::before{ content:''; position:absolute; inset-inline:0; top:0; height:3px; background:var(--brand-gradient); opacity:0; transition:opacity .2s; }
+.kpi-tile:hover::before{ opacity:1; }
+.kpi-tile:hover{ transform:translateY(-5px); box-shadow:0 18px 34px -14px rgba(0,102,255,.35); }
+.kpi-tile.accent-2:hover{ box-shadow:0 18px 34px -14px rgba(0,181,199,.35); }
+.kpi-tile.accent-3:hover{ box-shadow:0 18px 34px -14px rgba(0,214,143,.35); }
+.kpi-tile.accent-4:hover{ box-shadow:0 18px 34px -14px rgba(225,75,68,.35); }
+.task-item{ border-inline-start:3px solid transparent; transition:transform .15s, box-shadow .15s, border-color .15s; }
+.task-item:hover{ transform:translateX(-3px); border-inline-start-color:var(--s1); box-shadow:0 10px 22px -14px rgba(0,102,255,.3); }
+.status-pill.status-new{ animation:pillPulseFx 2s ease-in-out infinite; }
+@keyframes pillPulseFx{ 0%,100%{ box-shadow:0 0 0 0 rgba(180,83,9,.25); } 50%{ box-shadow:0 0 0 5px rgba(180,83,9,0); } }
+button.primary{ background-size:160% 100%; background-position:0% 0; transition:background-position .4s ease, filter .15s, transform .12s; }
+button.primary:hover{ background-position:100% 0; }
+button:active{ transform:scale(.96); }
+.tab-panel{ animation:panelFadeFx .4s ease; }
+@keyframes panelFadeFx{ from{ opacity:0; } to{ opacity:1; } }
+::-webkit-scrollbar{ height:8px; width:8px; }
+::-webkit-scrollbar-thumb{ background:var(--brand-gradient); border-radius:99px; }
+@media (prefers-reduced-motion: reduce){ header.app-header::after, .logo-mark, .status-badge.connected::after, .tab-btn.active, .kpi-tile, .status-pill.status-new, .tab-panel{ animation:none !important; } }
+/* ==== نهاية الإضافة ==== */
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
