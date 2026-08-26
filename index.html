@@ -4464,7 +4464,7 @@ function renderDashboard(){
 
   renderBarChart('chartByType', countBy(POLES,'type'));
   renderBarChart('chartByOffice', countBy(POLES,'office'));
-  renderBarChart('chartByManu', countBy(POLES,'manufacturer').slice(0,8));
+  renderBarChart('chartByManu', countBy(POLES,'manufacturer'));
   renderWarrantySection();
   populateExportFilters();
 }
