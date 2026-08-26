@@ -249,7 +249,7 @@ tbody tr:hover{ background:var(--surface-1); }
 .live-activity-feed{ display:flex; flex-direction:column; gap:2px; max-height:280px; overflow-y:auto; }
 .live-feed-item{ display:flex; align-items:flex-start; gap:10px; padding:9px 4px; border-bottom:1px dashed var(--baseline); }
 .live-feed-item:last-child{ border-bottom:none; }
-.live-feed-dot{ width:7px; height:7px; border-radius:2px; background:var(--good); flex-shrink:0; margin-top:5px; animation:ledBlink 1.6s ease-in-out infinite; }
+.live-feed-dot{ width:7px; height:7px; border-radius:2px; background:var(--good); flex-shrink:0; margin-top:5px; animation:ledBlink 1.6s ease-in-out infinite; } .live-feed-item.is-new-ticket .live-feed-dot{ background:var(--critical); } .live-feed-item.is-new-ticket .live-feed-top span:first-child{ color:var(--critical); font-weight:800; }
 @media (prefers-reduced-motion: reduce){ .live-feed-dot{ animation:none; } }
 .live-feed-body{ flex:1; min-width:0; }
 .live-feed-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; font-weight:700; }
