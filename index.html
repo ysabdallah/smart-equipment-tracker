@@ -2987,45 +2987,11 @@ async function renderFaultyCasesView(){
           <div class="leave-title">${escapeHtml(c.pole)} — ${escapeHtml(c.problemType)}</div>
           <span class="status-pill status-new">${escapeHtml((c.office||'').toUpperCase())}</span>
         </div>
-        <div class="leave-meta">${c.problemDescription ? escapeHtml(c.problemDescription) : 'بدون وصف'} · آخر رصد: ${escapeHtml(c.lastSeenAt||'')}</div>
-        <div class="leave-actions">
-          <select class="faultyCloseReason" data-id="${escapeHtml(c.id)}">
-            <option value="">-- سبب الإقفال --</option>
-            ${FAULTY_CLOSE_REASONS.map(r=>`<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('')}
-          </select>
-          <button type="button" class="primary btnCloseFaultyCase" data-id="${escapeHtml(c.id)}">✔ إقفال</button>
-        </div>
+        <div class="leave-meta">${c.problemDescription ? escapeHtml(c.problemDescription) : 'بدون وصف'} · آخر رصد: ${escapeHtml(c.lastSeenAt||'')}</div><div class="leave-actions" style="position:relative;"><button type="button" class="faultyResolveBtn" data-id="${escapeHtml(c.id)}" title="تم الحل؟" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--good);background:var(--surface-2);color:var(--good);font-size:16px;line-height:1;cursor:pointer;">✔</button></div>
       </div>
     `).join('');
 
-    wrap.querySelectorAll('.btnCloseFaultyCase').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const id = btn.dataset.id;
-        const select = wrap.querySelector(`.faultyCloseReason[data-id="${CSS.escape(id)}"]`);
-        const reason = select ? select.value : '';
-        if(!reason){ toast('اختر سبب الإقفال أولًا'); return; }
-        btn.disabled = true;
-        try{
-          const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'closeFaultyCase', token: authToken(), id, reason })
-          });
-          const json = await res.json();
-          if(!json.ok){
-            if(json.error === 'unauthorized'){ forceReLogin(); return; }
-            toast(json.error || 'تعذر إقفال الحالة');
-            btn.disabled = false;
-            return;
-          }
-          toast('تم إقفال الحالة');
-          renderFaultyCasesView();
-        }catch(e){
-          toast('تعذر الاتصال بالخادم');
-          btn.disabled = false;
-        }
-      });
-    });
+    wrap.querySelectorAll('.faultyResolveBtn').forEach(btn=>{ btn.addEventListener('click', (ev)=>{ ev.stopPropagation(); document.querySelectorAll('.faultyReasonPopover').forEach(p=>p.remove()); const id = btn.dataset.id; const pop = document.createElement('div'); pop.className = 'faultyReasonPopover'; pop.style.cssText = 'position:absolute; top:38px; left:0; z-index:50; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); padding:6px; min-width:200px;'; pop.innerHTML = '<div style="font-size:11px; color:var(--text-muted); padding:4px 8px 6px;">اختر سبب الإقفال</div>' + FAULTY_CLOSE_REASONS.map(r=>`<button type="button" class="faultyReasonOption" data-reason="${escapeHtml(r)}" style="display:block; width:100%; text-align:right; background:none; border:none; padding:7px 8px; font-size:13px; color:var(--text-primary); cursor:pointer; border-radius:6px;">${escapeHtml(r)}</button>`).join(''); btn.parentElement.appendChild(pop); pop.querySelectorAll('.faultyReasonOption').forEach(opt=>{ opt.addEventListener('click', async (e2)=>{ e2.stopPropagation(); const reason = opt.dataset.reason; pop.remove(); btn.disabled = true; try{ const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'closeFaultyCase', token: authToken(), id, reason }) }); const json2 = await res.json(); if(!json2.ok){ if(json2.error === 'unauthorized'){ forceReLogin(); return; } toast(json2.error || 'تعذر إقفال الحالة'); btn.disabled = false; return; } toast('تم إقفال الحالة'); renderFaultyCasesView(); }catch(e2){ toast('تعذر الاتصال بالخادم'); btn.disabled = false; } }); }); }); }); if(!window.__faultyPopoverOutsideBound){ window.__faultyPopoverOutsideBound = true; document.addEventListener('click', function(e){ if(!e.target.closest('.faultyReasonPopover') && !e.target.closest('.faultyResolveBtn')){ document.querySelectorAll('.faultyReasonPopover').forEach(p=>p.remove()); } }); }
   }catch(e){
     wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">تعذر الاتصال بالخادم</div>`;
   }
