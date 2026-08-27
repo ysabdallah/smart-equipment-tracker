@@ -2485,7 +2485,7 @@ document.getElementById('btnApplyDefaultSchedule').addEventListener('click', asy
     }).join('');
   }catch(e){
     wrap.innerHTML = `<div class="empty-state">تعذر الاتصال بالخادم</div>`;
-  }
+  
 }
 
 async function renderNetworkReport(){
@@ -2511,7 +2511,7 @@ async function renderNetworkReport(){
       ['مهام مفتوحة', r.openTasksCount],
       ['مهام متأخرة', r.overdueTasksCount],
       ['حالات معطوبة مفتوحة', r.faultyOpenCount],
-      ['فحوصات دورية متأخرة', r.overdueInspectionsCount],
+                ['فحوصات دورية متأخرة', r.overdueInspectionsCount], ['تذاكر المصنّع المفتوحة', r.ticketsOpenCount], ['تذاكر المصنّع المغلقة', r.ticketsClosedCount],
     ];
     wrap.innerHTML = tiles.map(([label,val])=>`
       <div class="kpi-tile accent-1"><div class="label">${escapeHtml(label)}</div><div class="value">${val===undefined||val===null ? '—' : escapeHtml(val)}</div></div>
