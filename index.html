@@ -1123,10 +1123,7 @@ button:active{ transform:scale(.96); }
         </div>
         <div>
           <label for="schedFrequencySelect">تكرار الفحص</label>
-          <select id="schedFrequencySelect">
-            <option value="أسبوعي">أسبوعي</option>
-            <option value="شهري">شهري</option>
-          </select>
+          <select id="schedFrequencySelect"><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="كل 4 أشهر">كل 4 أشهر</option></select>
         </div>
       </div>
       <div class="form-msg" id="schedFormMsg"></div>
@@ -1152,10 +1149,7 @@ button:active{ transform:scale(.96); }
         </div>
       </div>
       <label for="schedBulkFrequencySelect">تكرار الفحص</label>
-      <select id="schedBulkFrequencySelect">
-        <option value="أسبوعي">أسبوعي</option>
-        <option value="شهري">شهري</option>
-      </select>
+      <select id="schedBulkFrequencySelect"><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="كل 4 أشهر">كل 4 أشهر</option></select>
       <div class="form-msg" id="schedBulkFormMsg"></div>
       <div class="btn-row">
         <button type="button" class="primary" id="btnSaveScheduleBulk">💾 جدولة الدفعة</button>
@@ -1163,8 +1157,7 @@ button:active{ transform:scale(.96); }
     </div>
 
     <div class="card">
-      <h3>🗓️ جداول الفحص الحالية</h3>
-      <div id="inspectionSchedulesWrap"></div>
+      <h3>🗓️ جداول الفحص الحالية</h3><div class="btn-row"><button type="button" class="primary" id="btnApplyDefaultSchedule">🗓️ تطبيق الجدولة الافتراضية (كل 4 أشهر) على كل المعدات الآن</button></div><div id="inspectionSchedulesWrap"></div>
     </div>
   </div>
 
@@ -2457,7 +2450,7 @@ document.getElementById('btnSaveScheduleBulk').addEventListener('click', async (
    TAB: المتابعة والتقارير (admin only)
    ============================================================ */
 
-async function renderEmployeeStats(){
+document.getElementById('btnApplyDefaultSchedule').addEventListener('click', async ()=>{ const btn = document.getElementById('btnApplyDefaultSchedule'); btn.disabled = true; try{ const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'applyDefaultInspectionScheduleAll', token: authToken() }) }); const json = await res.json(); if(!json.ok){ toast(json.error || 'تعذر تطبيق الجدولة الافتراضية'); } else { toast(`تم تطبيق الجدولة على ${json.added||0} معدة جديدة`); renderInspectionSchedules(); } }catch(e){ toast('تعذر الاتصال بالخادم'); } btn.disabled = false; }); async function renderEmployeeStats(){
   const wrap = document.getElementById('employeeStatsWrap');
   if(!wrap) return;
   wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:16px 0;">جارٍ التحميل...</div>`;
