@@ -1123,7 +1123,7 @@ button:active{ transform:scale(.96); }
         </div>
         <div>
           <label for="schedFrequencySelect">تكرار الفحص</label>
-          <select id="schedFrequencySelect"><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="كل 4 أشهر">كل 4 أشهر</option></select>
+          <select id="schedFrequencySelect"><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="كل شهرين">كل شهرين</option><option value="كل 4 أشهر">كل 4 أشهر</option></select>
         </div>
       </div>
       <div class="form-msg" id="schedFormMsg"></div>
@@ -1149,11 +1149,21 @@ button:active{ transform:scale(.96); }
         </div>
       </div>
       <label for="schedBulkFrequencySelect">تكرار الفحص</label>
-      <select id="schedBulkFrequencySelect"><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="كل 4 أشهر">كل 4 أشهر</option></select>
+      <select id="schedBulkFrequencySelect"><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="كل شهرين">كل شهرين</option><option value="كل 4 أشهر">كل 4 أشهر</option></select>
       <div class="form-msg" id="schedBulkFormMsg"></div>
       <div class="btn-row">
         <button type="button" class="primary" id="btnSaveScheduleBulk">💾 جدولة الدفعة</button>
       </div>
+    </div>
+
+    <div class="card">
+      <h3>📥 استيراد جدولة NOP / ZONE1</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع ملف Excel أو CSV يحتوي على عمودي "رقم العمود" و"النوع" (NOP أو ZONE1) لجدولة فحص هذه المعدات تلقائيًا كل شهرين.</p>
+      <div class="btn-row">
+        <input type="file" id="nopZoneInput" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="max-width:260px;">
+        <button type="button" class="primary" id="btnImportNopZone">⬆ استيراد الملف</button>
+      </div>
+      <div id="nopZoneImportResult" style="margin-top:12px; font-size:13px; color:var(--text-secondary);"></div>
     </div>
 
     <div class="card">
@@ -2442,6 +2452,49 @@ document.getElementById('btnSaveScheduleBulk').addEventListener('click', async (
     }
   }catch(e){
     msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
+
+/* -------- استيراد جدولة فحص NOP / ZONE1 -------- */
+async function nopZoneReadExcelAsCsv(file){
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_csv(sheet);
+}
+
+document.getElementById('btnImportNopZone').addEventListener('click', async ()=>{
+  const input = document.getElementById('nopZoneInput');
+  const resultBox = document.getElementById('nopZoneImportResult');
+  const file = input.files && input.files[0];
+  if(!file){ toast('اختر ملف CSV أو Excel أولًا'); return; }
+  const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+  const btn = document.getElementById('btnImportNopZone');
+  btn.disabled = true;
+  resultBox.textContent = 'جارٍ قراءة الملف...';
+  try{
+    const csvText = isExcel ? await nopZoneReadExcelAsCsv(file) : await file.text();
+    resultBox.textContent = 'جارٍ رفع الملف...';
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'importNopZoneSchedule', token: authToken(), csvText })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      resultBox.textContent = 'تعذر الاستيراد: ' + (json.error || 'خطأ غير معروف');
+      btn.disabled = false;
+      return;
+    }
+    resultBox.innerHTML = `تم الاستيراد بنجاح — إجمالي الصفوف: ${json.totalRows} · معدات مطابقة: ${json.matched} · غير مطابقة: ${json.unmatched}<br>
+      أُضيفت جدولة جديدة: ${json.added} · حُدّثت جدولة قائمة: ${json.updated}${(json.nopCount||json.zoneCount) ? (' · NOP: ' + (json.nopCount||0) + ' / ZONE: ' + (json.zoneCount||0)) : ''}`;
+    toast('تم استيراد جدولة NOP/ZONE1 بنجاح');
+    input.value = '';
+    renderInspectionSchedules();
+  }catch(e){
+    resultBox.textContent = 'تعذر قراءة الملف أو الاتصال بالخادم';
   }
   btn.disabled = false;
 });
