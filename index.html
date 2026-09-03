@@ -438,7 +438,10 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 .warranty-note{ color:var(--text-muted); font-size:11px; margin-top:8px; text-align:center;}
 .auth-screen{ position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; padding:20px;
   background: radial-gradient(circle at 88% -8%, #E4F1FF 0%, transparent 42%), radial-gradient(circle at 6% 108%, #E7F0FB 0%, transparent 40%), var(--plane); }
-.auth-screen .login-card{ width:100%; max-width:380px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; text-align:center; }
+.auth-screen .login-card{ width:100%; max-width:380px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; text-align:center; overflow:hidden; }
+.auth-screen .login-card-banner{ background:linear-gradient(115deg, var(--brand-navy) 20%, var(--brand-blue) 100%); margin:-32px -28px 20px; padding:24px 28px 14px; position:relative; overflow:hidden; color:#F2F7FF; }
+.auth-screen .login-card-banner .wave-deco{ position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+.auth-screen .login-card-banner .login-logo, .auth-screen .login-card-banner h2{ position:relative; z-index:1; margin-top:0; }
 .auth-screen .login-logo{ font-size:34px; margin-bottom:6px; }
 .auth-screen h2{ margin:0 0 4px; font-size:19px; }
 .auth-screen .login-sub{ color:var(--text-secondary); font-size:12px; margin-bottom:22px; }
@@ -572,8 +575,16 @@ button:active{ transform:scale(.96); }
 
 <div id="loginScreen" class="auth-screen" style="display:none;">
   <div class="login-card">
-    <div class="login-logo">🔒</div>
-    <h2>نظام إدارة المعدات الذكية</h2>
+    <div class="login-card-banner">
+      <svg class="wave-deco" viewBox="0 0 800 140" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="loginWaveGrad" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stop-color="#8FE0C8" stop-opacity="0.28"/><stop offset="45%" stop-color="#0081FF"/><stop offset="100%" stop-color="#001F5E" stop-opacity="0"/>
+        </linearGradient></defs>
+        <path d="M0,140 C120,20 200,150 320,60 C420,-10 480,90 620,40 C700,12 760,60 800,20 L800,140 Z" fill="url(#loginWaveGrad)" opacity="0.85"/>
+      </svg>
+      <div class="login-logo">🔒</div>
+      <h2>نظام إدارة المعدات الذكية</h2>
+    </div>
     <div class="login-sub">الرجاء تسجيل الدخول للمتابعة — الصفحة تحتوي على بيانات حساسة</div>
     <form id="loginForm" autocomplete="off">
       <label for="loginUsername">اسم المستخدم / رقم الهوية أو الإقامة</label>
@@ -590,8 +601,16 @@ button:active{ transform:scale(.96); }
 
 <div id="registerScreen" class="auth-screen" style="display:none;">
   <div class="login-card">
-    <div class="login-logo">🧑‍🔧</div>
-    <h2>إنشاء حساب موظف جديد</h2>
+    <div class="login-card-banner">
+      <svg class="wave-deco" viewBox="0 0 800 140" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="registerWaveGrad" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stop-color="#8FE0C8" stop-opacity="0.28"/><stop offset="45%" stop-color="#0081FF"/><stop offset="100%" stop-color="#001F5E" stop-opacity="0"/>
+        </linearGradient></defs>
+        <path d="M0,140 C120,20 200,150 320,60 C420,-10 480,90 620,40 C700,12 760,60 800,20 L800,140 Z" fill="url(#registerWaveGrad)" opacity="0.85"/>
+      </svg>
+      <div class="login-logo">🧑‍🔧</div>
+      <h2>إنشاء حساب موظف جديد</h2>
+    </div>
     <div class="login-sub">سيُرسل طلبك لمدير النظام للموافقة قبل أن تتمكن من الدخول — جميع الحقول إجبارية</div>
     <form id="registerForm" autocomplete="off">
       <label for="regFullName">الاسم بالكامل</label>
@@ -634,8 +653,16 @@ button:active{ transform:scale(.96); }
 
 <div id="forgotScreen" class="auth-screen" style="display:none;">
   <div class="login-card">
-    <div class="login-logo">🔑</div>
-    <h2>استعادة كلمة المرور</h2>
+    <div class="login-card-banner">
+      <svg class="wave-deco" viewBox="0 0 800 140" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="forgotWaveGrad" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stop-color="#8FE0C8" stop-opacity="0.28"/><stop offset="45%" stop-color="#0081FF"/><stop offset="100%" stop-color="#001F5E" stop-opacity="0"/>
+        </linearGradient></defs>
+        <path d="M0,140 C120,20 200,150 320,60 C420,-10 480,90 620,40 C700,12 760,60 800,20 L800,140 Z" fill="url(#forgotWaveGrad)" opacity="0.85"/>
+      </svg>
+      <div class="login-logo">🔑</div>
+      <h2>استعادة كلمة المرور</h2>
+    </div>
     <div class="login-sub" id="forgotSub">أدخل اسم المستخدم (رقم الهوية أو الإقامة) للمتابعة</div>
     <form id="forgotStep1Form" autocomplete="off">
       <label for="forgotUsername">اسم المستخدم / رقم الهوية أو الإقامة</label>
