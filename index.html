@@ -931,6 +931,10 @@ button:active{ transform:scale(.96); }
     <div class="card">
       <h3>⚠️ الحالات المتعطلة</h3>
       <div id="faultyCasesWrap"></div>
+      <div style="margin-top:14px; border-top:1px solid var(--border); padding-top:12px;">
+        <button type="button" onclick="document.getElementById('faultyCasesHistoryWrap').style.display = document.getElementById('faultyCasesHistoryWrap').style.display==='none' ? 'block':'none';" style="font-size:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 10px; cursor:pointer; color:var(--text-primary);">📜 سجل الأعطال السابقة (المُقفلة)</button>
+        <div id="faultyCasesHistoryWrap" style="display:none; margin-top:10px;"></div>
+      </div>
     </div>
   </div>
 
@@ -3023,6 +3027,7 @@ async function renderFaultyCasesView(){
       return;
     }
     FAULTY_CASES_CACHE = (json.cases || []).filter(c=>c.status === 'مفتوحة');
+    renderFaultyCasesHistory((json.cases || []).filter(c=>c.status !== 'مفتوحة').sort((a,b)=> String(b.closedAt||'').localeCompare(String(a.closedAt||''))));
     if(!FAULTY_CASES_CACHE.length){
       wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">لا توجد حالات متعطلة مفتوحة حاليًا</div>`;
       return;
@@ -3043,6 +3048,23 @@ async function renderFaultyCasesView(){
   }
 }
 
+function renderFaultyCasesHistory(cases){
+  const histWrap = document.getElementById('faultyCasesHistoryWrap');
+  if(!histWrap) return;
+  if(!cases.length){
+    histWrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:14px 0;">لا يوجد سجل أعطال سابقة</div>`;
+    return;
+  }
+  histWrap.innerHTML = cases.map(c=>`
+    <div class="leave-item">
+      <div class="leave-top">
+        <div class="leave-title">${escapeHtml(c.pole)} — ${escapeHtml(c.problemType)}</div>
+        <span class="status-pill" style="background:var(--surface-2); color:var(--text-muted);">${escapeHtml(c.status||'')}</span>
+      </div>
+      <div class="leave-meta">${c.problemDescription ? escapeHtml(c.problemDescription) : 'بدون وصف'} · سبب الإقفال: ${escapeHtml(c.closeReason||'-')}${c.closeNote ? (' — ' + escapeHtml(c.closeNote)) : ''}<br>أُقفلت بواسطة: ${escapeHtml(c.closedBy||'-')} · بتاريخ: ${escapeHtml(c.closedAt||'-')}</div>
+    </div>
+  `).join('');
+}
 const SCADA_OUR_OFFICES = ['bbr','uuz','mmb'];
 // أنواع المعدات التي تخصنا فقط — يستثني هذا معدات أخرى كثيرة (مثل SMART RMU) موجودة في نفس
 // المكاتب لكنها ليست ضمن نطاق فريقنا. نطابق بمرونة (فراغ أو شرطة سفلية بين الكلمتين، بدون حساسية لحالة الأحرف).
@@ -3178,7 +3200,7 @@ document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=
       ? `<br><span style="color:var(--text-muted); font-size:12px;">(تمت تصفية الملف الأصلي إلى ${filterResult.filteredRows} صف لمكاتبنا فقط من ${filterResult.totalRows} صف بيانات حقيقي${filterResult.stoppedEarly ? ' — تم تجاوز باقي الملف تلقائيًا بعد رصد صفوف فارغة زائدة' : ''})</span>`
       : '';
     const connPct = json.totalRows ? Math.round(((json.skippedOnline||0) / json.totalRows) * 1000) / 10 : null;
-    resultBox.innerHTML = `تم الاستيراد بنجاح — إجمالي الصفوف: ${json.totalRows} · معدات مطابقة: ${json.matchedPoles} · غير مطابقة: ${json.unmatchedPoles}<br>
+    resultBox.innerHTML = `تم الاستيراد بنجاح — إجمالي الصفوف: ${json.totalRows} · معدات مطابقة: ${json.matchedPoles} · غير مطابقة: ${json.unmatchedPoles} · أُضيفت جديدًا: ${json.addedPoles||0}<br>
       مهام أُسندت تلقائيًا: ${json.tasksCreated} · حالات متعطلة جديدة/محدَّثة: ${json.faultyUpserted} · تُترك لفريق سكادا: ${json.skippedNeedScada} · متصل: ${json.skippedOnline||0} (${connPct !== null ? connPct.toLocaleString('en-US') : '—'}%)${filterNote}`;
     toast('تم استيراد ملف SCADA بنجاح');
     input.value = '';
