@@ -356,13 +356,14 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 @media (prefers-color-scheme: dark){
   :root:where(:not([data-theme="light"])){
     color-scheme: dark;
-    --surface-1:#1B2233; --surface-2:#212A3F; --plane:#10141F;
-    --text-primary:#F2F5FA; --text-secondary:#A9B4C9; --text-muted:#74809C;
-    --grid:#2A3349; --grid-soft:#232B3E; --baseline:#2E3850; --border:rgba(255,255,255,0.09);
+    --surface-1:#131A28; --surface-2:#1B2436; --plane:#090C13;
+    --text-primary:#F5F7FB; --text-secondary:#B9C3D6; --text-muted:#8592AC;
+    --grid:#2E3850; --grid-soft:#232C40; --baseline:#334063; --border:rgba(255,255,255,0.13);
     --accent-dim:#1B2E52; --accent-line:#4E9EFA; --warning-dim:#4a3c22; --critical-dim:#4a2626; --good-dim:#1E3D34;
     --s1:#4E9EFA; --s2:#6FB8F5; --s3:#5FB093; --s4:#D9A54A; --s5:#A99BE0; --s6:#3E7BD6; --s7:#8A96AE; --s8:#E07A73;
     --good:#5FB093; --warning:#D9A54A; --serious:#D79A78; --critical:#E07A73;
-    --glass-bg:rgba(33,42,63,.65); --glass-border:rgba(255,255,255,.09);
+    --glass-bg:rgba(27,36,54,.65); --glass-border:rgba(255,255,255,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 14px 30px -10px rgba(0,0,0,.6);
   }
   :root:where(:not([data-theme="light"])) body{
     background:var(--plane);
@@ -381,13 +382,14 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --surface-1:#1B2233; --surface-2:#212A3F; --plane:#10141F;
-  --text-primary:#F2F5FA; --text-secondary:#A9B4C9; --text-muted:#74809C;
-  --grid:#2A3349; --grid-soft:#232B3E; --baseline:#2E3850; --border:rgba(255,255,255,0.09);
+  --surface-1:#131A28; --surface-2:#1B2436; --plane:#090C13;
+  --text-primary:#F5F7FB; --text-secondary:#B9C3D6; --text-muted:#8592AC;
+  --grid:#2E3850; --grid-soft:#232C40; --baseline:#334063; --border:rgba(255,255,255,0.13);
   --accent-dim:#1B2E52; --accent-line:#4E9EFA; --warning-dim:#4a3c22; --critical-dim:#4a2626; --good-dim:#1E3D34;
   --s1:#4E9EFA; --s2:#6FB8F5; --s3:#5FB093; --s4:#D9A54A; --s5:#A99BE0; --s6:#3E7BD6; --s7:#8A96AE; --s8:#E07A73;
   --good:#5FB093; --warning:#D9A54A; --serious:#D79A78; --critical:#E07A73;
-  --glass-bg:rgba(33,42,63,.65); --glass-border:rgba(255,255,255,.09);
+  --glass-bg:rgba(27,36,54,.65); --glass-border:rgba(255,255,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.35), 0 14px 30px -10px rgba(0,0,0,.6);
 }
 :root[data-theme="dark"] body{
   background:var(--plane);
@@ -697,12 +699,12 @@ button:active{ transform:scale(.96); }
       <button id="profileBtn" class="ghost user-chip" title="حسابي — تعديل كلمة المرور والصورة الشخصية"><span class="hdr-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.4"/><path d="M4.8 19.5c1.2-3.8 3.8-5.8 7.2-5.8s6 2 7.2 5.8"/></svg></span> <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></button>
       <button id="logoutBtn" class="ghost" style="padding:2px 8px; font-size:11px;" title="تسجيل الخروج"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M10 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H10"/><path d="M14.5 8 19 12l-4.5 4"/><path d="M19 12H9.5"/></svg></span> خروج</button>
       <div class="notif-wrap">
-        <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M12 4a5 5 0 0 0-5 5v3.1c0 .5-.16 1-.46 1.4L5 15.5h14l-1.54-2c-.3-.4-.46-.9-.46-1.4V9a5 5 0 0 0-5-5Z"/><path d="M9.5 18.5a2.5 2.5 0 0 0 5 0"/></svg></span><span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
+        <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
         <div class="notif-panel" id="notifPanel"></div>
       </div>
       <button id="themeBtn" class="ghost" style="padding:2px 6px; font-size:11px;" title="تبديل الوضع الليلي">
-        <span class="hdr-ico theme-icon-moon"><svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg></span>
-        <span class="hdr-ico theme-icon-sun" style="display:none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.6"/><path d="M12 3v2.2M12 18.8V21M4.2 12H2M22 12h-2.2M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M5.6 18.4l1.5-1.5M16.9 7.1l1.5-1.5"/></svg></span>
+        <span class="hdr-ico theme-icon-moon"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span class="hdr-ico theme-icon-sun" style="display:none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
       </button>
     </div>
   </div>
