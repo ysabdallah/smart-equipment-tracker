@@ -871,6 +871,7 @@ button:active{ transform:scale(.96); }
   <nav class="subtabs">
     <button class="subtab-btn active" data-subtab="taskslist">🧾 المهام</button>
     <button class="subtab-btn" data-subtab="taskscada" id="scadaSubtabBtn" style="display:none;">📡 SCADA</button>
+    <button class="subtab-btn" data-subtab="faultyequip" id="faultyEquipSubtabBtn" style="display:none;">🛠️ معدات متعطلة</button>
   </nav>
 
   <div id="subtab-taskslist" class="subtab-panel active">
@@ -935,6 +936,27 @@ button:active{ transform:scale(.96); }
         <button type="button" onclick="document.getElementById('faultyCasesHistoryWrap').style.display = document.getElementById('faultyCasesHistoryWrap').style.display==='none' ? 'block':'none';" style="font-size:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 10px; cursor:pointer; color:var(--text-primary);">📜 سجل الأعطال السابقة (المُقفلة)</button>
         <div id="faultyCasesHistoryWrap" style="display:none; margin-top:10px;"></div>
       </div>
+    </div>
+  </div>
+
+  <div id="subtab-faultyequip" class="subtab-panel">
+    <div class="card">
+      <h3>🛠️ استيراد قائمة المعدات المتعطلة (إكسل)</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع ملف إكسل بنفس أعمدة الملف الأصلي (المكتب، اسم المعدة، نوع المعدة، نوع المشكلة، إفادة الزينون، المقاول، الإشعار، تاريخ الإشعار، الإجراء الحالي عند، الإجراء، هل تمت المعالجة). عند رفع الملف مرة أخرى: يتم تحديث الصفوف المطابقة (نفس المكتب واسم المعدة) وإضافة أي صف جديد فقط.</p>
+      <div class="btn-row">
+        <input type="file" id="faultyEquipInput" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="max-width:260px;">
+        <button type="button" class="primary" id="btnImportFaultyEquip">⬆ استيراد الملف</button>
+      </div>
+      <div id="faultyEquipImportResult" style="margin-top:12px; font-size:13px; color:var(--text-secondary);"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <h3 style="margin:0;">🛠️ المعدات المتعطلة</h3>
+        <button type="button" id="btnAddFaultyEquip">➕ إضافة معدة يدويًا</button>
+      </div>
+      <div id="faultyEquipAddFormWrap"></div>
+      <div id="faultyEquipListWrap"></div>
     </div>
   </div>
 
@@ -1340,6 +1362,8 @@ function showAppShell(){
   if(exportTasksBtn) exportTasksBtn.style.display = admin ? '' : 'none';
   const scadaSubtabBtn = document.getElementById('scadaSubtabBtn');
   if(scadaSubtabBtn) scadaSubtabBtn.style.display = admin ? '' : 'none';
+  const faultyEquipSubtabBtn = document.getElementById('faultyEquipSubtabBtn');
+  if(faultyEquipSubtabBtn) faultyEquipSubtabBtn.style.display = admin ? '' : 'none';
   const inspectionTabBtn = document.getElementById('inspectionTabBtn');
   if(inspectionTabBtn) inspectionTabBtn.style.display = admin ? '' : 'none';
   const reportsTabBtn = document.getElementById('reportsTabBtn');
@@ -2949,7 +2973,7 @@ async function respondToLeave(requestId, decision){
 
 async function renderScadaView(){
   if(!isAdmin()) return;
-  await Promise.all([renderOfficeAssignmentsView(), renderFaultyCasesView()]);
+  await Promise.all([renderOfficeAssignmentsView(), renderFaultyCasesView(), renderFaultyEquipmentView()]);
 }
 
 async function renderOfficeAssignmentsView(){
@@ -3165,6 +3189,210 @@ async function scadaReadExcelAsCsv(file){
   const sheet = wb.Sheets[sheetName];
   return XLSX.utils.sheet_to_csv(sheet);
 }
+
+
+let FAULTY_EQUIP_FIELDS = [
+  {key:'office', label:'المكتب'},
+  {key:'equipName', label:'اسم المعدة'},
+  {key:'equipType', label:'نوع المعدة'},
+  {key:'problemType', label:'نوع المشكلة'},
+  {key:'zenonNote', label:'إفادة الزينون'},
+  {key:'contractor', label:'المقاول'},
+  {key:'notice', label:'الإشعار'},
+  {key:'noticeDate', label:'تاريخ الإشعار'},
+  {key:'currentActionOwner', label:'الإجراء الحالي عند'},
+  {key:'action', label:'الإجراء'}
+];
+let FAULTY_EQUIP_CACHE = [];
+
+async function renderFaultyEquipmentView(){
+  const wrap = document.getElementById('faultyEquipListWrap');
+  if(!wrap) return;
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">جارٍ التحميل...</div>`;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getFaultyEquipment', token: authToken() })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">تعذر تحميل القائمة</div>`;
+      return;
+    }
+    FAULTY_EQUIP_CACHE = json.items || [];
+    renderFaultyEquipList();
+  }catch(e){
+    wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">تعذر الاتصال بالخادم</div>`;
+  }
+}
+function renderFaultyEquipList(){
+  const wrap = document.getElementById('faultyEquipListWrap');
+  if(!wrap) return;
+  if(!FAULTY_EQUIP_CACHE.length){
+    wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">لا توجد معدات متعطلة مسجّلة حاليًا</div>`;
+    return;
+  }
+  const sorted = FAULTY_EQUIP_CACHE.slice().sort((a,b)=>{
+    const ap = a.processed === 'نعم' ? 1 : 0;
+    const bp = b.processed === 'نعم' ? 1 : 0;
+    return ap - bp;
+  });
+  wrap.innerHTML = sorted.map(item=>{
+    const done = item.processed === 'نعم';
+    return `
+    <div class="leave-item" data-fe-id="${escapeHtml(item.id)}" style="${done?'opacity:0.65;':''}">
+      <div class="leave-top">
+        <div class="leave-title">${escapeHtml(item.equipName)} — ${escapeHtml(item.office)}</div>
+        <span class="status-pill ${done?'status-done':'status-new'}">${done?'تمت الإصلاح':'قائمة'}</span>
+      </div>
+      <div class="leave-meta">
+        نوع المعدة: ${escapeHtml(item.equipType||'-')} · نوع المشكلة: ${escapeHtml(item.problemType||'-')}<br>
+        إفادة الزينون: ${escapeHtml(item.zenonNote||'-')} · المقاول: ${escapeHtml(item.contractor||'-')}<br>
+        الإشعار: ${escapeHtml(item.notice||'-')} · تاريخ الإشعار: ${escapeHtml(item.noticeDate||'-')}<br>
+        الإجراء الحالي عند: ${escapeHtml(item.currentActionOwner||'-')}<br>
+        الإجراء: ${escapeHtml(item.action||'-')}
+      </div>
+      <div class="leave-actions">
+        <button type="button" class="feEditBtn" data-id="${escapeHtml(item.id)}">✏️ تعديل</button>
+        ${done ? '' : `<button type="button" class="feFixBtn" data-id="${escapeHtml(item.id)}" style="border-color:var(--good); color:var(--good);">✅ تمت الإصلاح</button>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.feEditBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openFaultyEquipEditForm(btn.dataset.id));
+  });
+  wrap.querySelectorAll('.feFixBtn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      btn.disabled = true;
+      try{
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'markFaultyEquipmentFixed', token: authToken(), id: btn.dataset.id })
+        });
+        const json = await res.json();
+        if(!json.ok){
+          if(json.error === 'unauthorized'){ forceReLogin(); return; }
+          toast(json.error || 'تعذر التحديث'); btn.disabled = false; return;
+        }
+        toast('تم تحديد المعدة كـ «تمت الإصلاح»');
+        renderFaultyEquipmentView();
+      }catch(e){ toast('تعذر الاتصال بالخادم'); btn.disabled = false; }
+    });
+  });
+}
+function faultyEquipFormHtml(item){
+  item = item || {};
+  return `
+    <div class="form-grid">
+      ${FAULTY_EQUIP_FIELDS.map(f=>`
+        <div>
+          <label>${f.label}</label>
+          <input type="text" id="fe_f_${f.key}" value="${escapeHtml(item[f.key]||'')}">
+        </div>
+      `).join('')}
+      <div>
+        <label>هل تمت المعالجة</label>
+        <select id="fe_f_processed">
+          <option value="" ${!item.processed?'selected':''}>-- غير محدد --</option>
+          <option value="نعم" ${item.processed==='نعم'?'selected':''}>نعم</option>
+          <option value="لا" ${item.processed==='لا'?'selected':''}>لا</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:10px;">
+      <button type="button" class="primary" id="fe_btnSave">💾 حفظ</button>
+      <button type="button" id="fe_btnCancel">إلغاء</button>
+    </div>
+  `;
+}
+
+function openFaultyEquipEditForm(id){
+  const item = FAULTY_EQUIP_CACHE.find(x=>String(x.id)===String(id));
+  if(!item) return;
+  const card = document.querySelector(`.leave-item[data-fe-id="${CSS.escape(String(id))}"]`);
+  if(!card) return;
+  card.innerHTML = faultyEquipFormHtml(item);
+  document.getElementById('fe_btnCancel').addEventListener('click', ()=> renderFaultyEquipList());
+  document.getElementById('fe_btnSave').addEventListener('click', ()=> saveFaultyEquipForm(id));
+}
+
+async function saveFaultyEquipForm(id){
+  const record = {};
+  FAULTY_EQUIP_FIELDS.forEach(f=>{ record[f.key] = document.getElementById('fe_f_'+f.key).value.trim(); });
+  record.processed = document.getElementById('fe_f_processed').value;
+  const btn = document.getElementById('fe_btnSave');
+  btn.disabled = true;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'saveFaultyEquipmentRow', token: authToken(), id: id||'', record })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      toast(json.error || 'تعذر الحفظ'); btn.disabled = false; return;
+    }
+    toast('تم الحفظ');
+    const addWrap = document.getElementById('faultyEquipAddFormWrap');
+    if(addWrap) addWrap.innerHTML = '';
+    await renderFaultyEquipmentView();
+  }catch(e){ toast('تعذر الاتصال بالخادم'); btn.disabled = false; }
+}
+document.getElementById('btnAddFaultyEquip').addEventListener('click', ()=>{
+  const wrap = document.getElementById('faultyEquipAddFormWrap');
+  wrap.innerHTML = `<div class="card" style="margin-bottom:14px;">${faultyEquipFormHtml({})}</div>`;
+  wrap.querySelector('#fe_btnCancel').addEventListener('click', ()=>{ wrap.innerHTML=''; });
+  wrap.querySelector('#fe_btnSave').addEventListener('click', ()=> saveFaultyEquipForm(''));
+});
+
+async function faultyEquipReadExcelAsCsv(file){
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array'});
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_csv(sheet);
+}
+
+document.getElementById('btnImportFaultyEquip').addEventListener('click', async ()=>{
+  const input = document.getElementById('faultyEquipInput');
+  const resultBox = document.getElementById('faultyEquipImportResult');
+  const btn = document.getElementById('btnImportFaultyEquip');
+  const file = input.files[0];
+  if(!file){ toast('يرجى اختيار ملف'); return; }
+  btn.disabled = true;
+  resultBox.textContent = 'جارٍ المعالجة...';
+  try{
+    let csvText;
+    if(/\.(xlsx|xls)$/i.test(file.name)){
+      csvText = await faultyEquipReadExcelAsCsv(file);
+    } else {
+      csvText = await file.text();
+    }
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'importFaultyEquipment', token: authToken(), csvText })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      resultBox.textContent = 'تعذر الاستيراد: ' + (json.error || 'خطأ غير معروف');
+      btn.disabled = false;
+      return;
+    }
+    resultBox.textContent = `تم الاستيراد — إجمالي الصفوف: ${json.totalRows} · أُضيف: ${json.added} · حُدّث: ${json.updated}`;
+    toast('تم استيراد الملف بنجاح');
+    input.value = '';
+    await renderFaultyEquipmentView();
+  }catch(e){
+    resultBox.textContent = 'تعذر قراءة الملف أو الاتصال بالخادم';
+  }
+  btn.disabled = false;
+});
 
 document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=>{
   const input = document.getElementById('scadaCsvInput');
