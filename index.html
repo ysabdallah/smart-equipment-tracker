@@ -4224,8 +4224,11 @@ document.getElementById('notifBtn').addEventListener('click', (e)=>{
   if(showing){
     const r = e.currentTarget.getBoundingClientRect();
     panel.style.top = (r.bottom + 8) + 'px';
-    panel.style.right = (window.innerWidth - r.right) + 'px';
-    panel.style.left = 'auto';
+    panel.style.right = 'auto';
+    let leftPos = r.left;
+    const maxLeft = window.innerWidth - panel.offsetWidth - 8;
+    if(leftPos > maxLeft) leftPos = Math.max(8, maxLeft);
+    panel.style.left = leftPos + 'px';
     renderNotifPanel(); markNotificationsSeen();
   }
 });
