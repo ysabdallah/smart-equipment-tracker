@@ -23,10 +23,10 @@
   --surface-1:#F5F9FC; --surface-2:#FFFFFF; --plane:#F3F7FA;
   --text-primary:#101B2B; --text-secondary:#5A6B7C; --text-muted:#93A3B0;
   --grid:#DCE6EE; --grid-soft:#EAF1F6; --baseline:#DCE6EE; --border:#DCE6EE;
-  --brand-navy:#0a2ea3; --brand-blue:#0066FF; --brand-cyan:#00B5C7; --brand-green:#00D68F; --brand-teal:#00c2b3;
-  --accent-dim:#E8F1FF; --accent-line:#BBD8FF;
-  --s1:#0066FF; --s2:#00B5C7; --s3:#00D68F; --s4:#eda100; --s5:#e87ba4; --s6:#0a2ea3; --s7:#4a3aa7; --s8:#E14B44;
-  --good:#00D68F; --warning:#B5790A; --warning-dim:#FBF2E1; --serious:#ec835a; --critical:#E14B44; --critical-dim:#FBEAE8;
+  --brand-navy:#001F5E; --brand-blue:#0081FF; --brand-cyan:#3E9EF2; --brand-green:#3F8F72; --brand-teal:#3F8F72;
+  --accent-dim:#E7F0FB; --accent-line:#BBD8FF;
+  --s1:#0081FF; --s2:#3E9EF2; --s3:#3F8F72; --s4:#AD7C22; --s5:#8478C9; --s6:#001F5E; --s7:#5B6B85; --s8:#B5453E;
+  --good:#3F8F72; --good-dim:#E7F0EC; --warning:#AD7C22; --warning-dim:#F7F0DE; --serious:#C08A5C; --critical:#B5453E; --critical-dim:#F8E7E5;
   --brand-gradient: linear-gradient(100deg, var(--brand-blue), var(--brand-cyan));
   --radius:14px;
   --shadow:0 1px 2px rgba(16,27,43,.04), 0 8px 24px -12px rgba(16,27,43,.10);
@@ -38,7 +38,7 @@ html,body{margin:0;padding:0;}
 body{
   background:
     radial-gradient(circle at 88% -8%, #E4F1FF 0%, transparent 42%),
-    radial-gradient(circle at 6% 108%, #E7FBF3 0%, transparent 40%),
+    radial-gradient(circle at 6% 108%, #E7F0FB 0%, transparent 40%),
     repeating-linear-gradient(180deg, transparent 0 27px, var(--grid-soft) 27px 28px),
     var(--plane);
   color:var(--text-primary);
@@ -47,7 +47,7 @@ body{
 }
 body::before{
   content:''; position:fixed; inset-inline:0; top:0; height:3px; z-index:999; pointer-events:none;
-  background:linear-gradient(90deg, var(--brand-blue), var(--brand-cyan), var(--good), var(--brand-blue));
+  background:linear-gradient(90deg, var(--brand-navy), var(--brand-blue), var(--brand-cyan), var(--brand-navy));
   background-size:200% 100%; animation:accentSheen 8s linear infinite;
 }
 @keyframes accentSheen{ to{ background-position:-200% 0; } }
@@ -158,9 +158,9 @@ main > .tab-panel{
 .task-item .task-meta{ font-size:11.5px; color:var(--text-secondary); }
 .status-pill{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:7px; white-space:nowrap; display:inline-flex; align-items:center; gap:5px;}
 .status-pill::before{ content:''; width:6px; height:6px; border-radius:2px; background:currentColor; flex-shrink:0;}
-.status-pill.status-new{ background:#fde68a33; color:#b45309; }
-.status-pill.status-progress{ background:#93c5fd33; color:#1d4ed8; }
-.status-pill.status-done{ background:#86efac33; color:#15803d; }
+.status-pill.status-new{ background:var(--warning-dim); color:var(--warning); }
+.status-pill.status-progress{ background:var(--accent-dim); color:var(--s1); }
+.status-pill.status-done{ background:var(--good-dim); color:var(--good); }
 .status-pill.status-rejected{ background:var(--critical-dim); color:var(--critical); }
 .task-item .task-actions{ margin-top:10px; display:flex; gap:8px; }
 
@@ -349,9 +349,9 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
     --surface-1:#334160; --surface-2:#3C4B71; --plane:#2A3648;
     --text-primary:#FFFFFF; --text-secondary:#FFFFFF; --text-muted:#E4E9F5;
     --grid:#48567c; --grid-soft:#3d4a6c; --baseline:#52608a; --border:rgba(255,255,255,0.11);
-    --accent-dim:#33456b; --accent-line:#5a83c2; --warning-dim:#4a3c22; --critical-dim:#4a2626;
-    --s1:#3987e5; --s2:#1fb8cc; --s3:#22c98f; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
-    --good:#22c98f; --warning:#e0a53a; --serious:#ec835a; --critical:#e66767;
+    --accent-dim:#1E3866; --accent-line:#4E9EFA; --warning-dim:#4a3c22; --critical-dim:#4a2626; --good-dim:#1E3D34;
+    --s1:#4E9EFA; --s2:#6FB8F5; --s3:#5FB093; --s4:#D9A54A; --s5:#A99BE0; --s6:#3E7BD6; --s7:#9AA6BE; --s8:#E07A73;
+    --good:#5FB093; --warning:#D9A54A; --serious:#D79A78; --critical:#E07A73;
     --glass-bg:rgba(51,65,96,.65); --glass-border:rgba(255,255,255,.11);
   }
   :root:where(:not([data-theme="light"])) body{
@@ -381,8 +381,9 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
   --surface-1:#334160; --surface-2:#3C4B71; --plane:#2A3648;
   --text-primary:#FFFFFF; --text-secondary:#FFFFFF; --text-muted:#E4E9F5;
   --grid:#48567c; --grid-soft:#3d4a6c; --baseline:#52608a; --border:rgba(255,255,255,0.11);
-  --accent-dim:#33456b; --accent-line:#5a83c2; --warning-dim:#4a3c22; --critical-dim:#4a2626;
-  --s1:#3987e5; --s2:#1fb8cc; --s3:#22c98f; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --accent-dim:#1E3866; --accent-line:#4E9EFA; --warning-dim:#4a3c22; --critical-dim:#4a2626; --good-dim:#1E3D34;
+  --s1:#4E9EFA; --s2:#6FB8F5; --s3:#5FB093; --s4:#D9A54A; --s5:#A99BE0; --s6:#3E7BD6; --s7:#9AA6BE; --s8:#E07A73;
+  --good:#5FB093; --warning:#D9A54A; --serious:#D79A78; --critical:#E07A73;
   --glass-bg:rgba(51,65,96,.65); --glass-border:rgba(255,255,255,.11);
 }
 :root[data-theme="dark"] body{
@@ -428,7 +429,7 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 .warranty-table tr:last-child td{ border-bottom:none; }
 .warranty-note{ color:var(--text-muted); font-size:11px; margin-top:8px; text-align:center;}
 .auth-screen{ position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; padding:20px;
-  background: radial-gradient(circle at 88% -8%, #E4F1FF 0%, transparent 42%), radial-gradient(circle at 6% 108%, #E7FBF3 0%, transparent 40%), var(--plane); }
+  background: radial-gradient(circle at 88% -8%, #E4F1FF 0%, transparent 42%), radial-gradient(circle at 6% 108%, #E7F0FB 0%, transparent 40%), var(--plane); }
 .auth-screen .login-card{ width:100%; max-width:380px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; text-align:center; }
 .auth-screen .login-logo{ font-size:34px; margin-bottom:6px; }
 .auth-screen h2{ margin:0 0 4px; font-size:19px; }
@@ -3549,7 +3550,7 @@ function formatTimestampNice(iso){
   if(!iso) return '';
   const d = new Date(iso);
   if(isNaN(d.getTime())) return String(iso);
-  return d.toLocaleString('ar-SA', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+  return d.toLocaleString('en-GB', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
 }
 
 function ticketStatusClass(status){
