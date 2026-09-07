@@ -3220,6 +3220,7 @@ async function scadaReadExcelAsCsv(file){
 
 let FAULTY_EQUIP_FIELDS = [
   {key:'office', label:'المكتب'},
+  {key:'priority', label:'الأولوية'},
   {key:'equipName', label:'اسم المعدة'},
   {key:'equipType', label:'نوع المعدة'},
   {key:'problemType', label:'نوع المشكلة'},
@@ -3228,7 +3229,9 @@ let FAULTY_EQUIP_FIELDS = [
   {key:'notice', label:'الإشعار'},
   {key:'noticeDate', label:'تاريخ الإشعار'},
   {key:'currentActionOwner', label:'الإجراء الحالي عند'},
-  {key:'action', label:'الإجراء'}
+  {key:'action', label:'الإجراء'},
+  {key:'boqNumber', label:'رقم المقايسة'},
+  {key:'consultant', label:'الاستشاري'}
 ];
 let FAULTY_EQUIP_CACHE = [];
 
@@ -3275,11 +3278,13 @@ function renderFaultyEquipList(){
         <span class="status-pill ${done?'status-done':'status-new'}">${done?'تمت الإصلاح':'قائمة'}</span>
       </div>
       <div class="leave-meta">
-        نوع المعدة: ${escapeHtml(item.equipType||'-')} · نوع المشكلة: ${escapeHtml(item.problemType||'-')}<br>
+        الأولوية: ${escapeHtml(item.priority||'-')}<br>
+          نوع المعدة: ${escapeHtml(item.equipType||'-')} · نوع المشكلة: ${escapeHtml(item.problemType||'-')}<br>
         إفادة الزينون: ${escapeHtml(item.zenonNote||'-')} · المقاول: ${escapeHtml(item.contractor||'-')}<br>
         الإشعار: ${escapeHtml(item.notice||'-')} · تاريخ الإشعار: ${escapeHtml(item.noticeDate||'-')}<br>
         الإجراء الحالي عند: ${escapeHtml(item.currentActionOwner||'-')}<br>
-        الإجراء: ${escapeHtml(item.action||'-')}
+        الإجراء: ${escapeHtml(item.action||'-')}<br>
+          رقم المقايسة: ${escapeHtml(item.boqNumber||'-')} · الاستشاري: ${escapeHtml(item.consultant||'-')}
       </div>
       <div class="leave-actions">
         <button type="button" class="feEditBtn" data-id="${escapeHtml(item.id)}">✏️ تعديل</button>
@@ -3458,6 +3463,8 @@ document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=
     resultBox.innerHTML = `تم الاستيراد بنجاح — إجمالي الصفوف: ${json.totalRows} · معدات مطابقة: ${json.matchedPoles} · غير مطابقة: ${json.unmatchedPoles} · أُضيفت جديدًا: ${json.addedPoles||0}<br>
       مهام أُسندت تلقائيًا: ${json.tasksCreated} · حالات متعطلة جديدة/محدَّثة: ${json.faultyUpserted} · تُترك لفريق سكادا: ${json.skippedNeedScada} · متصل: ${json.skippedOnline||0} (${connPct !== null ? connPct.toLocaleString('en-US') : '—'}%)${filterNote}`;
     toast('تم استيراد ملف SCADA بنجاح');
+        if(json.ipChangesCount){ toast(`تنبيه: تغيّر IP لـ ${json.ipChangesCount} معدة`); }
+        if(Array.isArray(json.ipChanges)){ for(const ch of json.ipChanges){ await logActivity(ch.pole, `تغيير عنوان IP (${ch.office||'-'}): من ${ch.oldIp||'—'} إلى ${ch.newIp||'—'}`); } }
     input.value = '';
     await attemptReconnect();
     renderFaultyCasesView();
