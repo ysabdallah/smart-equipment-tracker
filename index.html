@@ -1179,24 +1179,6 @@ button:active{ transform:scale(.96); }
 
   <div id="subtab-inspSchedule" class="subtab-panel">
     <div class="card">
-      <h3>📅 جدولة الفحص الدوري لعمود واحد</h3>
-      <div class="form-grid">
-        <div>
-          <label for="schedPoleInput">رقم العمود</label>
-          <input type="text" id="schedPoleInput" placeholder="مثال: BNE4-84-46-11-19-14">
-        </div>
-        <div>
-          <label for="schedFrequencySelect">تكرار الفحص</label>
-          <select id="schedFrequencySelect"><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="كل شهرين">كل شهرين</option><option value="كل 4 أشهر">كل 4 أشهر</option></select>
-        </div>
-      </div>
-      <div class="form-msg" id="schedFormMsg"></div>
-      <div class="btn-row">
-        <button type="button" class="primary" id="btnSaveSchedule">💾 حفظ الجدولة</button>
-      </div>
-    </div>
-
-    <div class="card">
       <h3>➕ جدولة دفعة معدات دفعة واحدة</h3>
       <div class="form-grid">
         <div>
@@ -1209,7 +1191,7 @@ button:active{ transform:scale(.96); }
         </div>
         <div>
           <label for="schedBulkScopeValue">قيمة النطاق</label>
-          <input type="text" id="schedBulkScopeValue" placeholder="مثال: BBR">
+          <select id="schedBulkScopeValue"></select>
         </div>
       </div>
       <label for="schedBulkFrequencySelect">تكرار الفحص</label>
@@ -1426,7 +1408,7 @@ function restoreActiveTab(){
   if(saved==='tickets') renderTicketsView();
   if(saved==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
   if(saved==='myprofile') renderMyProfileView();
-  if(saved==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); }
+  if(saved==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); populateScheduleBulkScopeOptions(); }
   if(saved==='reports'){ renderEmployeeStats(); renderNetworkReport(); loadReportScheduleConfig(); }
 }
 async function doLogin(username, password){
@@ -2466,34 +2448,6 @@ async function renderInspectionSchedules(){
   }
 }
 
-document.getElementById('btnSaveSchedule').addEventListener('click', async ()=>{
-  const btn = document.getElementById('btnSaveSchedule');
-  const msg = document.getElementById('schedFormMsg');
-  const pole = document.getElementById('schedPoleInput').value.trim();
-  const frequency = document.getElementById('schedFrequencySelect').value;
-  msg.className = 'form-msg'; msg.textContent = '';
-  if(!pole){ msg.className = 'form-msg err'; msg.textContent = 'يرجى إدخال رقم العمود'; return; }
-  btn.disabled = true;
-  try{
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'saveInspectionSchedule', token: authToken(), pole, frequency })
-    });
-    const json = await res.json();
-    if(!json.ok){
-      msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر حفظ الجدولة';
-    } else {
-      msg.className = 'form-msg ok'; msg.textContent = 'تم حفظ جدولة الفحص';
-      document.getElementById('schedPoleInput').value = '';
-      renderInspectionSchedules();
-    }
-  }catch(e){
-    msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم';
-  }
-  btn.disabled = false;
-});
-
 document.getElementById('btnSaveScheduleBulk').addEventListener('click', async ()=>{
   const btn = document.getElementById('btnSaveScheduleBulk');
   const msg = document.getElementById('schedBulkFormMsg');
@@ -2514,7 +2468,6 @@ document.getElementById('btnSaveScheduleBulk').addEventListener('click', async (
       msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر جدولة الدفعة';
     } else {
       msg.className = 'form-msg ok'; msg.textContent = `تمت جدولة ${json.count||0} معدة`;
-      document.getElementById('schedBulkScopeValue').value = '';
       renderInspectionSchedules();
     }
   }catch(e){
@@ -2522,6 +2475,19 @@ document.getElementById('btnSaveScheduleBulk').addEventListener('click', async (
   }
   btn.disabled = false;
 });
+
+function populateScheduleBulkScopeOptions(){
+  const typeSel = document.getElementById('schedBulkScopeType');
+  const valueSel = document.getElementById('schedBulkScopeValue');
+  if(!typeSel || !valueSel) return;
+  const current = valueSel.value;
+  const values = distinctValues(typeSel.value);
+  valueSel.innerHTML = values.length
+    ? values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('')
+    : `<option value="">لا توجد قيم متاحة بعد</option>`;
+  if(values.includes(current)) valueSel.value = current;
+}
+document.getElementById('schedBulkScopeType').addEventListener('change', populateScheduleBulkScopeOptions);
 
 /* -------- استيراد جدولة فحص NOP / ZONE1 -------- */
 async function nopZoneReadExcelAsCsv(file){
@@ -2613,19 +2579,41 @@ async function renderNetworkReport(){
   if(!wrap) return;
   wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:16px 0;">جارٍ التحميل...</div>`;
   try{
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getNetworkReport', token: authToken() })
-    });
+    const [res, feRes] = await Promise.all([
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getNetworkReport', token: authToken() })
+      }),
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getFaultyEquipment', token: authToken() })
+      })
+    ]);
     const json = await res.json();
     if(!json.ok){
       if(json.error === 'unauthorized') forceReLogin();
       wrap.innerHTML = `<div class="empty-state">تعذر تحميل تقرير الشبكة</div>`;
       return;
     }
+    let feResolvedPct = null;
+    try{
+      const feJson = await feRes.json();
+      const feItems = (feJson && feJson.ok) ? (feJson.items || []) : [];
+      if(feItems.length){
+        const resolved = feItems.filter(x=>x.processed==='نعم').length;
+        feResolvedPct = Math.round((resolved / feItems.length) * 100);
+      }
+    }catch(e){ /* تجاهل — تُعرض القيمة كـ "—" */ }
+
+    const s = SCADA_CONN_STATUS;
+    const connPct = (s && s.hasData && s.totalCount) ? s.percentage : null;
+
     const r = json.report || {};
     const tiles = [
+      ['نسبة اتصال المعدات', connPct===null ? '—' : (connPct.toLocaleString('en-US') + '%')],
+      ['نسبة معالجة المعدات المتعطلة', feResolvedPct===null ? '—' : (feResolvedPct.toLocaleString('en-US') + '%')],
       ['إجمالي المعدات', r.totalEquipment],
       ['مهام مكتملة هذا الأسبوع', r.completedThisWeek],
       ['مهام مفتوحة', r.openTasksCount],
@@ -4272,7 +4260,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='tickets') renderTicketsView();
     if(btn.dataset.tab==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
     if(btn.dataset.tab==='myprofile') renderMyProfileView();
-    if(btn.dataset.tab==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); }
+    if(btn.dataset.tab==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); populateScheduleBulkScopeOptions(); }
     if(btn.dataset.tab==='reports'){ renderEmployeeStats(); renderNetworkReport(); loadReportScheduleConfig(); }
   });
 });
@@ -4777,6 +4765,7 @@ function renderDashboard(){
   renderBarChart('chartByManu', countBy(POLES,'manufacturer'));
   renderWarrantySection();
   populateExportFilters();
+  populateScheduleBulkScopeOptions();
 }
 function renderScadaConnKpi(){
   const elVal = document.getElementById('kpiScadaConnPct');
