@@ -4259,7 +4259,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='faultyequip'){
+      document.getElementById('tab-tasks').classList.add('active');
+      document.querySelectorAll('#tab-tasks .subtab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('#tab-tasks .subtab-panel').forEach(p=>p.classList.remove('active'));
+      const sb=document.querySelector('#tab-tasks .subtab-btn[data-subtab="faultyequip"]');
+      if(sb) sb.classList.add('active');
+      document.getElementById('subtab-faultyequip').classList.add('active');
+    } else {
+      document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    }
     try{ sessionStorage.setItem('activeTab', btn.dataset.tab); }catch(e){}
     if(btn.dataset.tab==='dash') renderDashboard();
     if(btn.dataset.tab==='tasks'){ renderTasksView(); renderScadaView(); }
