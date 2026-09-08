@@ -35,7 +35,7 @@
   --glass-bg:rgba(255,255,255,.55); --glass-border:rgba(255,255,255,.6);
 }
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;}
+html,body{margin:0;padding:0;overflow-x:hidden;max-width:100%;}
 body{
   background:var(--plane);
   color:var(--text-primary);
@@ -126,9 +126,12 @@ main > .tab-panel{
 .tab-panel{ display:none; }
 .tab-panel.active{ display:block; }
 @media (max-width: 860px){
-  .app-layout{ flex-direction:column; }
-  .tabs{ flex-direction:row; width:100%; overflow-x:auto; position:static; }
+  .app-layout{ flex-direction:column; min-width:0; }
+  .tabs{ flex-direction:row; width:100%; overflow-x:auto; position:static; min-width:0; }
   .tab-btn{ width:auto; }
+  header.app-header{ flex-wrap:wrap; }
+  .badge-group{ min-width:0; max-width:100%; }
+  .sync-pending-btn{ white-space:normal; text-align:center; }
 }
 .subtabs{ display:flex; gap:6px; margin-bottom:16px; overflow-x:auto;}
 .subtab-btn{
