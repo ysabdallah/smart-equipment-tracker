@@ -271,7 +271,8 @@ tbody tr:hover{ background:var(--surface-1); }
 .stack-legend-item{ display:flex; align-items:center; gap:6px; font-size:12.5px; }
 .stack-legend-dot{ width:9px; height:9px; border-radius:3px; flex:0 0 auto; }
 .stack-legend-val{ font-weight:700; font-variant-numeric:tabular-nums; opacity:.85; }
-.tw-widget{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; background:linear-gradient(115deg, var(--brand-navy) 0%, #04122e 100%); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px 20px; margin:0 0 16px; color:#eaf2ff; font-family:'JetBrains Mono', monospace; box-shadow:inset 0 0 24px rgba(62,158,242,.08); }
+.tw-widget{ display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap; background:linear-gradient(115deg, var(--brand-navy) 0%, #04122e 100%); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px 24px; margin:0 0 16px; color:#eaf2ff; font-family:'JetBrains Mono', monospace; box-shadow:inset 0 0 24px rgba(62,158,242,.08); }
+.tw-clockblock{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
 .app-layout{ flex-wrap:wrap !important; }
 .tw-widget{ order:-1 !important; flex:1 1 100% !important; width:100% !important; }
 nav.tabs{ order:1 !important; }
@@ -280,13 +281,17 @@ nav.tabs{ order:1 !important; }
 .tw-clock{ font-size:28px; font-weight:700; letter-spacing:1px; text-shadow:0 0 12px rgba(62,158,242,.55); }
 .tw-dates{ display:flex; flex-direction:column; gap:2px; font-size:12px; opacity:.85; font-family:'Noto Kufi Arabic', sans-serif; }
 .tw-sep{ width:1px; align-self:stretch; background:rgba(255,255,255,.15); }
-.tw-weather{ display:flex; align-items:center; gap:10px; }
-.tw-temp{ font-size:26px; font-weight:700; }
+.tw-weather{ display:flex; flex-direction:column; align-items:center; gap:2px; }
+.tw-feels{ font-size:11px; opacity:.75; }
+.tw-city{ font-size:11px; opacity:.75; font-family:'Noto Kufi Arabic', sans-serif; }
+.tw-temp{ font-size:26px; font-weight:700; line-height:1; }
 .tw-temp small{ font-size:13px; opacity:.7; font-weight:500; }
-.tw-env{ display:flex; flex-direction:column; gap:3px; font-size:11px; opacity:.85; font-family:'Noto Kufi Arabic', sans-serif; }
+.tw-env{ display:flex; flex-direction:column; gap:6px; font-size:12px; opacity:.9; font-family:'Noto Kufi Arabic', sans-serif; }
 .tw-env-item{ display:flex; align-items:center; gap:5px; }
 .tw-env-item svg{ width:12px; height:12px; opacity:.8; }
-@media (max-width:720px){ .tw-widget{ flex-direction:column; align-items:stretch; text-align:center; } }
+@media (max-width:720px){ .tw-widget{ flex-direction:column; align-items:center; text-align:center; } .tw-clockblock{ align-items:center; } }
+.app-layout > nav.tabs{ flex-direction:row !important; flex-wrap:wrap; width:auto !important; justify-content:flex-end; gap:8px; }
+.app-layout > nav.tabs .tab-btn{ width:auto !important; flex:0 0 auto; white-space:nowrap; }
 
 .kpi-tile.hero-tile .wave-deco{ position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
 .kpi-tile.hero-tile .label, .kpi-tile.hero-tile .value, .kpi-tile.hero-tile .kpi-sub, .kpi-tile.hero-tile .sparkline-wrap{ position:relative; z-index:1; }
@@ -830,17 +835,21 @@ button:active{ transform:scale(.96); }
 
 <div class="app-layout">
 <div class="tw-widget" id="twWidget">
-  <div class="tw-clock" id="twClock">--:--:--</div>
-  <div class="tw-dates"><span id="twDateG"></span><span id="twDateH"></span></div>
+  <div class="tw-clockblock">
+    <div class="tw-clock" id="twClock">--:--:--</div>
+    <div class="tw-dates"><span id="twDateG"></span></div>
+  </div>
   <div class="tw-sep"></div>
   <div class="tw-weather">
     <div class="tw-temp" id="twTemp">—<small>°C</small></div>
-    <div class="tw-env">
-      <div class="tw-env-item" title="الشعور بالحرارة"><span id="twFeels">—</span></div>
-      <div class="tw-env-item" title="سرعة الرياح"><span id="twWind">—</span></div>
-      <div class="tw-env-item" title="الرطوبة"><span id="twHumidity">—</span></div>
-      <div class="tw-env-item" title="الشروق / الغروب"><span id="twSun">—</span></div>
-    </div>
+    <div class="tw-feels" id="twFeels">—</div>
+    <div class="tw-city">بريدة، القصيم</div>
+  </div>
+  <div class="tw-sep"></div>
+  <div class="tw-env">
+    <div class="tw-env-item" title="سرعة الرياح"><span id="twWind">—</span></div>
+    <div class="tw-env-item" title="الرطوبة"><span id="twHumidity">—</span></div>
+    <div class="tw-env-item" title="الشروق / الغروب"><span id="twSun">—</span></div>
   </div>
 </div>
 <nav class="tabs">
@@ -4733,10 +4742,8 @@ function initTimeWeatherWidgetOnce(){
     const now = new Date();
     const t = new Intl.DateTimeFormat('ar-SA-u-nu-latn',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'Asia/Riyadh'}).format(now);
     const dg = new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Riyadh'}).format(now);
-    const dh = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-nu-latn',{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Riyadh'}).format(now);
     const elC = document.getElementById('twClock'); if(elC) elC.textContent = t;
     const elG = document.getElementById('twDateG'); if(elG) elG.textContent = dg;
-    const elH = document.getElementById('twDateH'); if(elH) elH.textContent = dh + ' هـ';
   }
   tick(); setInterval(tick, 1000);
   async function loadWeather(){
@@ -4748,7 +4755,7 @@ function initTimeWeatherWidgetOnce(){
       const d = j.daily || {};
       const elT = document.getElementById('twTemp');
       if(elT && c.temperature_2m!=null) elT.innerHTML = Math.round(c.temperature_2m) + '<small>°C</small>';
-      const elF = document.getElementById('twFeels'); if(elF && c.apparent_temperature!=null) elF.textContent = 'شعور ' + Math.round(c.apparent_temperature) + '°';
+      const elF = document.getElementById('twFeels'); if(elF && c.apparent_temperature!=null) elF.textContent = 'يشعر كـ ' + Math.round(c.apparent_temperature) + '°';
       const elW = document.getElementById('twWind'); if(elW && c.wind_speed_10m!=null) elW.textContent = Math.round(c.wind_speed_10m) + ' كم/س';
       const elHu = document.getElementById('twHumidity'); if(elHu && c.relative_humidity_2m!=null) elHu.textContent = c.relative_humidity_2m + '%';
       const elS = document.getElementById('twSun');
