@@ -41,6 +41,10 @@ body{
   font-family: 'Noto Kufi Arabic', system-ui, -apple-system, "Segoe UI", sans-serif;
   min-height:100vh;
 }
+[data-theme="dark"] body{ background:
+    radial-gradient(1100px 480px at 15% -10%, rgba(47,140,255,.35), transparent 60%),
+    linear-gradient(180deg,#061434,#0a1f4d 45%,#0c1f3e) !important;
+  background-attachment:fixed; background-repeat:no-repeat; }
 body::before{
   content:''; position:fixed; inset-inline:0; top:0; height:3px; z-index:999; pointer-events:none;
   background:linear-gradient(90deg, var(--brand-navy), var(--brand-blue), var(--brand-cyan), var(--brand-navy));
@@ -291,7 +295,7 @@ nav.tabs{ order:1 !important; }
 .tw-env-item{ display:flex; align-items:center; gap:5px; }
 .tw-env-item svg{ width:14px; height:14px; opacity:1; color:#7bd3ff; flex-shrink:0; }
 @media (max-width:720px){ .tw-widget{ flex-direction:column; align-items:center; text-align:center; } .tw-clockblock{ align-items:center; } }
-.app-layout > nav.tabs{ flex-direction:row !important; flex-wrap:wrap; width:auto !important; justify-content:flex-end; gap:8px; flex:0 1 100% !important; }
+.app-layout > nav.tabs{ flex-direction:row !important; flex-wrap:wrap; width:auto !important; justify-content:flex-start; gap:8px; flex:0 1 100% !important; }
 .app-layout > main{ flex-basis:100% !important; width:auto !important; }
 .app-layout > nav.tabs .tab-btn{ width:auto !important; flex:0 0 auto; white-space:nowrap; }
 
