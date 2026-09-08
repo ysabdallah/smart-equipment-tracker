@@ -272,8 +272,10 @@ tbody tr:hover{ background:var(--surface-1); }
 .stack-legend-dot{ width:9px; height:9px; border-radius:3px; flex:0 0 auto; }
 .stack-legend-val{ font-weight:700; font-variant-numeric:tabular-nums; opacity:.85; }
 .tw-widget{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; background:linear-gradient(115deg, var(--brand-navy) 0%, #04122e 100%); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px 20px; margin:0 0 16px; color:#eaf2ff; font-family:'JetBrains Mono', monospace; box-shadow:inset 0 0 24px rgba(62,158,242,.08); }
-.app-layout{ flex-wrap:wrap; }
-.tw-widget{ order:-1; flex:1 1 100%; }
+.app-layout{ flex-wrap:wrap !important; }
+.tw-widget{ order:-1 !important; flex:1 1 100% !important; width:100% !important; }
+nav.tabs{ order:1 !important; }
+.app-layout > main{ order:2 !important; }
 
 .tw-clock{ font-size:28px; font-weight:700; letter-spacing:1px; text-shadow:0 0 12px rgba(62,158,242,.55); }
 .tw-dates{ display:flex; flex-direction:column; gap:2px; font-size:12px; opacity:.85; font-family:'Noto Kufi Arabic', sans-serif; }
