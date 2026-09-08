@@ -636,6 +636,7 @@ button:active{ transform:scale(.96); }
 ::-webkit-scrollbar-thumb{ background:var(--brand-gradient); border-radius:99px; }
 @media (prefers-reduced-motion: reduce){ header.app-header::after, .logo-mark, .status-badge.connected::after, .tab-btn.active, .kpi-tile, .status-pill.status-new, .tab-panel{ animation:none !important; } }
 /* ==== نهاية الإضافة ==== */
+.search-card{position:relative;z-index:5;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -903,7 +904,7 @@ button:active{ transform:scale(.96); }
 <!-- ===================== TAB 1: COORDINATES ===================== -->
 <section id="tab-coords" class="tab-panel">
 
-  <div class="card">
+  <div class="card search-card">
     <div class="search-hero">
       <label style="text-align:center; display:block;">رقم العمود</label>
       <div class="search-box">
@@ -1880,6 +1881,7 @@ function normalizePoles(arr){
       ip: String(p.ip||''),
       lat: (p.lat==='' || p.lat===undefined || p.lat===null || isNaN(parseFloat(p.lat))) ? null : parseFloat(p.lat),
       lng: (p.lng==='' || p.lng===undefined || p.lng===null || isNaN(parseFloat(p.lng))) ? null : parseFloat(p.lng),
+      scada_confirmed: (p.scada_confirmed===false || p.scada_confirmed==='false' || p.scada_confirmed==='FALSE') ? false : true,
     };
     Object.keys(EXTRA_COLS).forEach(k=>{
       rec[k] = String(p[EXTRA_COLS[k]] || p[k] || '');
@@ -4579,6 +4581,9 @@ function savePole(idx){
   if(idx!==null && idx!==undefined && POLES[idx]){
     rec.material_code = POLES[idx].material_code || '';
     rec.po_number = POLES[idx].po_number || '';
+    rec.scada_confirmed = POLES[idx].scada_confirmed === false ? false : true;
+  } else {
+    rec.scada_confirmed = false;
   }
   if(!rec.pole){ toast('يرجى إدخال رقم العمود'); return; }
   if(idx===null || idx===undefined){
@@ -4920,9 +4925,10 @@ function renderDashboard(){
   renderScadaConnKpi();
         initTimeWeatherWidgetOnce();
 
-  renderDonutChart('chartByType', countBy(POLES,'type'));
-  renderStackedBarChart('chartByOffice', countBy(POLES,'office'));
-  renderRankedBarChart('chartByManu', countBy(POLES,'manufacturer'));
+  const SCADA_POLES = POLES.filter(function(p){ return p.scada_confirmed !== false; });
+  renderDonutChart('chartByType', countBy(SCADA_POLES,'type'));
+  renderStackedBarChart('chartByOffice', countBy(SCADA_POLES,'office'));
+  renderRankedBarChart('chartByManu', countBy(SCADA_POLES,'manufacturer'));
   renderDonutChart('chartByFaultyType', countBy(FAULTY_CASES_DASH.filter(function(fc){return fc.status==='مفتوحة';}),'problemType'));
   renderWarrantySection();
   populateExportFilters();
