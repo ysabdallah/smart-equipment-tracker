@@ -4294,8 +4294,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const sb=document.querySelector('#tab-tasks .subtab-btn[data-subtab="faultyequip"]');
       if(sb) sb.classList.add('active');
       document.getElementById('subtab-faultyequip').classList.add('active');
+      var _stNav = document.querySelector('#tab-tasks .subtabs'); if(_stNav) _stNav.style.display='none';
     } else {
       document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+      var _stNav2 = document.querySelector('#tab-tasks .subtabs'); if(_stNav2) _stNav2.style.display='';
     }
     try{ sessionStorage.setItem('activeTab', btn.dataset.tab); }catch(e){}
     if(btn.dataset.tab==='dash') renderDashboard();
