@@ -1882,6 +1882,7 @@ function normalizePoles(arr){
       lat: (p.lat==='' || p.lat===undefined || p.lat===null || isNaN(parseFloat(p.lat))) ? null : parseFloat(p.lat),
       lng: (p.lng==='' || p.lng===undefined || p.lng===null || isNaN(parseFloat(p.lng))) ? null : parseFloat(p.lng),
       scada_confirmed: (p.scada_confirmed===false || p.scada_confirmed==='false' || p.scada_confirmed==='FALSE') ? false : true,
+      scada_last_seen_at: String(p.scada_last_seen_at || ''),
     };
     Object.keys(EXTRA_COLS).forEach(k=>{
       rec[k] = String(p[EXTRA_COLS[k]] || p[k] || '');
@@ -4582,8 +4583,10 @@ function savePole(idx){
     rec.material_code = POLES[idx].material_code || '';
     rec.po_number = POLES[idx].po_number || '';
     rec.scada_confirmed = POLES[idx].scada_confirmed === false ? false : true;
+    rec.scada_last_seen_at = POLES[idx].scada_last_seen_at || '';
   } else {
     rec.scada_confirmed = false;
+    rec.scada_last_seen_at = '';
   }
   if(!rec.pole){ toast('يرجى إدخال رقم العمود'); return; }
   if(idx===null || idx===undefined){
@@ -4925,7 +4928,9 @@ function renderDashboard(){
   renderScadaConnKpi();
         initTimeWeatherWidgetOnce();
 
-  const SCADA_POLES = POLES.filter(function(p){ return p.scada_confirmed !== false; });
+  const latestImportTs = (SCADA_CONN_STATUS && SCADA_CONN_STATUS.lastImportAt) ? SCADA_CONN_STATUS.lastImportAt : null;
+  let SCADA_POLES = latestImportTs ? POLES.filter(function(p){ return p.scada_last_seen_at === latestImportTs; }) : [];
+  if (!SCADA_POLES.length) { SCADA_POLES = POLES.filter(function(p){ return p.scada_confirmed !== false; }); }
   renderDonutChart('chartByType', countBy(SCADA_POLES,'type'));
   renderStackedBarChart('chartByOffice', countBy(SCADA_POLES,'office'));
   renderRankedBarChart('chartByManu', countBy(SCADA_POLES,'manufacturer'));
