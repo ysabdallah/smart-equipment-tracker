@@ -80,7 +80,7 @@ header.app-header h1{
   font-size:17px; margin:0; font-weight:800; font-family:var(--font-display);
   color:#F2F7FF;
 }
-header.app-header .sub{ font-size:10.5px; color:rgba(242,247,255,.75); margin-top:3px; font-weight:600; letter-spacing:.3px;}
+header.app-header .sub{ font-size:10.5px; color:var(--text-secondary); margin-top:3px; font-weight:600; letter-spacing:.3px;}
 .badge-group{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
 .badge-icons-row{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
 .sync-pending-btn{ padding:2px 10px; font-size:10.5px; font-weight:700; color:#FFD98A; background:rgba(255,255,255,.14); border:1.5px dashed #FFD98A; border-radius:999px; animation:syncPulse 1.8s ease-in-out infinite;}
@@ -253,7 +253,7 @@ tbody tr:hover{ background:var(--surface-1); }
 .kpi-tile.hero-tile .wave-deco{ opacity:.35 !important; }
 .theme-switch{ position:relative; display:inline-flex; align-items:center; width:52px; height:26px; padding:0; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); cursor:pointer; }
 .theme-switch .ts-knob{ position:absolute; top:2px; inset-inline-start:2px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.35); transition:inset-inline-start .25s ease, background .25s ease; }
-:root:not([data-theme="dark"]) .theme-switch{ background:rgba(255,196,92,.16); border-color:rgba(255,196,92,.4); }
+:root:not([data-theme="dark"]) .theme-switch{ background:#fff2df; border-color:#ffdca8; }
 :root:not([data-theme="dark"]) .theme-switch .ts-knob{ inset-inline-start:28px; background:linear-gradient(135deg,#ffe1a8,#ffb257); }
 :root[data-theme="dark"] .theme-switch{ background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.16); }
 :root[data-theme="dark"] .theme-switch .ts-knob{ inset-inline-start:2px; background:#fff; }
@@ -451,8 +451,8 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 [data-theme="dark"] .kpi-tile.hero-tile{ background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03)) !important; border-color:rgba(255,255,255,.14) !important; box-shadow:var(--shadow) !important; }
 [data-theme="dark"] .tab-btn{ background:rgba(255,255,255,.06); color:#c4d6f2; }
 [data-theme="dark"] .tab-btn.active{ background:linear-gradient(135deg,#2F8CFF,#1a5fc4) !important; color:#fff !important; font-weight:700 !important; }
-[data-theme="dark"] header.app-header{ background:transparent !important; border:none !important; box-shadow:none !important; padding:6px 4px !important; }
-[data-theme="dark"] header.app-header .wave-deco{ display:none !important; }
+header.app-header{ background:transparent !important; border:none !important; box-shadow:none !important; padding:6px 4px !important; }
+header.app-header .wave-deco{ display:none !important; }
 .hero-wave-thin{ inset:auto 0 0 0 !important; top:auto !important; height:32px !important; width:100% !important; }
 :root[data-theme="dark"] body{
   background:var(--plane);
@@ -461,13 +461,17 @@ button.btn-pdf:hover{ border-color:var(--s1); color:var(--s1); background:var(--
 :root[data-theme="dark"] .auth-screen{
   background:var(--plane);
 }
-:root[data-theme="dark"] header.app-header h1{
+:rootheader.app-header h1{
   background:none; -webkit-background-clip:initial; background-clip:initial;
   color:var(--text-primary);
 }
-:root[data-theme="dark"] header.app-header .badge-icons-row button.ghost:not(.sync-pending-btn){
+:rootheader.app-header .badge-icons-row button.ghost:not(.sync-pending-btn){
   color:var(--text-primary);
 }
+:root:not([data-theme="dark"]) header.app-header .badge-icons-row button.ghost{ background: var(--surface-1) !important; border-color: var(--border) !important; }
+:root:not([data-theme="dark"]) header.app-header .badge-icons-row button.ghost.sync-pending-btn{ background: var(--warning-dim) !important; color: var(--warning) !important; border-color: var(--warning) !important; }
+:root:not([data-theme="dark"]) .status-badge.connected{ background: var(--good-dim); color: var(--good); border-color: rgba(63,143,114,.35); }
+:root:not([data-theme="dark"]) .status-badge.disconnected{ background: var(--surface-1); color: var(--text-secondary); border-color: var(--border); }
 .theme-toggle{ display:flex; align-items:center; gap:8px; }
 .notif-wrap{ position:relative; }
 .notif-badge{ position:absolute; top:-6px; left:-6px; background:var(--critical); color:#fff; font-size:9px; font-weight:800; border-radius:999px; min-width:16px; height:16px; align-items:center; justify-content:center; padding:0 3px; box-shadow:0 0 0 2px var(--surface-2);}
