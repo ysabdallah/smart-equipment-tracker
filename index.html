@@ -761,8 +761,8 @@ button:active{ transform:scale(.96); }
     <div class="status-badge disconnected" id="statusBadge">غير متصل</div>
     <button id="syncPendingBtn" class="ghost sync-pending-btn" style="display:none;" title="يوجد تغييرات محلية لم تتم مزامنتها بعد — اضغط للمحاولة الآن">⏳ بانتظار المزامنة</button>
     <div class="badge-icons-row">
-      <button id="profileBtn" class="ghost user-chip" title="حسابي — تعديل كلمة المرور والصورة الشخصية"><span class="hdr-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.4"/><path d="M4.8 19.5c1.2-3.8 3.8-5.8 7.2-5.8s6 2 7.2 5.8"/></svg></span> <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></button>
-      <button id="logoutBtn" class="ghost" style="padding:2px 8px; font-size:11px;" title="تسجيل الخروج"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M10 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H10"/><path d="M14.5 8 19 12l-4.5 4"/><path d="M19 12H9.5"/></svg></span> خروج</button>
+      <button id="profileBtn" class="ghost user-chip" title="حسابي — تعديل كلمة المرور والصورة الشخصية"><span class="hdr-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 20c.6-3.6 3.2-5.8 7-5.8s6.4 2.2 7 5.8"/></svg></span> <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></button>
+      <button id="logoutBtn" class="ghost" style="padding:2px 8px; font-size:11px;" title="تسجيل الخروج"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M9 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3"/><polyline points="15 16 20 12 15 8"/><line x1="20" y1="12" x2="9" y2="12"/></svg></span> خروج</button>
       <div class="notif-wrap">
         <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
         <div class="notif-panel" id="notifPanel"></div>
@@ -1058,16 +1058,6 @@ button:active{ transform:scale(.96); }
   </div>
 
   <div id="subtab-faultyequip" class="subtab-panel">
-    <div class="card">
-      <h3>🛠️ استيراد قائمة المعدات المتعطلة (إكسل)</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع ملف إكسل بنفس أعمدة الملف الأصلي (المكتب، اسم المعدة، نوع المعدة، نوع المشكلة، إفادة الزينون، المقاول، الإشعار، تاريخ الإشعار، الإجراء الحالي عند، الإجراء، هل تمت المعالجة). عند رفع الملف مرة أخرى: يتم تحديث الصفوف المطابقة (نفس المكتب واسم المعدة) وإضافة أي صف جديد فقط.</p>
-      <div class="btn-row">
-        <input type="file" id="faultyEquipInput" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="max-width:260px;">
-        <button type="button" class="primary" id="btnImportFaultyEquip">⬆ استيراد الملف</button>
-      </div>
-      <div id="faultyEquipImportResult" style="margin-top:12px; font-size:13px; color:var(--text-secondary);"></div>
-    </div>
-
     <div class="card">
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
         <h3 style="margin:0;">🛠️ المعدات المتعطلة</h3>
@@ -3139,7 +3129,7 @@ document.getElementById('btnSaveOfficeAssignment').addEventListener('click', asy
   }
 });
 
-const FAULTY_CLOSE_REASONS = ['NEED MANUFACTURE', 'DAMAG', 'NO JUMPER', 'المعدة مزالة', 'تم حذف المعدة مع منظومة التحكم'];
+const FAULTY_CLOSE_REASONS = ['تمت المعالجة', 'تم الحذف من النظام'];
 let FAULTY_CASES_CACHE = [];
 
 async function renderFaultyCasesView(){
@@ -3355,20 +3345,14 @@ function renderFaultyEquipList(){
     <div class="leave-item" data-fe-id="${escapeHtml(item.id)}" style="${done?'opacity:0.65;':''}">
       <div class="leave-top">
         <div class="leave-title">${escapeHtml(item.equipName)} — ${escapeHtml(item.office)}</div>
-        <span class="status-pill ${done?'status-done':'status-new'}">${done?'تمت الإصلاح':'قائمة'}</span>
+        <span class="status-pill ${done?'status-done':'status-new'}">${done?'تمت المعالجة':'قائمة'}</span>
       </div>
       <div class="leave-meta">
-        الأولوية: ${escapeHtml(item.priority||'-')}<br>
-          نوع المعدة: ${escapeHtml(item.equipType||'-')} · نوع المشكلة: ${escapeHtml(item.problemType||'-')}<br>
-        إفادة الزينون: ${escapeHtml(item.zenonNote||'-')} · المقاول: ${escapeHtml(item.contractor||'-')}<br>
-        الإشعار: ${escapeHtml(item.notice||'-')} · تاريخ الإشعار: ${escapeHtml(item.noticeDate||'-')}<br>
-        الإجراء الحالي عند: ${escapeHtml(item.currentActionOwner||'-')}<br>
-        الإجراء: ${escapeHtml(item.action||'-')}<br>
-          رقم المقايسة: ${escapeHtml(item.boqNumber||'-')} · الاستشاري: ${escapeHtml(item.consultant||'-')}
+        الإجراء: ${escapeHtml(item.action) || '-'}
       </div>
       <div class="leave-actions">
         <button type="button" class="feEditBtn" data-id="${escapeHtml(item.id)}">✏️ تعديل</button>
-        ${done ? '' : `<button type="button" class="feFixBtn" data-id="${escapeHtml(item.id)}" style="border-color:var(--good); color:var(--good);">✅ تمت الإصلاح</button>`}
+        ${done ? '' : `<button type="button" class="feFixBtn" data-id="${escapeHtml(item.id)}" style="border-color:var(--good); color:var(--good);">✅ تمت المعالجة</button>`}
       </div>
     </div>`;
   }).join('');
@@ -3390,7 +3374,7 @@ function renderFaultyEquipList(){
           if(json.error === 'unauthorized'){ forceReLogin(); return; }
           toast(json.error || 'تعذر التحديث'); btn.disabled = false; return;
         }
-        toast('تم تحديد المعدة كـ «تمت الإصلاح»');
+        toast('تم تحديد المعدة كـ «تمت المعالجة»');
         renderFaultyEquipmentView();
       }catch(e){ toast('تعذر الاتصال بالخادم'); btn.disabled = false; }
     });
@@ -3469,42 +3453,6 @@ async function faultyEquipReadExcelAsCsv(file){
   return XLSX.utils.sheet_to_csv(sheet);
 }
 
-document.getElementById('btnImportFaultyEquip').addEventListener('click', async ()=>{
-  const input = document.getElementById('faultyEquipInput');
-  const resultBox = document.getElementById('faultyEquipImportResult');
-  const btn = document.getElementById('btnImportFaultyEquip');
-  const file = input.files[0];
-  if(!file){ toast('يرجى اختيار ملف'); return; }
-  btn.disabled = true;
-  resultBox.textContent = 'جارٍ المعالجة...';
-  try{
-    let csvText;
-    if(/\.(xlsx|xls)$/i.test(file.name)){
-      csvText = await faultyEquipReadExcelAsCsv(file);
-    } else {
-      csvText = await file.text();
-    }
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'importFaultyEquipment', token: authToken(), csvText })
-    });
-    const json = await res.json();
-    if(!json.ok){
-      if(json.error === 'unauthorized'){ forceReLogin(); return; }
-      resultBox.textContent = 'تعذر الاستيراد: ' + (json.error || 'خطأ غير معروف');
-      btn.disabled = false;
-      return;
-    }
-    resultBox.textContent = `تم الاستيراد — إجمالي الصفوف: ${json.totalRows} · أُضيف: ${json.added} · حُدّث: ${json.updated}`;
-    toast('تم استيراد الملف بنجاح');
-    input.value = '';
-    await renderFaultyEquipmentView();
-  }catch(e){
-    resultBox.textContent = 'تعذر قراءة الملف أو الاتصال بالخادم';
-  }
-  btn.disabled = false;
-});
 
 document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=>{
   const input = document.getElementById('scadaCsvInput');
