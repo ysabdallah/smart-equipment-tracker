@@ -1470,8 +1470,16 @@ function restoreActiveTab(){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
-  const panel = document.getElementById('tab-'+saved);
-  if(panel) panel.classList.add('active');
+  if(saved==='faultyequip'){
+    document.getElementById('tab-tasks').classList.add('active');
+    document.querySelectorAll('#tab-tasks .subtab-btn').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('#tab-tasks .subtab-panel').forEach(function(p){p.classList.remove('active');});
+    document.getElementById('subtab-faultyequip').classList.add('active');
+    var _stNav3 = document.querySelector('#tab-tasks .subtabs'); if(_stNav3) _stNav3.style.display='none';
+  } else {
+    var panel = document.getElementById('tab-'+saved);
+    if(panel) panel.classList.add('active');
+  }
   if(saved==='dash') renderDashboard();
   if(saved==='tasks'){ renderTasksView(); renderScadaView(); }
   if(saved==='faultyequip') renderFaultyEquipmentView();
