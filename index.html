@@ -16,7 +16,7 @@
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme: light;
@@ -30,7 +30,7 @@
   --brand-gradient: linear-gradient(100deg, var(--brand-blue), var(--brand-cyan));
   --radius:14px;
   --shadow:0 1px 2px rgba(16,27,43,.04), 0 8px 24px -12px rgba(16,27,43,.10);
-  --font-display:'Cairo','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --font-display:'El Messiri','Noto Kufi Arabic',system-ui,sans-serif;
   --glass-bg:rgba(255,255,255,.55); --glass-border:rgba(255,255,255,.6);
 }
 *{box-sizing:border-box;}
@@ -38,7 +38,7 @@ html,body{margin:0;padding:0;}
 body{
   background:var(--plane);
   color:var(--text-primary);
-  font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: 'Noto Kufi Arabic', system-ui, -apple-system, "Segoe UI", sans-serif;
   min-height:100vh;
 }
 body::before{
@@ -245,6 +245,44 @@ tbody tr:hover{ background:var(--surface-1); }
 .kpi-tile.accent-4 .value{ color:var(--critical);}
 .kpi-tile .kpi-sub{ font-size:11px; color:var(--text-muted); margin-top:8px;}
 .kpi-tile.hero-tile{ background:linear-gradient(115deg, var(--brand-navy) 20%, var(--brand-blue) 100%); border:none; }
+/* === تحديث الهوية البصرية: El Messiri/Noto Kufi، مفتاح تبديل، دونات، شريط تراكمي، ودجت الوقت/الطقس === */
+.kpi-tile.hero-tile .wave-deco{ opacity:.35 !important; }
+.theme-switch{ position:relative; display:inline-flex; align-items:center; width:52px; height:26px; padding:0; border-radius:999px; background:linear-gradient(180deg,#1b2a4a,#0e1730); border:1px solid rgba(255,255,255,.15); cursor:pointer; }
+.theme-switch .ts-knob{ position:absolute; top:2px; inset-inline-start:2px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.35); transition:inset-inline-start .25s ease, background .25s ease; }
+:root:not([data-theme="dark"]) .theme-switch{ background:linear-gradient(180deg,#bfe0ff,#8fd0ff); border-color:rgba(0,0,0,.08); }
+:root:not([data-theme="dark"]) .theme-switch .ts-knob{ inset-inline-start:28px; background:#fff8dc; }
+:root[data-theme="dark"] .theme-switch{ background:linear-gradient(180deg,#1b2a4a,#0e1730); border-color:rgba(255,255,255,.15); }
+:root[data-theme="dark"] .theme-switch .ts-knob{ inset-inline-start:2px; background:#fff; }
+.theme-switch .ts-icon{ position:absolute; top:5px; width:14px; height:14px; opacity:.85; pointer-events:none; }
+.theme-switch .ts-icon.ts-sun{ inset-inline-start:6px; color:#ffce54; }
+.theme-switch .ts-icon.ts-moon{ inset-inline-end:6px; color:#dfe8ff; }
+.theme-switch .ts-icon svg{ width:100%; height:100%; fill:currentColor; }
+.donut-wrap{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.donut-svg{ flex:0 0 auto; }
+.donut-legend{ display:flex; flex-direction:column; gap:8px; flex:1 1 160px; min-width:140px; }
+.donut-legend-item{ display:flex; align-items:center; gap:8px; font-size:13px; }
+.donut-legend-dot{ width:10px; height:10px; border-radius:50%; flex:0 0 auto; }
+.donut-legend-label{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.donut-legend-val{ font-weight:700; font-variant-numeric:tabular-nums; }
+.stack-bar-outer{ display:flex; flex-direction:column; gap:12px; }
+.stack-bar-track{ display:flex; width:100%; height:26px; border-radius:8px; overflow:hidden; background:rgba(127,127,127,.15); }
+.stack-bar-seg{ height:100%; min-width:2px; }
+.stack-legend{ display:flex; flex-wrap:wrap; gap:10px 16px; }
+.stack-legend-item{ display:flex; align-items:center; gap:6px; font-size:12.5px; }
+.stack-legend-dot{ width:9px; height:9px; border-radius:3px; flex:0 0 auto; }
+.stack-legend-val{ font-weight:700; font-variant-numeric:tabular-nums; opacity:.85; }
+.tw-widget{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; background:linear-gradient(115deg, var(--brand-navy) 0%, #04122e 100%); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px 20px; margin:0 0 16px; color:#eaf2ff; font-family:'JetBrains Mono', monospace; box-shadow:inset 0 0 24px rgba(62,158,242,.08); }
+.tw-clock{ font-size:28px; font-weight:700; letter-spacing:1px; text-shadow:0 0 12px rgba(62,158,242,.55); }
+.tw-dates{ display:flex; flex-direction:column; gap:2px; font-size:12px; opacity:.85; font-family:'Noto Kufi Arabic', sans-serif; }
+.tw-sep{ width:1px; align-self:stretch; background:rgba(255,255,255,.15); }
+.tw-weather{ display:flex; align-items:center; gap:10px; }
+.tw-temp{ font-size:26px; font-weight:700; }
+.tw-temp small{ font-size:13px; opacity:.7; font-weight:500; }
+.tw-env{ display:flex; flex-direction:column; gap:3px; font-size:11px; opacity:.85; font-family:'Noto Kufi Arabic', sans-serif; }
+.tw-env-item{ display:flex; align-items:center; gap:5px; }
+.tw-env-item svg{ width:12px; height:12px; opacity:.8; }
+@media (max-width:720px){ .tw-widget{ flex-direction:column; align-items:stretch; text-align:center; } }
+
 .kpi-tile.hero-tile .wave-deco{ position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
 .kpi-tile.hero-tile .label, .kpi-tile.hero-tile .value, .kpi-tile.hero-tile .kpi-sub, .kpi-tile.hero-tile .sparkline-wrap{ position:relative; z-index:1; }
 .kpi-tile.hero-tile .label{ color:rgba(242,247,255,.85);}
@@ -702,10 +740,11 @@ button:active{ transform:scale(.96); }
         <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
         <div class="notif-panel" id="notifPanel"></div>
       </div>
-      <button id="themeBtn" class="ghost" style="padding:2px 6px; font-size:11px;" title="تبديل الوضع الليلي">
-        <span class="hdr-ico theme-icon-moon"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
-        <span class="hdr-ico theme-icon-sun" style="display:none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
-      </button>
+      <button id="themeBtn" class="theme-switch" title="تبديل الوضع الليلي" aria-label="تبديل الوضع الليلي">
+              <span class="ts-icon ts-sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
+              <span class="ts-icon ts-moon"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+              <span class="ts-knob"></span>
+            </button>
     </div>
   </div>
 </header>
@@ -785,6 +824,20 @@ button:active{ transform:scale(.96); }
 </div>
 
 <div class="app-layout">
+<div class="tw-widget" id="twWidget">
+  <div class="tw-clock" id="twClock">--:--:--</div>
+  <div class="tw-dates"><span id="twDateG"></span><span id="twDateH"></span></div>
+  <div class="tw-sep"></div>
+  <div class="tw-weather">
+    <div class="tw-temp" id="twTemp">—<small>°C</small></div>
+    <div class="tw-env">
+      <div class="tw-env-item" title="الشعور بالحرارة"><span id="twFeels">—</span></div>
+      <div class="tw-env-item" title="سرعة الرياح"><span id="twWind">—</span></div>
+      <div class="tw-env-item" title="الرطوبة"><span id="twHumidity">—</span></div>
+      <div class="tw-env-item" title="الشروق / الغروب"><span id="twSun">—</span></div>
+    </div>
+  </div>
+</div>
 <nav class="tabs">
   <button class="tab-btn active" data-tab="dash"><span class="tab-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span> لوحة المعلومات</button>
   <button class="tab-btn" data-tab="coords"><span class="tab-ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11a7 7 0 1 1 14 0c0 5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg></span> الإحداثيات والمعدات</button>
@@ -4641,6 +4694,67 @@ function countBy(arr, key){
   arr.forEach(x=>{ const k = x[key]||'—'; m[k]=(m[k]||0)+1; });
   return Object.entries(m).sort((a,b)=>b[1]-a[1]);
 }
+function renderDonutChart(containerId, data){
+  const container = document.getElementById(containerId);
+  const total = data.reduce((s,d)=>s+d[1],0) || 1;
+  const palette = ['#2F8CFF','#2FE6B8','#FFB86B','#FF6B9D','#9B8CFF','#4ADE80','#F472B6','#38BDF8'];
+  const r = 15.9155, cx = 21, cy = 21;
+  let offset = 0;
+  const segs = data.map(([label,val],i)=>{
+    const pct = (val/total*100);
+    const dash = pct.toFixed(2) + ' ' + (100-pct).toFixed(2);
+    const dashoffset = (-offset).toFixed(2);
+    offset += pct;
+    return '<circle class="donut-seg" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="transparent" stroke="'+palette[i%palette.length]+'" stroke-width="6" stroke-dasharray="'+dash+'" stroke-dashoffset="'+dashoffset+'" transform="rotate(-90 '+cx+' '+cy+')"></circle>';
+  }).join('');
+  const legend = data.map(([label,val],i)=>'<div class="donut-legend-item"><span class="donut-legend-dot" style="background:'+palette[i%palette.length]+'"></span><span class="donut-legend-label" title="'+escapeHtml(label)+'">'+escapeHtml(label)+'</span><span class="donut-legend-val">'+val+'</span></div>').join('');
+  container.innerHTML = '<div class="donut-wrap"><svg class="donut-svg" width="140" height="140" viewBox="0 0 42 42">'+segs+'<text x="'+cx+'" y="'+(cy+2)+'" text-anchor="middle" font-size="7" font-weight="800" fill="currentColor">'+total+'</text></svg><div class="donut-legend">'+legend+'</div></div>';
+}
+function renderStackedBarChart(containerId, data){
+  const container = document.getElementById(containerId);
+  const total = data.reduce((s,d)=>s+d[1],0) || 1;
+  const palette = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)','var(--s6)','var(--s7)','var(--s8)'];
+  const segs = data.map(([label,val],i)=>{
+    const pct = (val/total*100).toFixed(2);
+    return '<div class="stack-bar-seg" style="width:'+pct+'%; background:'+palette[i%palette.length]+';" title="'+escapeHtml(label)+': '+val+'"></div>';
+  }).join('');
+  const legend = data.map(([label,val],i)=>'<div class="stack-legend-item"><span class="stack-legend-dot" style="background:'+palette[i%palette.length]+'"></span><span>'+escapeHtml(label)+'</span><span class="stack-legend-val">'+val+'</span></div>').join('');
+  container.innerHTML = '<div class="stack-bar-outer"><div class="stack-bar-track">'+segs+'</div><div class="stack-legend">'+legend+'</div></div>';
+}
+let __twInited = false;
+function initTimeWeatherWidgetOnce(){
+  if(__twInited) return; __twInited = true;
+  function tick(){
+    const now = new Date();
+    const t = new Intl.DateTimeFormat('ar-SA-u-nu-latn',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'Asia/Riyadh'}).format(now);
+    const dg = new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Riyadh'}).format(now);
+    const dh = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-nu-latn',{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Riyadh'}).format(now);
+    const elC = document.getElementById('twClock'); if(elC) elC.textContent = t;
+    const elG = document.getElementById('twDateG'); if(elG) elG.textContent = dg;
+    const elH = document.getElementById('twDateH'); if(elH) elH.textContent = dh + ' هـ';
+  }
+  tick(); setInterval(tick, 1000);
+  async function loadWeather(){
+    try{
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=26.3260&longitude=43.9750&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m&daily=sunrise,sunset&timezone=Asia%2FRiyadh';
+      const res = await fetch(url);
+      const j = await res.json();
+      const c = j.current || {};
+      const d = j.daily || {};
+      const elT = document.getElementById('twTemp');
+      if(elT && c.temperature_2m!=null) elT.innerHTML = Math.round(c.temperature_2m) + '<small>°C</small>';
+      const elF = document.getElementById('twFeels'); if(elF && c.apparent_temperature!=null) elF.textContent = 'شعور ' + Math.round(c.apparent_temperature) + '°';
+      const elW = document.getElementById('twWind'); if(elW && c.wind_speed_10m!=null) elW.textContent = Math.round(c.wind_speed_10m) + ' كم/س';
+      const elHu = document.getElementById('twHumidity'); if(elHu && c.relative_humidity_2m!=null) elHu.textContent = c.relative_humidity_2m + '%';
+      const elS = document.getElementById('twSun');
+      if(elS && d.sunrise && d.sunset){
+        const fmt = iso => new Intl.DateTimeFormat('ar-SA-u-nu-latn',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Riyadh'}).format(new Date(iso));
+        elS.textContent = fmt(d.sunrise[0]) + ' / ' + fmt(d.sunset[0]);
+      }
+    }catch(e){ }
+  }
+  loadWeather(); setInterval(loadWeather, 15*60*1000);
+}
 function renderBarChart(containerId, data){
   const max = Math.max(...data.map(d=>d[1]), 1);
   const container = document.getElementById(containerId);
@@ -4775,9 +4889,10 @@ function animateCountUp(el, target){
 function renderDashboard(){
   animateCountUp(document.getElementById('kpiTotalPoles'), (SCADA_CONN_STATUS && SCADA_CONN_STATUS.hasData && SCADA_CONN_STATUS.totalCount) ? SCADA_CONN_STATUS.totalCount : POLES.length);
   renderScadaConnKpi();
+        initTimeWeatherWidgetOnce();
 
-  renderBarChart('chartByType', countBy(POLES,'type'));
-  renderBarChart('chartByOffice', countBy(POLES,'office'));
+  renderDonutChart('chartByType', countBy(POLES,'type'));
+  renderStackedBarChart('chartByOffice', countBy(POLES,'office'));
   renderBarChart('chartByManu', countBy(POLES,'manufacturer'));
   renderWarrantySection();
   populateExportFilters();
