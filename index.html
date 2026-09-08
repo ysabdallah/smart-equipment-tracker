@@ -2025,6 +2025,7 @@ async function initData(){
       TASKS = normalizeTasks(data.tasks);
       PENDING_USERS = data.pendingUsers || [];
       SCADA_CONN_STATUS = data.scadaConnectionStatus || null;
+      FAULTY_CASES_DASH = data.faultyCases || [];
       cachePolesLocally();
       cacheActivityLocally();
       setConnStatus('connected');
