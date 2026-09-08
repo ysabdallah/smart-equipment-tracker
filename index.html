@@ -506,9 +506,9 @@ header.app-header .wave-deco{ display:none !important; }
 .warranty-table td{ padding:8px 10px; border-bottom:1px dashed var(--baseline); direction:ltr; text-align:right;}
 .warranty-table tr:last-child td{ border-bottom:none; }
 .warranty-note{ color:var(--text-muted); font-size:11px; margin-top:8px; text-align:center;}
-.auth-screen{ position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; padding:20px;
+.auth-screen{ position:fixed; inset:0; z-index:500; display:flex; align-items:flex-start; justify-content:center; padding:20px; overflow-y:auto;
   background: var(--plane); }
-.auth-screen .login-card{ width:100%; max-width:380px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; text-align:center; overflow:hidden; }
+.auth-screen .login-card{ width:100%; max-width:380px; margin:auto 0; background:var(--surface-2); border:1.5px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; text-align:center; overflow:hidden; }
 .auth-screen .login-card-banner{ background:linear-gradient(115deg, var(--brand-navy) 20%, var(--brand-blue) 100%); margin:-32px -28px 20px; padding:24px 28px 14px; position:relative; overflow:hidden; color:#F2F7FF; }
 .auth-screen .login-card-banner .wave-deco{ position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
 .auth-screen .login-card-banner .login-logo, .auth-screen .login-card-banner h2{ position:relative; z-index:1; margin-top:0; }
