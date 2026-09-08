@@ -286,10 +286,9 @@ nav.tabs{ order:1 !important; }
 .tw-dates{ display:flex; flex-direction:column; gap:2px; font-size:12px; opacity:.85; font-family:'Noto Kufi Arabic', sans-serif; }
 .tw-sep{ width:1px; align-self:stretch; background:rgba(255,255,255,.15); }
 .tw-weather{ display:flex; flex-direction:column; align-items:center; gap:4px; }
-.tw-wicon{ width:26px; height:26px; color:#ffcf5c; filter:drop-shadow(0 0 6px rgba(255,207,92,.55)); margin-bottom:1px; }
+.tw-wicon{ width:24px; height:24px; color:#ffcf5c; filter:drop-shadow(0 0 6px rgba(255,207,92,.55)); flex-shrink:0; }
 .tw-wicon svg{ width:100%; height:100%; }
-.tw-feels{ font-size:11px; opacity:.75; margin-inline-start:6px; }
-.tw-temp-row{ display:flex; align-items:baseline; gap:2px; }
+.tw-temp-row{ display:flex; align-items:center; gap:6px; }
 .tw-city{ font-size:11px; opacity:.75; font-family:'Noto Kufi Arabic', sans-serif; }
 .tw-temp{ font-size:26px; font-weight:700; line-height:1; }
 .tw-temp small{ font-size:13px; opacity:.7; font-weight:500; }
@@ -867,8 +866,10 @@ button:active{ transform:scale(.96); }
   </div>
   <div class="tw-sep"></div>
   <div class="tw-weather">
-    <span class="tw-wicon" id="twIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 12H1.8M22.2 12h-2.4M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg></span>
-    <div class="tw-temp-row"><div class="tw-temp" id="twTemp">—<small>°C</small></div><span class="tw-feels" id="twFeels">—</span></div>
+    <div class="tw-temp-row">
+      <span class="tw-wicon" id="twIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 12H1.8M22.2 12h-2.4M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg></span>
+      <div class="tw-temp" id="twTemp">—<small>°C</small></div>
+    </div>
     <div class="tw-city">بريدة، القصيم</div>
   </div>
   <div class="tw-sep"></div>
