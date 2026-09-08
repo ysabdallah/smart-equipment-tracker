@@ -332,6 +332,12 @@ nav.tabs{ order:1 !important; }
 .lollipop-track::before{ content:''; position:absolute; inset-inline:0; top:50%; height:1px; background:var(--grid); transform:translateY(-50%); }
 .lollipop-stem{ position:absolute; inset-inline-start:0; top:50%; height:2px; background:var(--brand-navy); border-radius:2px; transform:translateY(-50%); }
 .lollipop-dot{ position:absolute; top:50%; width:10px; height:10px; border-radius:50%; background:var(--brand-navy); border:2px solid var(--surface-2); transform:translate(50%,-50%); box-shadow:0 0 0 1px var(--grid); }
+.ranked-row{display:flex;align-items:center;gap:10px;margin:9px 0;}
+.ranked-rank{width:22px;height:22px;border-radius:50%;background:var(--brand-navy);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ranked-label{width:130px;font-size:12px;color:var(--text-secondary);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ranked-track{flex:1;background:var(--surface-1);border-radius:999px;height:22px;position:relative;overflow:hidden;border:1px solid var(--grid-soft);}
+.ranked-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand-navy),#2F8CFF);display:flex;align-items:center;justify-content:flex-end;padding-inline-end:8px;min-width:30px;transition:width .4s ease;}
+.ranked-value{font-size:11px;font-weight:800;color:#fff;font-family:'JetBrains Mono',monospace;}
 
 .search-box{ position:relative; }
 .suggestions{ position:absolute; top:calc(100% + 8px); right:0; left:0; background:var(--surface-2); border:1.5px solid var(--border); border-radius:12px; box-shadow:0 12px 32px -8px rgba(16,27,43,.18); max-height:300px; overflow-y:auto; z-index:60; display:none;}
@@ -926,7 +932,6 @@ button:active{ transform:scale(.96); }
 
   <nav class="subtabs">
     <button class="subtab-btn active" data-subtab="overview">📈 نظرة عامة</button>
-    <button class="subtab-btn" data-subtab="warranty">🛡️ الضمان</button>
   </nav>
 
   <div id="subtab-overview" class="subtab-panel active">
@@ -968,9 +973,11 @@ button:active{ transform:scale(.96); }
         <div id="chartByManu"></div>
       </div>
     </div>
-  </div>
-
-  <div id="subtab-warranty" class="subtab-panel">
+  
+    <div class="card">
+      <h3>الحالات المتعطلة حسب التصنيف</h3>
+      <div id="chartByFaultyType"></div>
+    </div>
     <div class="card">
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
         <h3 style="margin:0;">حالة الضمان — تُحسب تلقائيًا من سنة الصنع (مدة الضمان 5 سنوات)</h3>
@@ -994,6 +1001,8 @@ button:active{ transform:scale(.96); }
       <div class="warranty-note" id="warrantyUnknownNote"></div>
     </div>
   </div>
+
+  
 </section>
 
 <!-- ===================== TAB 3: TASKS ===================== -->
@@ -1373,6 +1382,7 @@ button:active{ transform:scale(.96); }
 <script>
 /* ================= DATA ================= */
 let POLES = [];
+let FAULTY_CASES_DASH = [];
 let editingPoleIndex = null;
 
 let poleFilters = { search:"" };
@@ -1967,6 +1977,7 @@ async function attemptReconnect(){
       TASKS = normalizeTasks(data.tasks);
       PENDING_USERS = data.pendingUsers || [];
       SCADA_CONN_STATUS = data.scadaConnectionStatus || null;
+      FAULTY_CASES_DASH = data.faultyCases || [];
       cachePolesLocally();
       cacheActivityLocally();
       renderPoleResults();
@@ -4758,6 +4769,20 @@ function initTimeWeatherWidgetOnce(){
   }
   loadWeather(); setInterval(loadWeather, 15*60*1000);
 }
+function renderRankedBarChart(containerId, data) {
+  const max = Math.max.apply(null, data.map(function(d){return d[1];}).concat([1]));
+  const container = document.getElementById(containerId);
+  container.innerHTML = data.map(function(pair, i) {
+    var label = pair[0], val = pair[1];
+    var pct = (val/max*100).toFixed(1);
+    return '<div class="ranked-row">' +
+      '<div class="ranked-rank">' + (i+1) + '</div>' +
+      '<div class="ranked-label" title="' + escapeHtml(label) + '">' + escapeHtml(label) + '</div>' +
+      '<div class="ranked-track"><div class="ranked-fill" style="width:' + pct + '%"><span class="ranked-value">' + val + '</span></div></div>' +
+    '</div>';
+  }).join('');
+}
+
 function renderBarChart(containerId, data){
   const max = Math.max(...data.map(d=>d[1]), 1);
   const container = document.getElementById(containerId);
@@ -4896,7 +4921,8 @@ function renderDashboard(){
 
   renderDonutChart('chartByType', countBy(POLES,'type'));
   renderStackedBarChart('chartByOffice', countBy(POLES,'office'));
-  renderBarChart('chartByManu', countBy(POLES,'manufacturer'));
+  renderRankedBarChart('chartByManu', countBy(POLES,'manufacturer'));
+  renderDonutChart('chartByFaultyType', countBy(FAULTY_CASES_DASH.filter(function(fc){return fc.status==='مفتوحة';}),'problemType'));
   renderWarrantySection();
   populateExportFilters();
   populateScheduleBulkScopeOptions();
