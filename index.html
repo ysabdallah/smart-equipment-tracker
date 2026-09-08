@@ -72,13 +72,14 @@ header.app-header .badge-icons-row button.ghost{
 }
 .hdr-ico{ width:16.5px; height:16.5px; display:inline-block; vertical-align:-3px; flex-shrink:0; }
 .hdr-ico svg{ width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; }
+#notifBtn .hdr-ico svg{ fill:currentColor; stroke:none; }
 .logo-mark .hdr-ico{ width:16px; height:16px; vertical-align:0; }
 .logo-mark .hdr-ico svg{ stroke:none; fill:currentColor; }
 :root[data-theme="dark"] .theme-icon-moon{ display:none !important; }
 :root[data-theme="dark"] .theme-icon-sun{ display:inline-block !important; }
 header.app-header h1{
   font-size:17px; margin:0; font-weight:800; font-family:var(--font-display);
-  color:#F2F7FF;
+  color:var(--text-primary);
 }
 header.app-header .sub{ font-size:10.5px; color:var(--text-secondary); margin-top:3px; font-weight:600; letter-spacing:.3px;}
 .badge-group{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
@@ -275,24 +276,26 @@ tbody tr:hover{ background:var(--surface-1); }
 .stack-legend-item{ display:flex; align-items:center; gap:6px; font-size:12.5px; }
 .stack-legend-dot{ width:9px; height:9px; border-radius:3px; flex:0 0 auto; }
 .stack-legend-val{ font-weight:700; font-variant-numeric:tabular-nums; opacity:.85; }
-.tw-widget{ display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap; background:linear-gradient(180deg,#04122e,#071a3f); border:1px solid rgba(123,211,255,.22); border-radius:14px; padding:14px 24px; margin:0 0 16px; color:#eaf2ff; font-family:'JetBrains Mono', monospace; box-shadow:inset 0 0 24px rgba(62,158,242,.08); }
+.tw-widget{ display:flex; align-items:center; justify-content:center; gap:34px; flex-wrap:wrap; background:linear-gradient(180deg,#04122e,#071a3f); border:1px solid rgba(123,211,255,.22); border-radius:14px; padding:16px 30px; margin:0 0 16px; color:#eaf2ff; font-family:'JetBrains Mono', monospace; box-shadow:inset 0 0 24px rgba(62,158,242,.08); }
 .tw-clockblock{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
 .app-layout{ flex-wrap:wrap !important; }
 .tw-widget{ order:-1 !important; flex:1 1 100% !important; width:100% !important; }
 nav.tabs{ order:1 !important; }
 .app-layout > main{ order:2 !important; }
 
-.tw-clock{ font-size:28px; font-weight:700; letter-spacing:1px; text-shadow:0 0 12px rgba(62,158,242,.55); }
+.tw-clock{ font-size:28px; font-weight:700; letter-spacing:1px; color:#eaf6ff; text-shadow:0 0 6px rgba(160,221,255,.9), 0 0 16px rgba(62,158,242,.75), 0 0 34px rgba(62,158,242,.45); }
 .tw-dates{ display:flex; flex-direction:column; gap:2px; font-size:12px; opacity:.85; font-family:'Noto Kufi Arabic', sans-serif; }
 .tw-sep{ width:1px; align-self:stretch; background:rgba(255,255,255,.15); }
-.tw-weather{ display:flex; flex-direction:column; align-items:center; gap:2px; }
+.tw-weather{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+.tw-wicon{ width:26px; height:26px; color:#ffcf5c; filter:drop-shadow(0 0 6px rgba(255,207,92,.55)); margin-bottom:1px; }
+.tw-wicon svg{ width:100%; height:100%; }
 .tw-feels{ font-size:11px; opacity:.75; margin-inline-start:6px; }
 .tw-temp-row{ display:flex; align-items:baseline; gap:2px; }
 .tw-city{ font-size:11px; opacity:.75; font-family:'Noto Kufi Arabic', sans-serif; }
 .tw-temp{ font-size:26px; font-weight:700; line-height:1; }
 .tw-temp small{ font-size:13px; opacity:.7; font-weight:500; }
-.tw-env{ display:flex; flex-direction:column; gap:6px; font-size:12px; opacity:.9; font-family:'Noto Kufi Arabic', sans-serif; }
-.tw-env-item{ display:flex; align-items:center; gap:5px; }
+.tw-env{ display:flex; flex-direction:column; gap:9px; font-size:12px; opacity:.9; font-family:'Noto Kufi Arabic', sans-serif; }
+.tw-env-item{ display:flex; align-items:center; gap:7px; }
 .tw-env-item svg{ width:14px; height:14px; opacity:1; color:#7bd3ff; flex-shrink:0; }
 @media (max-width:720px){ .tw-widget{ flex-direction:column; align-items:center; text-align:center; } .tw-clockblock{ align-items:center; } }
 .app-layout > nav.tabs{ position:static !important; top:auto !important; flex-direction:row !important; flex-wrap:wrap; width:auto !important; justify-content:flex-start; gap:8px; flex:0 1 100% !important; }
@@ -764,7 +767,7 @@ button:active{ transform:scale(.96); }
       <button id="profileBtn" class="ghost user-chip" title="حسابي — تعديل كلمة المرور والصورة الشخصية"><span class="hdr-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 20c.6-3.6 3.2-5.8 7-5.8s6.4 2.2 7 5.8"/></svg></span> <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></button>
       <button id="logoutBtn" class="ghost" style="padding:2px 8px; font-size:11px;" title="تسجيل الخروج"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M9 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3"/><polyline points="15 16 20 12 15 8"/><line x1="20" y1="12" x2="9" y2="12"/></svg></span> خروج</button>
       <div class="notif-wrap">
-        <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات"><span class="hdr-ico"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
+        <button id="notifBtn" class="ghost" style="padding:2px 6px; font-size:13px; position:relative;" title="آخر التعديلات"><span class="hdr-ico"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 22.5c1.24 0 2.25-1.01 2.25-2.25h-4.5c0 1.24 1.01 2.25 2.25 2.25zm7-5.5v-.75l-1.5-1.5v-4.5c0-3.13-1.66-5.75-4.75-6.45V9c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.8C6.66 10.5 5 13.11 5 16.25v4.5L3.5 22.25V23h17v-.75z"/></svg></span><span id="notifBadge" class="notif-badge" style="display:none;">0</span></button>
         <div class="notif-panel" id="notifPanel"></div>
       </div>
       <button id="themeBtn" class="theme-switch" title="تبديل الوضع الليلي" aria-label="تبديل الوضع الليلي">
@@ -858,6 +861,7 @@ button:active{ transform:scale(.96); }
   </div>
   <div class="tw-sep"></div>
   <div class="tw-weather">
+    <span class="tw-wicon" id="twIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 12H1.8M22.2 12h-2.4M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg></span>
     <div class="tw-temp-row"><div class="tw-temp" id="twTemp">—<small>°C</small></div><span class="tw-feels" id="twFeels">—</span></div>
     <div class="tw-city">بريدة، القصيم</div>
   </div>
