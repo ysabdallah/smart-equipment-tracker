@@ -1390,10 +1390,27 @@ button:active{ transform:scale(.96); }
             <option value="monthly">شهري</option>
           </select>
         </div>
-        <div>
-          <label for="reportScheduleRecipient">البريد المستلم</label>
-          <input type="text" id="reportScheduleRecipient" placeholder="manager@example.com">
+        <div id="reportScheduleDayField">
+          <label for="reportScheduleDayOfWeek">يوم الإرسال (أسبوعي)</label>
+          <select id="reportScheduleDayOfWeek">
+            <option value="0">الأحد</option>
+            <option value="1">الاثنين</option>
+            <option value="2">الثلاثاء</option>
+            <option value="3">الأربعاء</option>
+            <option value="4">الخميس</option>
+            <option value="5">الجمعة</option>
+            <option value="6">السبت</option>
+          </select>
         </div>
+        <div id="reportScheduleHourField">
+          <label for="reportScheduleHour">ساعة الإرسال التقريبية</label>
+          <select id="reportScheduleHour"></select>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <label>البريد المستلم (يمكن إضافة أكثر من بريد)</label>
+        <div id="reportScheduleRecipientsWrap" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;"></div>
+        <button type="button" class="ghost" id="btnAddReportRecipient" style="margin-top:8px;">➕ إضافة بريد آخر</button>
       </div>
       <div class="form-msg" id="reportScheduleMsg"></div>
       <div class="btn-row">
@@ -2763,6 +2780,8 @@ async function renderNetworkReport(){
       ['مهام متأخرة', r.overdueTasksCount],
       ['حالات معطوبة مفتوحة', r.faultyOpenCount],
                 ['فحوصات دورية متأخرة', r.overdueInspectionsCount], ['تذاكر المصنّع المفتوحة', r.ticketsOpenCount], ['تذاكر المصنّع المغلقة', r.ticketsClosedCount],
+      ['نقاط ضعف الاتصال (أسبوع ' + (r.weakConnectionWeek!=null ? r.weakConnectionWeek : '—') + ')', r.weakConnectionCount || 0],
+      ...Object.keys(r.officeDistribution||{}).map(function(off){ return ['معدات مكتب ' + off, r.officeDistribution[off]]; }),
     ];
     wrap.innerHTML = tiles.map(([label,val])=>`
       <div class="kpi-tile accent-1"><div class="label">${escapeHtml(label)}</div><div class="value">${val===undefined||val===null ? '—' : escapeHtml(val)}</div></div>
@@ -2810,23 +2829,74 @@ async function loadReportScheduleConfig(){
     const c = json.config || {};
     document.getElementById('reportScheduleEnabled').checked = !!c.enabled;
     document.getElementById('reportScheduleFrequency').value = c.frequency === 'monthly' ? 'monthly' : 'weekly';
-    document.getElementById('reportScheduleRecipient').value = c.recipient || '';
+    document.getElementById('reportScheduleDayOfWeek').value = String(c.dayOfWeek != null ? c.dayOfWeek : 0);
+    populateReportScheduleHourSelect(c.hour != null ? c.hour : 7);
+    renderReportScheduleRecipients((c.recipients && c.recipients.length) ? c.recipients : ['']);
+    updateReportScheduleFieldsVisibility();
   }catch(e){ /* تجاهل — ليست حرجة */ }
 }
+
+function populateReportScheduleHourSelect(selectedHour){
+  const sel = document.getElementById('reportScheduleHour');
+  if(!sel) return;
+  sel.innerHTML = '';
+  for(let h=0; h<24; h++){
+    const opt = document.createElement('option');
+    opt.value = String(h);
+    opt.textContent = String(h).padStart(2,'0') + ':00';
+    if(h === Number(selectedHour)) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function renderReportScheduleRecipients(emails){
+  const wrap = document.getElementById('reportScheduleRecipientsWrap');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  emails.forEach(email => addReportScheduleRecipientRow(email));
+}
+
+function addReportScheduleRecipientRow(email){
+  const wrap = document.getElementById('reportScheduleRecipientsWrap');
+  if(!wrap) return;
+  const row = document.createElement('div');
+  row.style.display = 'flex'; row.style.gap = '8px';
+  row.innerHTML = '<input type="text" class="reportScheduleRecipientInput" placeholder="manager@example.com" style="flex:1;">' +
+    '<button type="button" class="danger" style="flex:0 0 auto;">✖</button>';
+  row.querySelector('input').value = email || '';
+  row.querySelector('button').addEventListener('click', () => {
+    if(wrap.children.length > 1) row.remove();
+    else row.querySelector('input').value = '';
+  });
+  wrap.appendChild(row);
+}
+
+function updateReportScheduleFieldsVisibility(){
+  const isWeekly = document.getElementById('reportScheduleFrequency').value === 'weekly';
+  const dayField = document.getElementById('reportScheduleDayField');
+  const hourField = document.getElementById('reportScheduleHourField');
+  if(dayField) dayField.style.display = isWeekly ? '' : 'none';
+  if(hourField) hourField.style.display = isWeekly ? '' : 'none';
+}
+
+document.getElementById('reportScheduleFrequency').addEventListener('change', updateReportScheduleFieldsVisibility);
+document.getElementById('btnAddReportRecipient').addEventListener('click', () => addReportScheduleRecipientRow(''));
 
 document.getElementById('btnSaveReportSchedule').addEventListener('click', async ()=>{
   const btn = document.getElementById('btnSaveReportSchedule');
   const msg = document.getElementById('reportScheduleMsg');
   const enabled = document.getElementById('reportScheduleEnabled').checked;
   const frequency = document.getElementById('reportScheduleFrequency').value;
-  const recipient = document.getElementById('reportScheduleRecipient').value.trim();
+  const dayOfWeek = Number(document.getElementById('reportScheduleDayOfWeek').value);
+  const hour = Number(document.getElementById('reportScheduleHour').value);
+  const recipients = Array.from(document.querySelectorAll('.reportScheduleRecipientInput')).map(i=>i.value.trim()).filter(v=>v);
   msg.className = 'form-msg'; msg.textContent = '';
   btn.disabled = true;
   try{
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'saveReportScheduleConfig', token: authToken(), enabled, frequency, recipient })
+      body: JSON.stringify({ action: 'saveReportScheduleConfig', token: authToken(), enabled, frequency, dayOfWeek, hour, recipients })
     });
     const json = await res.json();
     if(!json.ok){
