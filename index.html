@@ -1015,6 +1015,7 @@ button:active{ transform:scale(.96); }
   <nav class="subtabs">
     <button class="subtab-btn active" data-subtab="taskslist">🧾 المهام</button>
     <button class="subtab-btn" data-subtab="taskscada" id="scadaSubtabBtn" style="display:none;">📡 SCADA</button>
+    <button class="subtab-btn" data-subtab="weakconn" id="weakConnSubtabBtn" style="display:none;">📉 ضعف الاتصال</button>
   </nav>
 
   <div id="subtab-taskslist" class="subtab-panel active">
@@ -1079,6 +1080,30 @@ button:active{ transform:scale(.96); }
         <button type="button" onclick="document.getElementById('faultyCasesHistoryWrap').style.display = document.getElementById('faultyCasesHistoryWrap').style.display==='none' ? 'block':'none';" style="font-size:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 10px; cursor:pointer; color:var(--text-primary);">📜 سجل الأعطال السابقة (المُقفلة)</button>
         <div id="faultyCasesHistoryWrap" style="display:none; margin-top:10px;"></div>
       </div>
+    </div>
+  </div>
+
+  <div id="subtab-weakconn" class="subtab-panel">
+    <div class="card">
+      <h3>📉 رفع ملف نسبة الاتصال الأسبوعي</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع ملف Excel أو CSV بنسب اتصال المعدات لأسبوع معيّن (نفس بنية ملف SCADA). يتم تجاهل الخلايا التي قيمتها #VALUE! أو غير رقمية تلقائيًا.</p>
+      <div class="btn-row">
+        <input type="number" id="weakConnWeekInput" min="1" max="53" placeholder="رقم الأسبوع" style="max-width:120px;">
+        <input type="file" id="weakConnCsvInput" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="max-width:260px;">
+        <button type="button" class="primary" id="btnImportWeakConn">⬆ استيراد الملف</button>
+      </div>
+      <div id="weakConnImportResult" style="margin-top:12px; font-size:13px; color:var(--text-secondary);"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <h3 style="margin:0;">المعدات ذات ضعف الاتصال (أقل من 80% وأكبر من 0%)</h3>
+        <div class="btn-row" style="margin:0;">
+          <select id="weakConnWeekSelect" style="max-width:160px;"></select>
+          <button id="btnExportWeakConnExcel">⬇ تصدير إلى إكسل</button>
+        </div>
+      </div>
+      <div id="weakConnListWrap"></div>
     </div>
   </div>
 
@@ -1478,6 +1503,8 @@ function showAppShell(){
   if(exportTasksBtn) exportTasksBtn.style.display = admin ? '' : 'none';
   const scadaSubtabBtn = document.getElementById('scadaSubtabBtn');
   if(scadaSubtabBtn) scadaSubtabBtn.style.display = admin ? '' : 'none';
+  const weakConnSubtabBtn = document.getElementById('weakConnSubtabBtn');
+  if(weakConnSubtabBtn) weakConnSubtabBtn.style.display = admin ? '' : 'none';
   const faultyEquipTabBtn = document.getElementById('faultyEquipTabBtn');
   if(faultyEquipTabBtn) faultyEquipTabBtn.style.display = admin ? '' : 'none';
   const inspectionTabBtn = document.getElementById('inspectionTabBtn');
@@ -1507,7 +1534,7 @@ function restoreActiveTab(){
     if(panel) panel.classList.add('active');
   }
   if(saved==='dash') renderDashboard();
-  if(saved==='tasks'){ renderTasksView(); renderScadaView(); }
+  if(saved==='tasks'){ renderTasksView(); renderScadaView(); renderWeakConnView(); }
   if(saved==='faultyequip') renderFaultyEquipmentView();
   if(saved==='tickets') renderTicketsView();
   if(saved==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
@@ -3326,6 +3353,124 @@ async function scadaReadExcelAsCsv(file){
 }
 
 
+
+/* ================= تبويب ضعف نسبة الاتصال ================= */
+async function weakConnReadExcelAsCsv(file){
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array'});
+  const sheetName = wb.SheetNames.find(n => n.trim().toLowerCase() === 'data') || wb.SheetNames[0];
+  const sheet = wb.Sheets[sheetName];
+  return XLSX.utils.sheet_to_csv(sheet);
+}
+
+document.getElementById('btnImportWeakConn').addEventListener('click', async () => {
+  const input = document.getElementById('weakConnCsvInput');
+  const weekInput = document.getElementById('weakConnWeekInput');
+  const resultBox = document.getElementById('weakConnImportResult');
+  const file = input.files && input.files[0];
+  if(!file){ toast('اختر ملف CSV أو Excel أولًا'); return; }
+  const weekNumber = parseInt(weekInput.value, 10);
+  if(!weekNumber || weekNumber < 1 || weekNumber > 53){ toast('أدخل رقم الأسبوع أولًا'); return; }
+  const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+
+  const btn = document.getElementById('btnImportWeakConn');
+  btn.disabled = true;
+  resultBox.textContent = 'جارٍ قراءة الملف...';
+  try{
+    const csvText = isExcel ? await weakConnReadExcelAsCsv(file) : await file.text();
+    resultBox.textContent = 'جارٍ رفع الملف...';
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'importWeeklyConnectionCsv', token: authToken(), csvText, weekNumber })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      resultBox.textContent = 'تعذر الاستيراد: ' + (json.error || 'خطأ غير معروف');
+      btn.disabled = false;
+      return;
+    }
+    resultBox.textContent = `تم الاستيراد بنجاح — الأسبوع ${json.weekNumber}: ${json.totalRows} معدة، منها ${json.weakCount} ضعيفة الاتصال.`;
+    input.value = '';
+    btn.disabled = false;
+    await renderWeakConnView();
+  }catch(e){ resultBox.textContent = 'تعذر الاتصال بالخادم'; btn.disabled = false; }
+});
+
+let WEAK_CONN_CACHE = null;
+async function renderWeakConnView(selectedWeek){
+  if(!isAdmin()) return;
+  const wrap = document.getElementById('weakConnListWrap');
+  const weekSelect = document.getElementById('weakConnWeekSelect');
+  if(!wrap || !weekSelect) return;
+  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">جارٍ التحميل...</div>`;
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getWeeklyConnectionReport', token: authToken(), weekNumber: selectedWeek || undefined })
+    });
+    const json = await res.json();
+    if(!json.ok){
+      if(json.error === 'unauthorized'){ forceReLogin(); return; }
+      wrap.innerHTML = `<div style="color:var(--danger,#c0392b);">تعذر التحميل: ${escapeHtml(json.error||'خطأ غير معروف')}</div>`;
+      return;
+    }
+    WEAK_CONN_CACHE = json;
+    if(json.availableWeeks && json.availableWeeks.length){
+      weekSelect.innerHTML = json.availableWeeks.slice().reverse().map(w => `<option value="${w}" ${w===json.weekNumber?'selected':''}>الأسبوع ${w}</option>`).join('');
+      weekSelect.style.display = '';
+    } else {
+      weekSelect.innerHTML = '';
+      weekSelect.style.display = 'none';
+    }
+    if(!json.weekNumber){
+      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">لا توجد بيانات مرفوعة بعد.</div>`;
+      return;
+    }
+    if(!json.weak.length){
+      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">لا توجد معدات ضعيفة الاتصال في الأسبوع ${json.weekNumber}.</div>`;
+      return;
+    }
+    wrap.innerHTML = `
+      <div style="overflow-x:auto;">
+      <table class="warranty-table">
+        <thead><tr><th>المعدة</th><th>المكتب</th><th>نسبة الاتصال</th><th>الأسابيع المتكررة</th></tr></thead>
+        <tbody>
+          ${json.weak.map(r => `<tr>
+            <td>${escapeHtml(r.pole)}</td>
+            <td>${escapeHtml(r.office||'-')}</td>
+            <td>${escapeHtml(String(r.percentage))}%</td>
+            <td>${escapeHtml(r.weeksAffected.join(', '))} (${r.recurrenceCount})</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    `;
+  }catch(e){ wrap.innerHTML = `<div style="color:var(--danger,#c0392b);">تعذر الاتصال بالخادم</div>`; }
+}
+
+document.getElementById('weakConnWeekSelect').addEventListener('change', (e) => {
+  renderWeakConnView(e.target.value);
+});
+
+document.getElementById('btnExportWeakConnExcel').addEventListener('click', () => {
+  if(!WEAK_CONN_CACHE || !WEAK_CONN_CACHE.weak || !WEAK_CONN_CACHE.weak.length){ toast('لا توجد بيانات لتصديرها'); return; }
+  const rows = WEAK_CONN_CACHE.weak.map(r => ({
+    'المعدة': r.pole,
+    'المكتب': r.office,
+    'نسبة الاتصال': r.percentage,
+    'عدد أسابيع التكرار': r.recurrenceCount,
+    'الأسابيع المتكررة': r.weeksAffected.join(', ')
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'ضعف الاتصال');
+  XLSX.writeFile(wb, `weak_connection_week_${WEAK_CONN_CACHE.weekNumber}.xlsx`);
+  toast('تم تصدير التقرير كملف إكسل');
+});
+
 let FAULTY_EQUIP_FIELDS = [
   {key:'office', label:'المكتب'},
   {key:'priority', label:'الأولوية'},
@@ -4347,7 +4492,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     try{ sessionStorage.setItem('activeTab', btn.dataset.tab); }catch(e){}
     if(btn.dataset.tab==='dash') renderDashboard();
-    if(btn.dataset.tab==='tasks'){ renderTasksView(); renderScadaView(); }
+    if(btn.dataset.tab==='tasks'){ renderTasksView(); renderScadaView(); renderWeakConnView(); }
     if(btn.dataset.tab==='faultyequip') renderFaultyEquipmentView();
     if(btn.dataset.tab==='tickets') renderTicketsView();
     if(btn.dataset.tab==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
