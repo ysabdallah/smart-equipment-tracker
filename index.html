@@ -4927,13 +4927,14 @@ function animateCountUp(el, target){
   requestAnimationFrame(step);
 }
 function renderDashboard(){
-  animateCountUp(document.getElementById('kpiTotalPoles'), (SCADA_CONN_STATUS && SCADA_CONN_STATUS.hasData && SCADA_CONN_STATUS.totalCount) ? SCADA_CONN_STATUS.totalCount : POLES.length);
+  const STATS_POLES = POLES.filter(function(p){ return String(p.type||'').trim().toUpperCase() !== 'SMART OH'; });
+  animateCountUp(document.getElementById('kpiTotalPoles'), (SCADA_CONN_STATUS && SCADA_CONN_STATUS.hasData && SCADA_CONN_STATUS.totalCount) ? SCADA_CONN_STATUS.totalCount : STATS_POLES.length);
   renderScadaConnKpi();
         initTimeWeatherWidgetOnce();
 
   const latestImportTs = (SCADA_CONN_STATUS && SCADA_CONN_STATUS.lastImportAt) ? SCADA_CONN_STATUS.lastImportAt : null;
-  let SCADA_POLES = latestImportTs ? POLES.filter(function(p){ return p.scada_last_seen_at === latestImportTs; }) : [];
-  if (!SCADA_POLES.length) { SCADA_POLES = POLES.filter(function(p){ return p.scada_confirmed !== false; }); }
+  let SCADA_POLES = latestImportTs ? STATS_POLES.filter(function(p){ return p.scada_last_seen_at === latestImportTs; }) : [];
+  if (!SCADA_POLES.length) { SCADA_POLES = STATS_POLES.filter(function(p){ return p.scada_confirmed !== false; }); }
   renderDonutChart('chartByType', countBy(SCADA_POLES,'type'));
   renderStackedBarChart('chartByOffice', countBy(SCADA_POLES,'office'));
   renderRankedBarChart('chartByManu', countBy(SCADA_POLES,'manufacturer'));
