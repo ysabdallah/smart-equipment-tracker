@@ -894,6 +894,7 @@ button:active{ transform:scale(.96); }
   <button class="tab-btn active" data-tab="dash"><span class="tab-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span> لوحة المعلومات</button>
   <button class="tab-btn" data-tab="coords"><span class="tab-ico"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11a7 7 0 1 1 14 0c0 5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg></span> الإحداثيات والمعدات</button>
   <button class="tab-btn" data-tab="tasks"><span class="tab-ico"><svg viewBox="0 0 24 24"><path d="M6 3.5h9l3 3V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M9 11h6M9 15h6"/></svg></span> المهام</button>
+  <button class="tab-btn" data-tab="scada" id="scadaTabBtn" style="display:none;">📡 SCADA</button>
   <button class="tab-btn" data-tab="tickets"><span class="tab-ico"><svg viewBox="0 0 24 24"><path d="M4 8.5a1.5 1.5 0 0 1 1.5-1.5h13a1.5 1.5 0 0 1 1.5 1.5v2a1.7 1.7 0 0 0 0 3.4v2A1.5 1.5 0 0 1 18.5 17.5h-13A1.5 1.5 0 0 1 4 16v-2a1.7 1.7 0 0 0 0-3.4Z"/><path d="M14 7v10.5" stroke-dasharray="2.5 2.5"/></svg></span> تذاكر المصنعين</button>
   <button class="tab-btn" data-tab="faultyequip" id="faultyEquipTabBtn" style="display:none;"><span class="tab-ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 4.9L4 16.5 7.5 20l5.3-5.3a4 4 0 0 0 4.9-5.4l-2.8 2.8-2.4-2.4Z"/></svg></span> معدات متعطلة</button>
   <button class="tab-btn" data-tab="employees" id="employeesTabBtn" style="display:none;"><span class="tab-ico"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="8" r="2.6"/><path d="M3.5 19c.7-3 2.6-4.6 5-4.6s4.3 1.6 5 4.6"/><circle cx="17" cy="9" r="2.2"/><path d="M14.8 14.6c.5-.15 1-.22 1.6-.22 2.3 0 4 1.4 4.6 4"/></svg></span> الموظفون</button>
@@ -1014,8 +1015,6 @@ button:active{ transform:scale(.96); }
 
   <nav class="subtabs">
     <button class="subtab-btn active" data-subtab="taskslist">🧾 المهام</button>
-    <button class="subtab-btn" data-subtab="taskscada" id="scadaSubtabBtn" style="display:none;">📡 SCADA</button>
-    <button class="subtab-btn" data-subtab="weakconn" id="weakConnSubtabBtn" style="display:none;">📉 ضعف الاتصال</button>
   </nav>
 
   <div id="subtab-taskslist" class="subtab-panel active">
@@ -1047,7 +1046,28 @@ button:active{ transform:scale(.96); }
 
   </div>
 
-  <div id="subtab-taskscada" class="subtab-panel">
+  <div id="subtab-faultyequip" class="subtab-panel">
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <h3 style="margin:0;">🛠️ المعدات المتعطلة</h3>
+        <button type="button" id="btnAddFaultyEquip">➕ إضافة معدة يدويًا</button>
+      </div>
+      <div id="faultyEquipAddFormWrap"></div>
+      <div id="faultyEquipListWrap"></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ================= TAB: SCADA (admin only) ================= -->
+<section id="tab-scada" class="tab-panel">
+
+  <nav class="subtabs">
+    <button class="subtab-btn active" data-subtab="taskscada">📡 استيراد اسكادا</button>
+    <button class="subtab-btn" data-subtab="weakconn">📉 ضعف الاتصال</button>
+  </nav>
+
+  <div id="subtab-taskscada" class="subtab-panel active">
     <div class="card">
       <h3>📡 استيراد ملف SCADA اليومي</h3>
       <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع نسخة CSV أو Excel (xlsx) من شيت "data" لتحديث حالة الاتصال وإسناد المهام تلقائيًا.</p>
@@ -1107,18 +1127,7 @@ button:active{ transform:scale(.96); }
     </div>
   </div>
 
-  <div id="subtab-faultyequip" class="subtab-panel">
-    <div class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-        <h3 style="margin:0;">🛠️ المعدات المتعطلة</h3>
-        <button type="button" id="btnAddFaultyEquip">➕ إضافة معدة يدويًا</button>
-      </div>
-      <div id="faultyEquipAddFormWrap"></div>
-      <div id="faultyEquipListWrap"></div>
-    </div>
-  </div>
-
-</section>
+  </section>
 
 <!-- ===================== TAB: MY PROFILE (ملفي — employee only) ===================== -->
 <section id="tab-myprofile" class="tab-panel">
@@ -1497,14 +1506,12 @@ function showAppShell(){
   const admin = isAdmin();
   const employeesTabBtn = document.getElementById('employeesTabBtn');
   if(employeesTabBtn) employeesTabBtn.style.display = admin ? '' : 'none';
+  const scadaTabBtn = document.getElementById('scadaTabBtn');
+  if(scadaTabBtn) scadaTabBtn.style.display = admin ? '' : 'none';
   const myProfileTabBtn = document.getElementById('myProfileTabBtn');
   if(myProfileTabBtn) myProfileTabBtn.style.display = admin ? 'none' : '';
   const exportTasksBtn = document.getElementById('btnExportTasksExcel');
   if(exportTasksBtn) exportTasksBtn.style.display = admin ? '' : 'none';
-  const scadaSubtabBtn = document.getElementById('scadaSubtabBtn');
-  if(scadaSubtabBtn) scadaSubtabBtn.style.display = admin ? '' : 'none';
-  const weakConnSubtabBtn = document.getElementById('weakConnSubtabBtn');
-  if(weakConnSubtabBtn) weakConnSubtabBtn.style.display = admin ? '' : 'none';
   const faultyEquipTabBtn = document.getElementById('faultyEquipTabBtn');
   if(faultyEquipTabBtn) faultyEquipTabBtn.style.display = admin ? '' : 'none';
   const inspectionTabBtn = document.getElementById('inspectionTabBtn');
@@ -1534,7 +1541,8 @@ function restoreActiveTab(){
     if(panel) panel.classList.add('active');
   }
   if(saved==='dash') renderDashboard();
-  if(saved==='tasks'){ renderTasksView(); renderScadaView(); renderWeakConnView(); }
+  if(saved==='tasks'){ renderTasksView(); }
+  if(saved==='scada'){ renderScadaView(); renderWeakConnView(); }
   if(saved==='faultyequip') renderFaultyEquipmentView();
   if(saved==='tickets') renderTicketsView();
   if(saved==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
@@ -4492,7 +4500,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     try{ sessionStorage.setItem('activeTab', btn.dataset.tab); }catch(e){}
     if(btn.dataset.tab==='dash') renderDashboard();
-    if(btn.dataset.tab==='tasks'){ renderTasksView(); renderScadaView(); renderWeakConnView(); }
+    if(btn.dataset.tab==='tasks'){ renderTasksView(); }
+    if(btn.dataset.tab==='scada'){ renderScadaView(); renderWeakConnView(); }
     if(btn.dataset.tab==='faultyequip') renderFaultyEquipmentView();
     if(btn.dataset.tab==='tickets') renderTicketsView();
     if(btn.dataset.tab==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
