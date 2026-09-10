@@ -4954,7 +4954,7 @@ function renderDonutChart(containerId, data){
   let offset = 0;
   const segs = data.map(([label,val],i)=>{
     const pct = (val/total*100);
-    const dash = pct.toFixed(2) + ' ' + (100-pct).toFixed(2);
+    const overlap = Math.min(0.3, pct * 0.3); const dash = (pct + overlap).toFixed(2) + ' ' + Math.max(0, 100 - pct - overlap).toFixed(2);
     const dashoffset = (-offset).toFixed(2);
     offset += pct;
     return '<circle class="donut-seg" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="transparent" stroke="'+palette[i%palette.length]+'" stroke-width="6" stroke-dasharray="'+dash+'" stroke-dashoffset="'+dashoffset+'" transform="rotate(-90 '+cx+' '+cy+')"></circle>';
