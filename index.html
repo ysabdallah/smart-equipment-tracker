@@ -5229,4 +5229,34 @@ if(isLoggedIn()){
   })();
 </script>
 
+
+<script>
+  (function(){
+    try{
+      var st = document.createElement('style');
+      st.textContent = '#faultyEquipListWrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}.feEditBtn:disabled{opacity:.45;cursor:not-allowed;}';
+      document.head.appendChild(st);
+    }catch(e){}
+    try{
+      var _origRenderFaultyEquipList = renderFaultyEquipList;
+      window.renderFaultyEquipList = function(){
+        var r = _origRenderFaultyEquipList();
+        try{
+          var wrap = document.getElementById('faultyEquipListWrap');
+          if(wrap){
+            Array.from(wrap.children).forEach(function(card){
+              var isDone = !!card.querySelector('.status-done');
+              var editBtn = card.querySelector('.feEditBtn');
+              if(isDone && editBtn){
+                editBtn.disabled = true;
+                editBtn.title = 'لا يمكن تعديل معدة تمت معالجتها';
+              }
+            });
+          }
+        }catch(e){}
+        return r;
+      };
+    }catch(e){}
+  })();
+</script>
 </script>
