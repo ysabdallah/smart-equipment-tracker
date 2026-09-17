@@ -2762,7 +2762,7 @@ async function renderNetworkReport(){
       const feJson = await feRes.json();
       const feItems = (feJson && feJson.ok) ? (feJson.items || []) : [];
       if(feItems.length){
-        const resolved = feItems.filter(x=>x.processed==='نعم').length;
+        const resolved = feItems.filter(x=>x.processed && String(x.processed).trim()).length;
         feResolvedPct = Math.round((resolved / feItems.length) * 100);
       }
     }catch(e){ /* تجاهل — تُعرض القيمة كـ "—" */ }
