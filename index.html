@@ -5208,3 +5208,25 @@ if(isLoggedIn()){
 </script>
 </body>
 </html>
+
+<script>
+  (function(){
+    try{
+      var _origRenderTasksView = renderTasksView;
+          window.renderTasksView = async function(){
+                  try{
+                            var res = await fetch(API_URL, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                        body: JSON.stringify({ action: 'listMyTasks', token: authToken() })
+                            });
+                            var json = await res.json();
+                            if(json && json.ok && Array.isArray(json.tasks)){ TASKS = json.tasks; }
+                  }catch(e){ /* تجاهل - تبقى المهام المحلية إن وجدت */ }
+                  return _origRenderTasksView();
+          };
+    }catch(e){ /* تجاهل بأمان إذا لم تتوفر العناصر المطلوبة */ }
+  })();
+</script>
+
+</script>
