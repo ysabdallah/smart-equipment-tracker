@@ -3596,9 +3596,9 @@ function renderFaultyEquipList(){
     return;
   }
   const sorted = FAULTY_EQUIP_CACHE.slice().sort((a,b)=>{
-    const ap = a.processed === 'نعم' ? 1 : 0;
-    const bp = b.processed === 'نعم' ? 1 : 0;
-    return ap - bp;
+    const ap = (a.processed && String(a.processed).trim()) ? 1 : 0;
+      const bp = (b.processed && String(b.processed).trim()) ? 1 : 0;
+  return ap - bp;
   });
   wrap.innerHTML = sorted.map(item=>{
     const done = !!(item.processed && String(item.processed).trim());
