@@ -3601,7 +3601,7 @@ function renderFaultyEquipList(){
     return ap - bp;
   });
   wrap.innerHTML = sorted.map(item=>{
-    const done = item.processed === 'نعم';
+    const done = !!(item.processed && String(item.processed).trim());
     return `
     <div class="leave-item" data-fe-id="${escapeHtml(item.id)}" style="${done?'opacity:0.65;':''}">
       <div class="leave-top">
