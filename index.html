@@ -640,6 +640,33 @@ button:active{ transform:scale(.96); }
 @media (prefers-reduced-motion: reduce){ header.app-header::after, .logo-mark, .status-badge.connected::after, .tab-btn.active, .kpi-tile, .status-pill.status-new, .tab-panel{ animation:none !important; } }
 /* ==== نهاية الإضافة ==== */
 .search-card{position:relative;z-index:5;}
+
+/* ===== تبويب البطاريات ===== */
+.bat-pill{ display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:7px; white-space:nowrap; }
+.bat-pill::before{ content:''; width:6px; height:6px; border-radius:2px; background:currentColor; flex-shrink:0; }
+.bat-pill.ok{ background:var(--good-dim); color:var(--good); }
+.bat-pill.warn{ background:var(--warning-dim); color:var(--warning); }
+.bat-pill.bad{ background:var(--critical-dim); color:var(--critical); }
+.bat-pill.none{ background:var(--accent-dim); color:var(--s1); }
+.bat-info{ font-size:12.5px; color:var(--text-secondary); background:var(--surface-1); border:1px dashed var(--border); border-radius:10px; padding:10px 12px; margin-top:10px; line-height:1.9; }
+.bat-info:empty{ display:none; }
+.bat-preview{ font-size:13px; font-weight:700; padding:10px 12px; border-radius:10px; margin:6px 0 4px; }
+.bat-preview:empty{ display:none; }
+.bat-preview.ok{ background:var(--good-dim); color:var(--good); }
+.bat-preview.warn{ background:var(--warning-dim); color:var(--warning); }
+.bat-preview.bad{ background:var(--critical-dim); color:var(--critical); }
+.bat-table-wrap{ overflow-x:auto; width:0; min-width:100%; }
+.bat-table-wrap td, .bat-table-wrap th{ text-align:right; }
+.bat-muted{ color:var(--text-muted); font-size:11.5px; }
+.bat-row-bad td:first-child{ box-shadow:inset -3px 0 0 var(--critical); }
+.bat-act{ font-size:12px; padding:5px 10px; margin-inline-start:4px; }
+.bat-more{ text-align:center; margin-top:12px; }
+#tab-battery .form-msg{ margin:10px 0; padding:9px 12px; border-radius:8px; font-size:12.5px; font-weight:600; display:none; line-height:1.8; }
+#tab-battery .form-msg.err{ background:var(--critical-dim); color:var(--critical); display:block; }
+#tab-battery .form-msg.ok{ background:var(--good-dim); color:var(--good); display:block; }
+#tab-battery .kpi-grid{ grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+#tab-battery .kpi-tile{ padding:16px; }
+#tab-battery .kpi-tile .label{ margin-bottom:8px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -900,6 +927,7 @@ button:active{ transform:scale(.96); }
   <button class="tab-btn" data-tab="employees" id="employeesTabBtn" style="display:none;"><span class="tab-ico"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="8" r="2.6"/><path d="M3.5 19c.7-3 2.6-4.6 5-4.6s4.3 1.6 5 4.6"/><circle cx="17" cy="9" r="2.2"/><path d="M14.8 14.6c.5-.15 1-.22 1.6-.22 2.3 0 4 1.4 4.6 4"/></svg></span> الموظفون</button>
   <button class="tab-btn" data-tab="myprofile" id="myProfileTabBtn" style="display:none;"><span class="tab-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.5 17c.6-2 2-3 3.5-3s2.9 1 3.5 3"/><path d="M14 9h5M14 12.5h5"/></svg></span> ملفي</button>
   <button class="tab-btn" data-tab="inspection" id="inspectionTabBtn" style="display:none;"><span class="tab-ico"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6.5v5c0 5 3.4 8.4 7.5 9.5 4.1-1.1 7.5-4.5 7.5-9.5v-5Z"/><path d="m9.5 12 1.8 1.8L15 10"/></svg></span> الفحص الدوري</button>
+  <button class="tab-btn" data-tab="battery" id="batteryTabBtn"><span class="tab-ico"><svg viewBox="0 0 24 24"><rect x="2.5" y="8" width="17" height="9" rx="2"/><path d="M22 11v3"/><path d="M6 11v3M9.5 11v3"/></svg></span> البطاريات</button>
   <button class="tab-btn" data-tab="reports" id="reportsTabBtn" style="display:none;"><span class="tab-ico"><svg viewBox="0 0 24 24"><path d="M4 19V9.5M10 19V5M16 19v-6M20 19V12"/></svg></span> المتابعة والتقارير</button>
 </nav>
 
@@ -1349,6 +1377,173 @@ button:active{ transform:scale(.96); }
 </section>
 <!-- ===================== END TAB: الفحص الدوري ===================== -->
 
+<!-- ===================== TAB: البطاريات (فحص + مخزون) ===================== -->
+<section id="tab-battery" class="tab-panel">
+
+  <nav class="subtabs">
+    <button class="subtab-btn active" data-subtab="batInspect">🔋 الفحص</button>
+    <button class="subtab-btn" data-subtab="batStock" id="batStockSubBtn" style="display:none;">📦 المخزون</button>
+  </nav>
+
+  <div id="subtab-batInspect" class="subtab-panel active">
+    <div class="kpi-grid" id="batKpis"></div>
+
+    <div class="card" id="batFormCard">
+      <h3>➕ تسجيل فحص بطارية</h3>
+      <label for="batPole">رقم المعدة (من المعدات المستوردة عبر ملف SCADA)</label>
+      <input type="text" id="batPole" list="batPoleList" autocomplete="off" placeholder="ابحث أو اختر رقم المعدة">
+      <datalist id="batPoleList"></datalist>
+      <div class="bat-info" id="batPoleInfo"></div>
+      <div class="form-grid" style="margin-top:14px;">
+        <div>
+          <label for="batType">نوع البطارية</label>
+          <select id="batType"></select>
+        </div>
+        <div id="batTypeOtherWrap" style="display:none;">
+          <label for="batTypeOther">اكتب نوع البطارية</label>
+          <input type="text" id="batTypeOther" maxlength="40" autocomplete="off">
+        </div>
+        <div>
+          <label for="batVoltage">الجهد (V)</label>
+          <input type="text" id="batVoltage" inputmode="decimal" list="batVoltList" placeholder="مثال: 12" autocomplete="off">
+          <datalist id="batVoltList"><option value="6"></option><option value="12"></option><option value="24"></option><option value="48"></option></datalist>
+        </div>
+        <div>
+          <label for="batCapacity">السعة (Ah)</label>
+          <input type="text" id="batCapacity" inputmode="decimal" placeholder="مثال: 18" autocomplete="off">
+        </div>
+        <div>
+          <label for="batConfig">التركيب</label>
+          <select id="batConfig">
+            <option value="مفردة">مفردة (بطارية واحدة)</option>
+            <option value="مزدوجة">مزدوجة (بطاريتان متطابقتان)</option>
+          </select>
+        </div>
+        <div>
+          <label for="batPct1" id="batPct1Label">نسبة البطارية %</label>
+          <input type="text" id="batPct1" inputmode="decimal" placeholder="0 - 100" autocomplete="off">
+        </div>
+        <div id="batPct2Wrap" style="display:none;">
+          <label for="batPct2">نسبة البطارية الثانية %</label>
+          <input type="text" id="batPct2" inputmode="decimal" placeholder="0 - 100" autocomplete="off">
+        </div>
+        <div>
+          <label for="batNote">ملاحظة (اختياري)</label>
+          <input type="text" id="batNote" maxlength="200" autocomplete="off">
+        </div>
+      </div>
+      <div class="bat-preview" id="batPreview"></div>
+      <div class="form-msg" id="batFormMsg"></div>
+      <div class="btn-row">
+        <button type="button" class="primary" id="btnBatSave">💾 حفظ الفحص</button>
+        <button type="button" id="btnBatClear">مسح النموذج</button>
+      </div>
+    </div>
+
+    <div class="card" id="batReplaceCard" style="display:none;">
+      <h3>🔧 تسجيل استبدال البطارية — <span id="batRepPole"></span></h3>
+      <div class="bat-info" id="batRepInfo"></div>
+      <div class="form-grid" style="margin-top:14px;">
+        <div>
+          <label for="batRepPct1" id="batRepPct1Label">نسبة البطارية الجديدة % (بعد التركيب)</label>
+          <input type="text" id="batRepPct1" inputmode="decimal" placeholder="0 - 100" autocomplete="off">
+        </div>
+        <div id="batRepPct2Wrap" style="display:none;">
+          <label for="batRepPct2">نسبة البطارية الثانية الجديدة %</label>
+          <input type="text" id="batRepPct2" inputmode="decimal" placeholder="0 - 100" autocomplete="off">
+        </div>
+      </div>
+      <details style="margin:6px 0 10px;">
+        <summary style="cursor:pointer; font-size:12.5px; color:var(--text-secondary); font-weight:700;">البطارية الجديدة مختلفة عن السابقة؟ (اختياري)</summary>
+        <div class="form-grid" style="margin-top:12px;">
+          <div><label for="batRepType">النوع</label><select id="batRepType"></select></div>
+          <div id="batRepTypeOtherWrap" style="display:none;"><label for="batRepTypeOther">اكتب النوع</label><input type="text" id="batRepTypeOther" maxlength="40" autocomplete="off"></div>
+          <div><label for="batRepVoltage">الجهد (V)</label><input type="text" id="batRepVoltage" inputmode="decimal" autocomplete="off"></div>
+          <div><label for="batRepCapacity">السعة (Ah)</label><input type="text" id="batRepCapacity" inputmode="decimal" autocomplete="off"></div>
+          <div><label for="batRepConfig">التركيب</label>
+            <select id="batRepConfig"><option value="مفردة">مفردة</option><option value="مزدوجة">مزدوجة</option></select>
+          </div>
+        </div>
+      </details>
+      <div id="batRepNoStockWrap" style="display:none; margin-bottom:8px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="batRepNoStock"> بدون خصم من المخزون (بطارية من خارج المخزون)</label>
+      </div>
+      <div class="form-msg" id="batRepMsg"></div>
+      <div class="btn-row">
+        <button type="button" class="primary" id="btnBatRepConfirm">✔ تأكيد الاستبدال وخصم المخزون</button>
+        <button type="button" id="btnBatRepCancel">إلغاء</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+        <h3 style="margin:0;">🗂️ حالة بطاريات المعدات</h3>
+        <div class="btn-row" style="margin:0;">
+          <button type="button" id="btnBatRefresh">🔄 تحديث</button>
+          <button type="button" class="primary" id="btnBatAssignOffices" style="display:none;">📌 إسناد فحص البطاريات للمكاتب</button>
+        </div>
+      </div>
+      <div class="form-msg" id="batListMsg"></div>
+      <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));">
+        <div>
+          <label for="batFilterStatus">الحالة</label>
+          <select id="batFilterStatus">
+            <option value="all">الكل</option>
+            <option value="لم تُفحص">لم تُفحص بعد</option>
+            <option value="استبدال">استبدال</option>
+            <option value="إعادة فحص">إعادة فحص</option>
+            <option value="سليم">سليم</option>
+            <option value="due">مستحقة الآن</option>
+          </select>
+        </div>
+        <div>
+          <label for="batFilterOffice">المكتب</label>
+          <select id="batFilterOffice"><option value="">كل المكاتب</option></select>
+        </div>
+        <div>
+          <label for="batSearch">بحث برقم المعدة</label>
+          <input type="search" id="batSearch" placeholder="اكتب جزءاً من الرقم" autocomplete="off">
+        </div>
+      </div>
+      <div id="batListWrap"></div>
+    </div>
+  </div>
+
+  <div id="subtab-batStock" class="subtab-panel">
+    <div class="card">
+      <h3>⚖️ الاحتياج مقابل المخزون</h3>
+      <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 10px;">"مطلوب الآن" = بطاريات المعدات المصنفة استبدال (المزدوجة تحتاج بطاريتين). "محتمل" = معدات في نطاق إعادة الفحص قد تحتاج استبدالاً لاحقاً.</p>
+      <div id="batNeedsWrap"></div>
+    </div>
+    <div class="card">
+      <h3>➕ إضافة أو تعديل مخزون</h3>
+      <div class="form-grid">
+        <div><label for="batStType">نوع البطارية</label><select id="batStType"></select></div>
+        <div id="batStTypeOtherWrap" style="display:none;"><label for="batStTypeOther">اكتب النوع</label><input type="text" id="batStTypeOther" maxlength="40" autocomplete="off"></div>
+        <div><label for="batStVoltage">الجهد (V)</label><input type="text" id="batStVoltage" inputmode="decimal" list="batVoltList" placeholder="مثال: 12" autocomplete="off"></div>
+        <div><label for="batStCapacity">السعة (Ah)</label><input type="text" id="batStCapacity" inputmode="decimal" placeholder="مثال: 18" autocomplete="off"></div>
+        <div>
+          <label for="batStMode">العملية</label>
+          <select id="batStMode">
+            <option value="add">وارد: إضافة كمية للرصيد</option>
+            <option value="set">تعديل: تحديد الرصيد الفعلي</option>
+          </select>
+        </div>
+        <div><label for="batStQty">الكمية</label><input type="text" id="batStQty" inputmode="numeric" autocomplete="off"></div>
+        <div><label for="batStMin">الحد الأدنى للتنبيه (اختياري)</label><input type="text" id="batStMin" inputmode="numeric" autocomplete="off"></div>
+        <div><label for="batStNote">ملاحظة (اختياري)</label><input type="text" id="batStNote" maxlength="200" autocomplete="off"></div>
+      </div>
+      <div class="form-msg" id="batStMsg"></div>
+      <div class="btn-row"><button type="button" class="primary" id="btnBatStSave">💾 حفظ المخزون</button></div>
+    </div>
+    <div class="card"><h3>📦 المخزون الحالي</h3><div id="batStockWrap"></div></div>
+    <div class="card"><h3>📜 آخر حركات المخزون</h3><div id="batLogWrap"></div></div>
+  </div>
+
+</section>
+<!-- ===================== END TAB: البطاريات ===================== -->
+
+
 <!-- ===================== TAB: المتابعة والتقارير (admin only) ===================== -->
 <section id="tab-reports" class="tab-panel">
 
@@ -1566,6 +1761,7 @@ function restoreActiveTab(){
   if(saved==='myprofile') renderMyProfileView();
   if(saved==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); populateScheduleBulkScopeOptions(); }
   if(saved==='reports'){ renderEmployeeStats(); renderNetworkReport(); loadReportScheduleConfig(); }
+  if(saved==='battery' && typeof renderBatteryView==='function') renderBatteryView();
 }
 async function doLogin(username, password){
   const res = await fetch(API_URL, {
@@ -2291,6 +2487,9 @@ async function renderTasksView(){
       }
       if(isInspectionTask){
         actionsHtml += `<button type="button" class="primary btnOpenChecklist" data-task-id="${escapeHtml(t.id)}" data-pole-id="${escapeHtml(t.poleId||'')}">📋 تعبئة نموذج الفحص وإنهاء</button>`;
+      } else if(t.poleId && (t.description.indexOf('[بطارية] استبدال')===0 || t.description.indexOf('[بطارية] إعادة فحص')===0)){
+        // مهام البطاريات تُغلق تلقائيًا عند تسجيل الفحص/الاستبدال من تبويب البطاريات
+        actionsHtml += `<button type="button" class="primary btnOpenBattery" data-pole-id="${escapeHtml(t.poleId)}" data-replace="${t.description.indexOf('[بطارية] استبدال')===0 ? '1' : ''}">🔋 تسجيل في تبويب البطاريات</button>`;
       } else {
         actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
       }
@@ -2357,6 +2556,12 @@ async function renderTasksView(){
         toast('تعذر إسناد المهمة');
         btn.disabled = false;
       }
+    });
+  });
+
+  listWrap.querySelectorAll('.btnOpenBattery').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openBatteryTabForPole(btn.dataset.poleId, !!btn.dataset.replace);
     });
   });
 
@@ -4578,6 +4783,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='myprofile') renderMyProfileView();
     if(btn.dataset.tab==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); populateScheduleBulkScopeOptions(); }
     if(btn.dataset.tab==='reports'){ renderEmployeeStats(); renderNetworkReport(); loadReportScheduleConfig(); }
+    if(btn.dataset.tab==='battery') renderBatteryView();
   });
 });
 document.querySelectorAll('.subtab-btn').forEach(btn=>{
@@ -4590,6 +4796,581 @@ document.querySelectorAll('.subtab-btn').forEach(btn=>{
     scope.querySelector('#subtab-'+btn.dataset.subtab).classList.add('active');
   });
 });
+
+/* ================= البطاريات (فحص + مخزون) ================= */
+/* الباك-إند: ملف Battery.gs — الإجراءات batteryGetAll / batteryGetHistory / batterySaveInspection /
+   batteryCompleteReplacement / batteryStockSave / batteryAssignOfficeTasks
+   الحدود: أقل من 50% استبدال، أقل من 80% إعادة فحص، وما عدا ذلك سليم — وتُحسب في الباك-إند. */
+const BATTERY = { loaded:false, loading:false, inited:false, prefilled:false, confirmAssign:false, specs:{}, stock:[], needs:[], log:[], limit:100, replacePole:'' };
+const BAT_TYPES = [['VRLA','VRLA (رصاص حمضية مغلقة)'],['Li-ion','Li-ion'],['LiFePO4','LiFePO4'],['__other','أخرى…']];
+
+function batEl(id){ return document.getElementById(id); }
+function batNorm(s){
+  return String(s===null||s===undefined?'':s)
+    .replace(/[٠-٩]/g, d=>String(d.charCodeAt(0)-1632))
+    .replace(/[۰-۹]/g, d=>String(d.charCodeAt(0)-1776))
+    .replace(/٫/g,'.').replace(/,/g,'.').trim();
+}
+function batNum(s){
+  const t = batNorm(s);
+  if(t==='' || !/^\d+(\.\d+)?$/.test(t)) return null;
+  return parseFloat(t);
+}
+function batStatusOf(minPct){
+  if(minPct < 50) return 'استبدال';
+  if(minPct < 80) return 'إعادة فحص';
+  return 'سليم';
+}
+function batCount(config){ return config==='مزدوجة' ? 2 : 1; }
+function batTodayRiyadh(){
+  try{ return new Date().toLocaleDateString('en-CA', { timeZone:'Asia/Riyadh' }); }catch(e){ return new Date().toISOString().slice(0,10); }
+}
+function batKey(type, v, c){ return String(type||'').trim().toLowerCase()+'|'+v+'|'+c; }
+function batPillClass(status){
+  if(status==='استبدال') return 'bad';
+  if(status==='إعادة فحص') return 'warn';
+  if(status==='سليم') return 'ok';
+  return 'none';
+}
+function batPill(status){ return `<span class="bat-pill ${batPillClass(status)}">${escapeHtml(status)}</span>`; }
+function batSpecLabel(s){
+  return `${escapeHtml(s.type)} ${s.voltage}V ${s.capacity}Ah — ${escapeHtml(s.config)}`;
+}
+
+async function batPost(action, extra){
+  if(!authToken()) throw authError();
+  const res = await fetch(API_URL, {
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ action, token: authToken() }, extra||{}))
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const json = await res.json();
+  if(!json.ok){
+    if(json.error === 'unauthorized' && !isAdmin() && /Stock|Assign/.test(action)) throw new Error('هذه العملية للمدير فقط');
+    if(json.error === 'unauthorized') throw authError();
+    throw new Error(json.error || 'تعذر تنفيذ العملية');
+  }
+  return json;
+}
+function batMsg(id, text, ok){
+  const el = batEl(id);
+  if(!el) return;
+  el.textContent = text || '';
+  el.classList.remove('ok','err');
+  if(text) el.classList.add(ok ? 'ok' : 'err');
+}
+function batHandleErr(e, msgId){
+  if(e && e.isAuthError){ forceReLogin(); return; }
+  const m = (e && e.message) || 'حدث خطأ';
+  if(/unknown action|غير معروف/i.test(m)) batMsg(msgId, 'الخلفية لم تُحدَّث بعد (ملف Battery.gs) — راجع المدير', false);
+  else batMsg(msgId, m, false);
+}
+
+/* ---- الأنواع ---- */
+function batFillTypeSelect(selId){
+  const sel = batEl(selId);
+  if(!sel || sel.options.length) return;
+  sel.innerHTML = BAT_TYPES.map(t=>`<option value="${t[0]}">${escapeHtml(t[1])}</option>`).join('');
+}
+function batTypeValue(selId, otherId){
+  const v = batEl(selId).value;
+  return v==='__other' ? batNorm(batEl(otherId).value) : v;
+}
+function batSetType(selId, otherId, wrapId, value){
+  const sel = batEl(selId);
+  const known = BAT_TYPES.some(t=>t[0]===value && t[0]!=='__other');
+  if(!value){ sel.value = BAT_TYPES[0][0]; batEl(otherId).value=''; }
+  else if(known){ sel.value = value; batEl(otherId).value=''; }
+  else { sel.value = '__other'; batEl(otherId).value = value; }
+  batEl(wrapId).style.display = sel.value==='__other' ? '' : 'none';
+}
+function batBindTypeToggle(selId, wrapId){
+  batEl(selId).addEventListener('change', ()=>{
+    batEl(wrapId).style.display = batEl(selId).value==='__other' ? '' : 'none';
+  });
+}
+
+/* ---- التحميل ---- */
+async function loadBatteryData(force){
+  if(BATTERY.loading) return;
+  if(BATTERY.loaded && !force) return;
+  BATTERY.loading = true;
+  batMsg('batListMsg','');
+  try{
+    const d = await batPost('batteryGetAll');
+    BATTERY.specs = {};
+    (d.specs||[]).forEach(s=>{ BATTERY.specs[String(s.pole).toLowerCase()] = s; });
+    BATTERY.stock = d.stock || [];
+    BATTERY.needs = d.needs || [];
+    BATTERY.log = d.log || [];
+    BATTERY.loaded = true;
+  }catch(e){
+    batHandleErr(e, 'batListMsg');
+  }finally{
+    BATTERY.loading = false;
+  }
+  batRender();
+}
+async function batRefreshTasks(){
+  try{
+    const data = await apiFetchAll();
+    TASKS = normalizeTasks(data.tasks);
+    renderTasksView();
+  }catch(e){ if(e && e.isAuthError) forceReLogin(); }
+}
+
+/* ---- الحالة الحالية لمعدة ---- */
+function batRows(){
+  const today = batTodayRiyadh();
+  return POLES.map(p=>{
+    const s = BATTERY.specs[p.pole.toLowerCase()] || null;
+    const status = s ? s.status : 'لم تُفحص';
+    const due = !!(s && s.nextDue && s.nextDue <= today);
+    return { p, s, status, due };
+  });
+}
+const BAT_ORDER = { 'استبدال':0, 'إعادة فحص':1, 'لم تُفحص':2, 'سليم':3 };
+
+function batRender(){
+  if(!batEl('tab-battery')) return;
+  const admin = isAdmin();
+  batEl('batStockSubBtn').style.display = admin ? '' : 'none';
+  batEl('btnBatAssignOffices').style.display = admin ? '' : 'none';
+  batEl('batRepNoStockWrap').style.display = admin ? '' : 'none';
+  batRenderKpis();
+  batRenderList();
+  if(admin) batRenderStock();
+}
+
+function batRenderKpis(){
+  const rows = batRows();
+  const c = { total: rows.length, none:0, rep:0, rec:0, ok:0, due:0 };
+  rows.forEach(r=>{
+    if(r.status==='لم تُفحص') c.none++;
+    else if(r.status==='استبدال') c.rep++;
+    else if(r.status==='إعادة فحص') c.rec++;
+    else c.ok++;
+    if(r.due) c.due++;
+  });
+  batEl('batKpis').innerHTML = `
+    <div class="kpi-tile accent-1"><div class="label">إجمالي المعدات</div><div class="value">${c.total}</div></div>
+    <div class="kpi-tile"><div class="label">لم تُفحص بعد</div><div class="value">${c.none}</div></div>
+    <div class="kpi-tile accent-4"><div class="label">استبدال (أقل من 50%)</div><div class="value">${c.rep}</div></div>
+    <div class="kpi-tile accent-3"><div class="label">إعادة فحص (أقل من 80%)</div><div class="value">${c.rec}</div></div>
+    <div class="kpi-tile accent-2"><div class="label">سليمة</div><div class="value">${c.ok}</div></div>
+    <div class="kpi-tile accent-4"><div class="label">فحوصات مستحقة الآن</div><div class="value">${c.due}</div></div>`;
+}
+
+function batRenderList(){
+  const wrap = batEl('batListWrap');
+  // قائمة المعدات + المكاتب
+  const dl = batEl('batPoleList');
+  if(dl && dl.dataset.n !== String(POLES.length)){
+    dl.innerHTML = POLES.map(p=>`<option value="${escapeHtml(p.pole)}">${escapeHtml(p.office)}</option>`).join('');
+    dl.dataset.n = String(POLES.length);
+  }
+  const offSel = batEl('batFilterOffice');
+  const offices = Array.from(new Set(POLES.map(p=>p.office).filter(Boolean))).sort();
+  if(offSel.dataset.n !== offices.join('|')){
+    const cur = offSel.value;
+    offSel.innerHTML = '<option value="">كل المكاتب</option>' + offices.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+    offSel.value = offices.includes(cur) ? cur : '';
+    offSel.dataset.n = offices.join('|');
+  }
+  if(!BATTERY.loaded){
+    wrap.innerHTML = `<div class="empty-state">${BATTERY.loading ? 'جاري التحميل…' : 'تعذر تحميل بيانات البطاريات — اضغط تحديث'}</div>`;
+    return;
+  }
+  const fs = batEl('batFilterStatus').value;
+  const fo = batEl('batFilterOffice').value;
+  const q = batNorm(batEl('batSearch').value).toLowerCase();
+  let rows = batRows().filter(r=>{
+    if(fs==='due') { if(!r.due) return false; }
+    else if(fs!=='all' && r.status!==fs) return false;
+    if(fo && r.p.office!==fo) return false;
+    if(q && r.p.pole.toLowerCase().indexOf(q)===-1) return false;
+    return true;
+  });
+  rows.sort((a,b)=> (BAT_ORDER[a.status]-BAT_ORDER[b.status]) || a.p.pole.localeCompare(b.p.pole, 'en', {numeric:true}));
+  if(!rows.length){ wrap.innerHTML = `<div class="empty-state">لا توجد معدات مطابقة</div>`; return; }
+  const shown = rows.slice(0, BATTERY.limit);
+  const body = shown.map(r=>{
+    const s = r.s;
+    const pct = s ? (s.config==='مزدوجة' ? `${s.pct1} / ${s.pct2}` : `${s.pct1}`) + '%' : '—';
+    const spec = s ? batSpecLabel(s) : '<span class="bat-muted">لم تُسجَّل</span>';
+    const next = s && s.nextDue ? (r.due ? `<span style="color:var(--critical); font-weight:700;">${escapeHtml(s.nextDue)} (مستحق)</span>` : escapeHtml(s.nextDue)) : '—';
+    const pid = escapeHtml(r.p.pole);
+    return `<tr class="${r.status==='استبدال' ? 'bat-row-bad' : ''}" data-pole="${pid}">
+      <td><b>${pid}</b></td>
+      <td>${escapeHtml(r.p.office)||'—'}</td>
+      <td>${spec}</td>
+      <td style="font-family:'JetBrains Mono',monospace;">${pct}</td>
+      <td>${batPill(r.status)}</td>
+      <td>${s ? escapeHtml(s.lastDate) : '—'}</td>
+      <td>${next}</td>
+      <td>
+        <button type="button" class="bat-act btnBatFill" data-pole="${pid}">${s ? 'فحص' : 'أول فحص'}</button>
+        ${r.status==='استبدال' ? `<button type="button" class="bat-act primary btnBatReplace" data-pole="${pid}">استبدال</button>` : ''}
+        ${s ? `<button type="button" class="bat-act btnBatHist" data-pole="${pid}">السجل</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = `
+    <div class="bat-muted" style="margin:10px 0 6px;">عدد النتائج: ${rows.length}${rows.length>shown.length ? ` — معروض ${shown.length}` : ''}</div>
+    <div class="bat-table-wrap"><table>
+      <thead><tr><th>المعدة</th><th>المكتب</th><th>البطارية</th><th>النسبة</th><th>الحالة</th><th>آخر فحص</th><th>الاستحقاق</th><th></th></tr></thead>
+      <tbody>${body}</tbody></table></div>
+    ${rows.length>shown.length ? `<div class="bat-more"><button type="button" id="btnBatMore">عرض المزيد</button></div>` : ''}`;
+  const more = batEl('btnBatMore');
+  if(more) more.addEventListener('click', ()=>{ BATTERY.limit += 100; batRenderList(); });
+  wrap.querySelectorAll('.btnBatFill').forEach(b=>b.addEventListener('click', ()=>batOpenForPole(b.dataset.pole, true)));
+  wrap.querySelectorAll('.btnBatReplace').forEach(b=>b.addEventListener('click', ()=>batOpenReplace(b.dataset.pole)));
+  wrap.querySelectorAll('.btnBatHist').forEach(b=>b.addEventListener('click', ()=>batToggleHistory(b)));
+}
+
+async function batToggleHistory(btn){
+  const tr = btn.closest('tr');
+  const next = tr.nextElementSibling;
+  if(next && next.classList.contains('bat-hist-row')){ next.remove(); return; }
+  const row = document.createElement('tr');
+  row.className = 'bat-hist-row';
+  row.innerHTML = `<td colspan="8" style="white-space:normal; background:var(--surface-1);">جاري تحميل السجل…</td>`;
+  tr.after(row);
+  try{
+    const d = await batPost('batteryGetHistory', { pole: btn.dataset.pole });
+    const items = d.items || [];
+    row.firstElementChild.innerHTML = items.length
+      ? items.map(i=>`<div style="padding:4px 0; font-size:12.5px;">
+          <b>${escapeHtml(i.date)}</b> — ${escapeHtml(i.kind)} — ${i.pct2!==null && i.pct2!==undefined ? `${i.pct1}% / ${i.pct2}%` : `${i.pct1}%`} ${batPill(i.status)}
+          <span class="bat-muted">${escapeHtml(i.by)}${i.note ? ' — '+escapeHtml(i.note) : ''}</span></div>`).join('')
+      : '<span class="bat-muted">لا يوجد سجل</span>';
+  }catch(e){
+    if(e && e.isAuthError){ forceReLogin(); return; }
+    row.firstElementChild.textContent = (e && e.message) || 'تعذر تحميل السجل';
+  }
+}
+
+/* ---- نموذج الفحص ---- */
+function batFindPole(text){
+  const t = String(text||'').trim().toLowerCase();
+  return POLES.find(p=>p.pole.toLowerCase()===t) || null;
+}
+function batOnConfigChange(){
+  const dual = batEl('batConfig').value==='مزدوجة';
+  batEl('batPct2Wrap').style.display = dual ? '' : 'none';
+  batEl('batPct1Label').textContent = dual ? 'نسبة البطارية الأولى %' : 'نسبة البطارية %';
+  if(!dual) batEl('batPct2').value = '';
+  batPreview();
+}
+function batPreview(){
+  const el = batEl('batPreview');
+  const dual = batEl('batConfig').value==='مزدوجة';
+  const p1 = batNum(batEl('batPct1').value);
+  const p2 = dual ? batNum(batEl('batPct2').value) : null;
+  if(p1===null || p1>100 || (dual && (p2===null || p2>100))){ el.className='bat-preview'; el.textContent=''; return; }
+  const min = dual ? Math.min(p1,p2) : p1;
+  const st = batStatusOf(min);
+  const v = batNum(batEl('batVoltage').value), c = batNum(batEl('batCapacity').value);
+  let txt = `التصنيف التلقائي: ${st}`;
+  if(dual) txt += ` (الأدنى ${min}%)`;
+  if(st==='استبدال'){
+    txt += ` — يلزم ${batCount(dual?'مزدوجة':'مفردة')} × ${v||'؟'}V ${c||'؟'}Ah، وتُنشأ مهمة للمكتب تلقائيًا`;
+  } else if(st==='إعادة فحص'){
+    txt += ' — تُنشأ مهمة إعادة فحص بعد 30 يومًا';
+  } else {
+    txt += ' — الفحص الدوري القادم بعد 180 يومًا';
+  }
+  el.className = 'bat-preview ' + batPillClass(st);
+  el.textContent = txt;
+}
+function batClearForm(keepPole){
+  if(!keepPole) batEl('batPole').value='';
+  ['batTypeOther','batVoltage','batCapacity','batPct1','batPct2','batNote'].forEach(id=>batEl(id).value='');
+  batSetType('batType','batTypeOther','batTypeOtherWrap','');
+  batEl('batConfig').value='مفردة';
+  batOnConfigChange();
+  batEl('batPoleInfo').innerHTML='';
+  BATTERY.prefilled = false;
+  batMsg('batFormMsg','');
+}
+function batOnPoleInput(){
+  const p = batFindPole(batEl('batPole').value);
+  const info = batEl('batPoleInfo');
+  if(!p){ info.innerHTML=''; return; }
+  const s = BATTERY.specs[p.pole.toLowerCase()];
+  let html = `المكتب: <b>${escapeHtml(p.office)||'—'}</b> — النوع: <b>${escapeHtml(p.type)||'—'}</b>`;
+  if(s){
+    html += `<br>بيانات البطارية المحفوظة: <b>${batSpecLabel(s)}</b> — آخر قراءة: ${s.config==='مزدوجة' ? `${s.pct1}% / ${s.pct2}%` : `${s.pct1}%`} ${batPill(s.status)}`;
+    batSetType('batType','batTypeOther','batTypeOtherWrap', s.type);
+    batEl('batVoltage').value = s.voltage;
+    batEl('batCapacity').value = s.capacity;
+    batEl('batConfig').value = s.config;
+    batOnConfigChange();
+    html += `<br><span class="bat-muted">أدخل النسبة الجديدة فقط — باقي البيانات محفوظة.</span>`;
+    BATTERY.prefilled = true;
+  } else {
+    if(BATTERY.prefilled){
+      ['batTypeOther','batVoltage','batCapacity','batPct1','batPct2'].forEach(id=>batEl(id).value='');
+      batSetType('batType','batTypeOther','batTypeOtherWrap','');
+      batEl('batConfig').value='مفردة';
+      batOnConfigChange();
+      BATTERY.prefilled = false;
+    }
+    html += `<br><span class="bat-muted">أول فحص لهذه المعدة — أدخل بيانات البطارية مرة واحدة وستُحفظ.</span>`;
+  }
+  info.innerHTML = html;
+}
+function batOpenForPole(pole, scroll){
+  batEl('batPole').value = pole;
+  batOnPoleInput();
+  batEl('batPct1').value=''; batEl('batPct2').value='';
+  batPreview();
+  batEl('batReplaceCard').style.display='none';
+  if(scroll){
+    batEl('batFormCard').scrollIntoView({ behavior:'smooth', block:'start' });
+    setTimeout(()=>batEl('batPct1').focus(), 350);
+  }
+}
+async function batSaveInspection(){
+  batMsg('batFormMsg','');
+  const p = batFindPole(batEl('batPole').value);
+  if(!p) return batMsg('batFormMsg','اختر رقم معدة من القائمة (يجب أن تكون مستوردة من ملف SCADA)', false);
+  const type = batTypeValue('batType','batTypeOther');
+  const v = batNum(batEl('batVoltage').value), c = batNum(batEl('batCapacity').value);
+  const cfg = batEl('batConfig').value;
+  const p1 = batNum(batEl('batPct1').value);
+  const p2 = cfg==='مزدوجة' ? batNum(batEl('batPct2').value) : null;
+  if(!type) return batMsg('batFormMsg','اكتب نوع البطارية', false);
+  if(v===null || v<=0) return batMsg('batFormMsg','أدخل الجهد (V) رقمًا صحيحًا', false);
+  if(c===null || c<=0) return batMsg('batFormMsg','أدخل السعة (Ah) رقمًا صحيحًا', false);
+  if(p1===null || p1>100) return batMsg('batFormMsg','نسبة البطارية يجب أن تكون بين 0 و100', false);
+  if(cfg==='مزدوجة' && (p2===null || p2>100)) return batMsg('batFormMsg','أدخل نسبة البطارية الثانية (0 إلى 100)', false);
+  const btn = batEl('btnBatSave');
+  btn.disabled = true;
+  try{
+    const d = await batPost('batterySaveInspection', { pole:p.pole, type, voltage:v, capacity:c, config:cfg, pct1:p1, pct2:p2, note:batEl('batNote').value.trim() });
+    let msg = `تم الحفظ — ${p.pole}: ${d.status} (الأدنى ${d.min}%)`;
+    if(d.taskCreated==='replace') msg += ' — أُنشئت مهمة استبدال للمكتب';
+    else if(d.taskCreated==='recheck') msg += ' — أُنشئت مهمة إعادة فحص';
+    if(d.tasksClosed) msg += ` — أُغلقت ${d.tasksClosed} مهمة مفتوحة`;
+    if(d.status==='استبدال' && d.stockShort) msg += ' — تنبيه: المخزون لا يكفي لهذا النوع';
+    batMsg('batFormMsg', msg, true);
+    toast('تم حفظ الفحص');
+    batClearForm(false);
+    batMsg('batFormMsg', msg, true);
+    await loadBatteryData(true);
+    batRefreshTasks();
+  }catch(e){
+    batHandleErr(e, 'batFormMsg');
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+/* ---- الاستبدال ---- */
+function batOpenReplace(pole){
+  const p = batFindPole(pole);
+  const s = BATTERY.specs[String(pole).toLowerCase()];
+  if(!p || !s){ toast('سجّل فحصًا أولًا لهذه المعدة'); if(p) batOpenForPole(pole, true); return; }
+  BATTERY.replacePole = p.pole;
+  batEl('batRepPole').textContent = p.pole;
+  const n = batCount(s.config);
+  batEl('batRepInfo').innerHTML = `المعدة: <b>${escapeHtml(p.pole)}</b> — المكتب: ${escapeHtml(p.office)||'—'}<br>البطارية الحالية: <b>${batSpecLabel(s)}</b> — آخر قراءة: ${s.config==='مزدوجة' ? `${s.pct1}% / ${s.pct2}%` : `${s.pct1}%`}<br>سيُخصم من المخزون: <b>${n}</b> بطارية${n===2?' (تُستبدل البطاريتان معًا)':''}`;
+  const dual = s.config==='مزدوجة';
+  batEl('batRepPct2Wrap').style.display = dual ? '' : 'none';
+  batEl('batRepPct1Label').textContent = dual ? 'نسبة البطارية الأولى الجديدة %' : 'نسبة البطارية الجديدة % (بعد التركيب)';
+  ['batRepPct1','batRepPct2','batRepVoltage','batRepCapacity','batRepTypeOther'].forEach(id=>batEl(id).value='');
+  batSetType('batRepType','batRepTypeOther','batRepTypeOtherWrap', s.type);
+  batEl('batRepConfig').value = s.config;
+  batEl('batRepNoStock').checked = false;
+  batMsg('batRepMsg','');
+  batEl('batFormCard').style.display = 'none';
+  batEl('batReplaceCard').style.display = '';
+  batEl('batReplaceCard').scrollIntoView({ behavior:'smooth', block:'start' });
+  setTimeout(()=>batEl('batRepPct1').focus(), 350);
+}
+function batCloseReplace(){
+  batEl('batReplaceCard').style.display = 'none';
+  batEl('batFormCard').style.display = '';
+  BATTERY.replacePole = '';
+}
+async function batConfirmReplace(){
+  const pole = BATTERY.replacePole;
+  const s = BATTERY.specs[pole.toLowerCase()];
+  if(!pole || !s) return;
+  const cfg = batEl('batRepConfig').value || s.config;
+  const p1 = batNum(batEl('batRepPct1').value);
+  const p2 = cfg==='مزدوجة' ? batNum(batEl('batRepPct2').value) : null;
+  if(p1===null || p1>100) return batMsg('batRepMsg','أدخل نسبة البطارية الجديدة (0 إلى 100)', false);
+  if(cfg==='مزدوجة' && (p2===null || p2>100)) return batMsg('batRepMsg','أدخل نسبة البطارية الثانية الجديدة (0 إلى 100)', false);
+  const payload = { pole, pct1:p1, pct2:p2 };
+  // المواصفات تُرسل فقط إن غُيّرت عن المحفوظة
+  const type = batTypeValue('batRepType','batRepTypeOther');
+  if(type && type!==s.type) payload.type = type;
+  const v = batNum(batEl('batRepVoltage').value), c = batNum(batEl('batRepCapacity').value);
+  if(v!==null && v!==s.voltage) payload.voltage = v;
+  if(c!==null && c!==s.capacity) payload.capacity = c;
+  if(cfg!==s.config) payload.config = cfg;
+  if(isAdmin() && batEl('batRepNoStock').checked) payload.noStock = true;
+  const btn = batEl('btnBatRepConfirm');
+  btn.disabled = true;
+  try{
+    const d = await batPost('batteryCompleteReplacement', payload);
+    let msg = `تم تسجيل الاستبدال — ${pole}: ${d.status}`;
+    if(d.deducted) msg += ` — خُصم ${d.deducted} من المخزون (المتبقي ${d.stockLeft})`;
+    if(d.taskCreated==='replace') msg += ' — القراءة ما زالت منخفضة: أُنشئت مهمة استبدال جديدة';
+    toast('تم تسجيل الاستبدال');
+    batCloseReplace();
+    batMsg('batFormMsg', msg, true);
+    await loadBatteryData(true);
+    batRefreshTasks();
+  }catch(e){
+    batHandleErr(e, 'batRepMsg');
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+/* ---- المخزون (للمدير) ---- */
+function batRenderStock(){
+  const needs = BATTERY.needs || [];
+  batEl('batNeedsWrap').innerHTML = needs.length ? `<div class="bat-table-wrap"><table>
+    <thead><tr><th>البطارية</th><th>مطلوب الآن</th><th>محتمل (إعادة فحص)</th><th>المتوفر</th><th>العجز الآن</th><th>العجز مع المحتمل</th></tr></thead>
+    <tbody>${needs.map(n=>`<tr>
+      <td>${escapeHtml(n.type)} ${n.voltage}V ${n.capacity}Ah</td>
+      <td><b>${n.needNow}</b></td><td>${n.needSoon}</td><td>${n.stock}</td>
+      <td>${n.shortage>0 ? `<span class="bat-pill bad">${n.shortage}</span>` : `<span class="bat-pill ok">لا عجز</span>`}</td>
+      <td>${n.shortageWithSoon>0 ? `<span class="bat-pill warn">${n.shortageWithSoon}</span>` : `<span class="bat-pill ok">لا عجز</span>`}</td>
+    </tr>`).join('')}</tbody></table></div>`
+    : `<div class="empty-state">لا احتياج حاليًا — لا توجد معدات مصنفة استبدال أو إعادة فحص</div>`;
+
+  const stock = BATTERY.stock || [];
+  batEl('batStockWrap').innerHTML = stock.length ? `<div class="bat-table-wrap"><table>
+    <thead><tr><th>البطارية</th><th>الكمية</th><th>الحد الأدنى</th><th>آخر تحديث</th><th></th></tr></thead>
+    <tbody>${stock.map((s,i)=>`<tr>
+      <td>${escapeHtml(s.type)} ${s.voltage}V ${s.capacity}Ah</td>
+      <td><b>${s.qty}</b> ${s.min>0 && s.qty<=s.min ? '<span class="bat-pill bad">أقل من الحد الأدنى</span>' : ''}</td>
+      <td>${s.min||'—'}</td>
+      <td>${escapeHtml(s.updated)}</td>
+      <td><button type="button" class="bat-act btnBatStFill" data-i="${i}">تعبئة النموذج</button></td>
+    </tr>`).join('')}</tbody></table></div>`
+    : `<div class="empty-state">لا يوجد مخزون مسجل — أضف أول كمية من النموذج أعلاه</div>`;
+  batEl('batStockWrap').querySelectorAll('.btnBatStFill').forEach(b=>b.addEventListener('click', ()=>{
+    const s = stock[parseInt(b.dataset.i,10)];
+    batSetType('batStType','batStTypeOther','batStTypeOtherWrap', s.type);
+    batEl('batStVoltage').value = s.voltage;
+    batEl('batStCapacity').value = s.capacity;
+    batEl('batStMin').value = s.min || '';
+    batEl('batStMode').value = 'set';
+    batEl('batStQty').value = s.qty;
+    batEl('batStQty').focus();
+  }));
+
+  const log = BATTERY.log || [];
+  batEl('batLogWrap').innerHTML = log.length ? `<div class="bat-table-wrap"><table>
+    <thead><tr><th>التاريخ</th><th>البطارية</th><th>الحركة</th><th>الكمية</th><th>الرصيد بعد</th><th>المرجع</th><th>بواسطة</th></tr></thead>
+    <tbody>${log.map(l=>`<tr><td>${escapeHtml(l.date)}</td><td>${escapeHtml(l.type)} ${l.voltage}V ${l.capacity}Ah</td><td>${escapeHtml(l.action)}</td><td>${l.qty}</td><td>${l.balance}</td><td>${escapeHtml(l.ref)||'—'}</td><td>${escapeHtml(l.by)}</td></tr>`).join('')}</tbody></table></div>`
+    : `<div class="empty-state">لا توجد حركات بعد</div>`;
+}
+async function batSaveStock(){
+  batMsg('batStMsg','');
+  const type = batTypeValue('batStType','batStTypeOther');
+  const v = batNum(batEl('batStVoltage').value), c = batNum(batEl('batStCapacity').value);
+  const q = batNum(batEl('batStQty').value);
+  const minRaw = batEl('batStMin').value;
+  const m = batNorm(minRaw)==='' ? null : batNum(minRaw);
+  const mode = batEl('batStMode').value;
+  if(!type) return batMsg('batStMsg','اكتب نوع البطارية', false);
+  if(v===null || v<=0) return batMsg('batStMsg','أدخل الجهد (V) رقمًا صحيحًا', false);
+  if(c===null || c<=0) return batMsg('batStMsg','أدخل السعة (Ah) رقمًا صحيحًا', false);
+  if(q===null || q!==Math.floor(q) || (mode==='add' && q===0)) return batMsg('batStMsg','الكمية يجب أن تكون عددًا صحيحًا' + (mode==='add' ? ' أكبر من صفر' : ''), false);
+  if(batNorm(minRaw)!=='' && (m===null || m!==Math.floor(m))) return batMsg('batStMsg','الحد الأدنى يجب أن يكون عددًا صحيحًا', false);
+  const btn = batEl('btnBatStSave');
+  btn.disabled = true;
+  try{
+    const d = await batPost('batteryStockSave', { type, voltage:v, capacity:c, mode, qty:q, min:m, note:batEl('batStNote').value.trim() });
+    batMsg('batStMsg', `تم الحفظ — الرصيد الآن: ${d.balance}`, true);
+    toast('تم حفظ المخزون');
+    ['batStQty','batStMin','batStNote'].forEach(id=>batEl(id).value='');
+    await loadBatteryData(true);
+  }catch(e){
+    batHandleErr(e, 'batStMsg');
+  }finally{
+    btn.disabled = false;
+  }
+}
+async function batAssignOffices(){
+  const btn = batEl('btnBatAssignOffices');
+  const notInspected = batRows().filter(r=>!r.s).length;
+  if(!notInspected){ batMsg('batListMsg','كل المعدات لديها فحص بطارية — لا حاجة للإسناد', true); return; }
+  // تأكيد بخطوتين دون نافذة منبثقة
+  if(!BATTERY.confirmAssign){
+    BATTERY.confirmAssign = true;
+    btn.textContent = `تأكيد: إنشاء فحص شامل لكل مكتب (${notInspected} معدة)`;
+    batMsg('batListMsg','سيُنشأ فحص شامل واحد لكل مكتب ويُسند لمسؤول المكتب. اضغط الزر مرة أخرى للتأكيد.', true);
+    setTimeout(()=>{ BATTERY.confirmAssign = false; btn.textContent = '📌 إسناد فحص البطاريات للمكاتب'; }, 8000);
+    return;
+  }
+  BATTERY.confirmAssign = false;
+  btn.textContent = '📌 إسناد فحص البطاريات للمكاتب';
+  btn.disabled = true;
+  try{
+    const d = await batPost('batteryAssignOfficeTasks');
+    const created = d.created || [];
+    batMsg('batListMsg', created.length ? `أُنشئت ${created.length} مهمة: ` + created.map(c=>`${c.office} (${c.count})`).join('، ') : 'لا مهام جديدة — توجد مهام فحص شاملة مفتوحة لكل المكاتب', true);
+    batRefreshTasks();
+  }catch(e){
+    batHandleErr(e, 'batListMsg');
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+/* ---- تهيئة ودخول التبويب ---- */
+function batInit(){
+  if(BATTERY.inited) return;
+  BATTERY.inited = true;
+  ['batType','batRepType','batStType'].forEach(batFillTypeSelect);
+  batBindTypeToggle('batType','batTypeOtherWrap');
+  batBindTypeToggle('batRepType','batRepTypeOtherWrap');
+  batBindTypeToggle('batStType','batStTypeOtherWrap');
+  batEl('batConfig').addEventListener('change', batOnConfigChange);
+  ['batPct1','batPct2','batVoltage','batCapacity'].forEach(id=>batEl(id).addEventListener('input', batPreview));
+  batEl('batPole').addEventListener('input', batOnPoleInput);
+  batEl('batPole').addEventListener('change', batOnPoleInput);
+  batEl('btnBatSave').addEventListener('click', batSaveInspection);
+  batEl('btnBatClear').addEventListener('click', ()=>batClearForm(false));
+  batEl('btnBatRepConfirm').addEventListener('click', batConfirmReplace);
+  batEl('btnBatRepCancel').addEventListener('click', batCloseReplace);
+  batEl('btnBatRefresh').addEventListener('click', ()=>loadBatteryData(true));
+  batEl('btnBatAssignOffices').addEventListener('click', batAssignOffices);
+  batEl('btnBatStSave').addEventListener('click', batSaveStock);
+  ['batFilterStatus','batFilterOffice'].forEach(id=>batEl(id).addEventListener('change', ()=>{ BATTERY.limit=100; batRenderList(); }));
+  batEl('batSearch').addEventListener('input', ()=>{ BATTERY.limit=100; batRenderList(); });
+  batSetType('batType','batTypeOther','batTypeOtherWrap','');
+  batSetType('batRepType','batRepTypeOther','batRepTypeOtherWrap','');
+  batSetType('batStType','batStTypeOther','batStTypeOtherWrap','');
+}
+function renderBatteryView(){
+  batInit();
+  batRender();
+  loadBatteryData(true);
+}
+/* فتح تبويب البطاريات لمعدة معينة (من بطاقة مهمة في تبويب المهام) */
+function openBatteryTabForPole(pole, forReplace){
+  const btn = document.querySelector('.tab-btn[data-tab="battery"]');
+  if(!btn) return;
+  btn.click();
+  const go = ()=>{
+    if(forReplace && BATTERY.specs[String(pole).toLowerCase()] && BATTERY.specs[String(pole).toLowerCase()].status==='استبدال') batOpenReplace(pole);
+    else batOpenForPole(pole, true);
+  };
+  const t0 = Date.now();
+  (function wait(){
+    if(BATTERY.loaded || Date.now()-t0 > 6000) go(); else setTimeout(wait, 150);
+  })();
+}
 
 /* ================= THEME ================= */
 document.getElementById('themeBtn').addEventListener('click', ()=>{
