@@ -896,7 +896,33 @@ button:active{ transform:scale(.96); }
   </div>
 </div>
 
-<div class="app-layout">
+<!-- ===== نموذج إغلاق مهمة اتصال SCADA بسبب محدد ===== -->
+  <div id="closeTaskModalOverlay" class="profile-modal-overlay">
+    <div class="profile-modal" style="max-width:420px;">
+      <button class="close-x" id="closeCloseTaskModal" type="button">×</button>
+      <h3>🔧 إغلاق المهمة</h3>
+<div class="login-sub" style="margin:0 0 12px;">اختر سبب الإغلاق</div>
+      <div class="checklist" id="closeTaskReasonsWrap">
+        <div class="checklist-item">
+          <div class="ci-options" style="flex-direction:column; align-items:stretch; gap:8px;">
+<span class="ci-opt" data-reason="مشكلة مصنعية">مشكلة مصنعية</span>            
+<span class="ci-opt" data-reason="تستدعي سكادا">تستدعي سكادا</span>            
+<span class="ci-opt" data-reason="مزال من الشبكة">مزال من الشبكة</span>            
+<span class="ci-opt" data-reason="تمت معالجتها">تمت معالجتها</span>            
+          </div>
+        </div>
+      </div>
+      <label for="closeTaskNote" style="margin-top:14px;">ملاحظة (اختياري)</label>
+      <textarea id="closeTaskNote" rows="2" placeholder="أي تفاصيل إضافية"></textarea>
+<div class="form-msg" id="closeTaskFormMsg"></div>        
+      <div class="btn-row" style="margin-top:14px;">
+        <button type="button" id="btnCancelCloseTask" class="ghost">إلغاء</button>
+        <button type="button" id="btnSubmitCloseTask" class="primary" style="flex:1;">✔ تأكيد الإغلاق</button>
+      </div>
+    </div>
+  </div>
+  <div class="app-layout">  
+  
 <div class="tw-widget" id="twWidget">
   <div class="tw-clockblock">
     <div class="tw-clock" id="twClock">--:--:--</div>
@@ -1132,7 +1158,7 @@ button:active{ transform:scale(.96); }
   </div>
 
   <div id="subtab-weakconn" class="subtab-panel">
-    <div class="card">
+    <div class="card" style="display:none;">
       <h3>📉 رفع ملف نسبة الاتصال الأسبوعي</h3>
       <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع ملف Excel أو CSV بنسب اتصال المعدات لأسبوع معيّن (نفس بنية ملف SCADA). يتم تجاهل الخلايا التي قيمتها #VALUE! أو غير رقمية تلقائيًا.</p>
       <div class="btn-row">
@@ -2490,7 +2516,9 @@ async function renderTasksView(){
       } else if(t.poleId && (t.description.indexOf('[بطارية] استبدال')===0 || t.description.indexOf('[بطارية] إعادة فحص')===0)){
         // مهام البطاريات تُغلق تلقائيًا عند تسجيل الفحص/الاستبدال من تبويب البطاريات
         actionsHtml += `<button type="button" class="primary btnOpenBattery" data-pole-id="${escapeHtml(t.poleId)}" data-replace="${t.description.indexOf('[بطارية] استبدال')===0 ? '1' : ''}">🔋 تسجيل في تبويب البطاريات</button>`;
-      } else {
+  } else if(t.description.indexOf('[SCADA] ') === 0){
+  actionsHtml += `<button type="button" class="primary btnOpenCloseTask" data-task-id="${escapeHtml(t.id)}">🔧 إغلاق المهمة</button>`;
+  } else {
         actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
       }
       actionsHtml += `</div>`;
@@ -2569,6 +2597,11 @@ async function renderTasksView(){
     btn.addEventListener('click', ()=>{
       openInspectionChecklistModal(btn.dataset.taskId, btn.dataset.poleId);
     });
+  });
+  listWrap.querySelectorAll('.btnOpenCloseTask').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+  openCloseTaskModal(btn.dataset.taskId);
+  });
   });
 }
 
