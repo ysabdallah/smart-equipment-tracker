@@ -4590,6 +4590,14 @@ function timeAgo(iso){
 }
 let PENDING_USERS = [];
 let SCADA_CONN_STATUS = null;
+// مصدر موحّد لعدد المعدات: المعدات الموجودة في آخر ملف SCADA مستورد (تستخدمه لوحة المعلومات وتبويب البطاريات)
+function scadaLatestPoles(){
+  const base = POLES.filter(function(p){ return String(p.type||'').trim().toUpperCase() !== 'SMART OH'; });
+  const ts = (SCADA_CONN_STATUS && SCADA_CONN_STATUS.lastImportAt) ? SCADA_CONN_STATUS.lastImportAt : null;
+  let list = ts ? base.filter(function(p){ return p.scada_last_seen_at === ts; }) : [];
+  if (!list.length) { list = base.filter(function(p){ return p.scada_confirmed !== false; }); }
+  return list;
+}
 function renderNotifBadge(){
   let lastSeen = '';
   try{ lastSeen = localStorage.getItem('lastSeenActivityTs') || ''; }catch(e){}
@@ -4956,7 +4964,7 @@ async function batRefreshTasks(){
 /* ---- الحالة الحالية لمعدة ---- */
 function batRows(){
   const today = batTodayRiyadh();
-  return POLES.map(p=>{
+  return scadaLatestPoles().map(p=>{
     const s = BATTERY.specs[p.pole.toLowerCase()] || null;
     const status = s ? s.status : 'لم تُفحص';
     const due = !!(s && s.nextDue && s.nextDue <= today);
@@ -5965,14 +5973,11 @@ function animateCountUp(el, target){
   requestAnimationFrame(step);
 }
 function renderDashboard(){
-  const STATS_POLES = POLES.filter(function(p){ return String(p.type||'').trim().toUpperCase() !== 'SMART OH'; });
-  animateCountUp(document.getElementById('kpiTotalPoles'), (SCADA_CONN_STATUS && SCADA_CONN_STATUS.hasData && SCADA_CONN_STATUS.totalCount) ? SCADA_CONN_STATUS.totalCount : STATS_POLES.length);
+  const SCADA_POLES = scadaLatestPoles();
+  animateCountUp(document.getElementById('kpiTotalPoles'), SCADA_POLES.length);
   renderScadaConnKpi();
         initTimeWeatherWidgetOnce();
 
-  const latestImportTs = (SCADA_CONN_STATUS && SCADA_CONN_STATUS.lastImportAt) ? SCADA_CONN_STATUS.lastImportAt : null;
-  let SCADA_POLES = latestImportTs ? STATS_POLES.filter(function(p){ return p.scada_last_seen_at === latestImportTs; }) : [];
-  if (!SCADA_POLES.length) { SCADA_POLES = STATS_POLES.filter(function(p){ return p.scada_confirmed !== false; }); }
   renderDonutChart('chartByType', countBy(SCADA_POLES,'type'));
   renderStackedBarChart('chartByOffice', countBy(SCADA_POLES,'office'));
   renderRankedBarChart('chartByManu', countBy(SCADA_POLES,'manufacturer'));
