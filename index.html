@@ -709,8 +709,90 @@ button:active{ transform:scale(.96); }
 .zp-preview .zp-counts span{ padding:4px 10px; border-radius:7px; background:var(--grid-soft); font-weight:700; font-size:12px; }
 .zp-preview details{ margin:6px 0; }
 .zp-preview ul{ margin:6px 0; padding-inline-start:18px; max-height:180px; overflow:auto; font-family:'JetBrains Mono',monospace; font-size:11.5px; }
+
+/* ===== SCADA > ضعف الاتصال (متابعة أسبوعية تراكمية) ===== */
+#subtab-weakconn{ --wc-accent:#001F5E; --wc-accent-soft:#E3ECF8; --wc-mild:#8A6D00; --wc-mild-soft:#FAF4D6; }
+[data-theme="dark"] #subtab-weakconn{ --wc-accent:#8FB8FF; --wc-accent-soft:rgba(143,184,255,.14); --wc-mild:#E3CF6A; --wc-mild-soft:rgba(227,207,106,.14); }
+#subtab-weakconn.active{ display:flex; flex-direction:column; gap:16px; }
+.wc-head{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; justify-content:space-between; }
+.wc-sub{ color:var(--text-secondary); margin:2px 0 0; font-size:13px; }
+.wc-rule{ font-size:12px; color:var(--text-secondary); background:var(--surface-1); border:1px solid var(--border); border-radius:8px; padding:6px 10px; }
+.wc-rule b{ color:var(--text-primary); }
+.wc-note{ font-size:12px; color:var(--text-muted); }
+.wc-grid2{ display:grid; grid-template-columns:1.1fr 1fr; gap:16px; }
+@media (max-width:820px){ .wc-grid2{ grid-template-columns:1fr; } }
+.wc-drop{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; border:1.5px dashed var(--border); border-radius:12px; padding:22px 16px; text-align:center; cursor:pointer; background:var(--surface-1); transition:border-color .15s, background .15s; margin:0; }
+.wc-drop:hover, .wc-drop.over{ border-color:var(--wc-accent); background:var(--wc-accent-soft); }
+.wc-drop svg{ width:34px; height:34px; color:var(--wc-accent); }
+.wc-drop strong{ font-size:14px; }
+.wc-hint{ color:var(--text-muted); font-size:12px; }
+.wc-pick{ margin-top:6px; background:var(--brand-gradient); color:#fff; border-radius:8px; padding:6px 16px; font-size:13px; font-weight:700; }
+.wc-steps{ list-style:none; margin:12px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; color:var(--text-muted); }
+.wc-steps li{ display:flex; align-items:center; gap:6px; }
+.wc-steps b{ display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; background:var(--wc-accent-soft); color:var(--wc-accent); font-family:'JetBrains Mono',monospace; font-size:11px; }
+.wc-stage{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+.wc-stage:empty{ display:none; }
+.wc-scard{ border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--surface-2); }
+.wc-scard .top{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--border); }
+.wc-scard .top svg{ flex:none; width:20px; height:20px; color:var(--good); }
+.wc-scard .fn{ flex:1; min-width:0; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wc-scard .x{ border:0; background:transparent; color:var(--text-muted); font-size:18px; line-height:1; padding:2px 6px; }
+.wc-scard .x:hover{ color:var(--critical); }
+.wc-scard .figs{ display:grid; grid-template-columns:repeat(3,1fr); background:var(--surface-1); }
+.wc-scard .fig{ padding:8px 12px; border-inline-start:1px solid var(--border); }
+.wc-scard .fig:first-child{ border-inline-start:0; }
+.wc-scard .fig .k{ font-size:11px; color:var(--text-muted); }
+.wc-scard .fig .v{ font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; }
+.wc-scard .fig.hl .v{ color:var(--critical); }
+.wc-scard .act{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:10px 12px; }
+.wc-scard .act label{ font-size:13px; color:var(--text-secondary); margin:0; }
+.wc-scard .act input{ width:74px; text-align:center; font-family:'JetBrains Mono',monospace; }
+.wc-scard .act .primary{ margin-inline-start:auto; }
+.wc-scard .warnline{ padding:8px 12px; font-size:12px; color:var(--warning); background:var(--warning-dim); }
+.wc-scard .err{ padding:10px 12px; font-size:13px; color:var(--critical); }
+.wc-scard .busy{ padding:10px 12px; font-size:13px; color:var(--text-muted); }
+.wc-weeks{ display:flex; flex-direction:column; gap:6px; margin-top:6px; }
+.wc-wk{ display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+.wc-wk:last-child{ border-bottom:0; }
+.wc-wk .tag{ font-family:'JetBrains Mono',monospace; font-weight:700; background:var(--wc-accent-soft); color:var(--wc-accent); border-radius:6px; padding:2px 8px; }
+.wc-wk .info{ font-size:12px; color:var(--text-muted); min-width:0; overflow-wrap:anywhere; }
+.wc-wk .info b{ color:var(--text-primary); }
+.wc-wk button.danger{ color:var(--critical); border-color:var(--critical); }
+.wc-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+@media (max-width:700px){ .wc-stats{ grid-template-columns:repeat(2,1fr); } }
+.wc-stat{ background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; box-shadow:var(--shadow); }
+.wc-stat .v{ font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:800; color:var(--wc-accent); }
+.wc-stat .l{ font-size:12px; color:var(--text-secondary); }
+.wc-stat.hl{ border-color:var(--critical); }
+.wc-stat.hl .v{ color:var(--critical); }
+.wc-toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.wc-filters{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.wc-filters input, .wc-filters select{ width:auto; max-width:100%; }
+.wc-filters input{ width:220px; }
+.wc-seg{ display:inline-flex; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.wc-seg button{ border:0; border-radius:0; border-inline-start:1px solid var(--border); background:transparent; font-weight:700; }
+.wc-seg button:first-child{ border-inline-start:0; }
+.wc-seg button[aria-pressed="true"]{ background:#001F5E; color:#fff; }
+.wc-tbl{ overflow-x:auto; border:1px solid var(--border); border-radius:10px; max-height:620px; }
+.wc-tbl table{ border-collapse:collapse; width:100%; font-size:13px; }
+.wc-tbl th, .wc-tbl td{ padding:8px 10px; text-align:start; border-bottom:1px solid var(--border); white-space:nowrap; }
+.wc-tbl th{ background:var(--surface-1); font-weight:700; font-size:12px; color:var(--text-secondary); position:sticky; top:0; z-index:1; }
+.wc-tbl tbody tr:hover{ background:var(--surface-1); }
+.wc-tbl td.name{ font-family:'JetBrains Mono',monospace; font-size:12.5px; }
+.wc-num{ font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+.wc-pct{ display:inline-block; min-width:58px; text-align:center; border-radius:6px; padding:1px 6px; font-family:'JetBrains Mono',monospace; font-size:12px; }
+.wc-p-c{ background:var(--critical-dim); color:var(--critical); }
+.wc-p-w{ background:var(--warning-dim); color:var(--warning); }
+.wc-p-m{ background:var(--wc-mild-soft); color:var(--wc-mild); }
+.wc-p-n{ color:var(--text-muted); }
+.wc-rep{ display:inline-flex; gap:6px; align-items:center; font-size:12px; }
+.wc-rep .x{ font-family:'JetBrains Mono',monospace; background:var(--critical); color:#fff; border-radius:5px; padding:0 6px; }
+.wc-rep.once{ color:var(--text-muted); }
+.wc-legend{ display:flex; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--text-muted); margin-top:10px; }
+.wc-empty{ padding:28px; text-align:center; color:var(--text-muted); }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -1200,29 +1282,70 @@ button:active{ transform:scale(.96); }
   </div>
 
   <div id="subtab-weakconn" class="subtab-panel">
-    <div class="card" style="display:none;">
-      <h3>📉 رفع ملف نسبة الاتصال الأسبوعي</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع ملف Excel أو CSV بنسب اتصال المعدات لأسبوع معيّن (نفس بنية ملف SCADA). يتم تجاهل الخلايا التي قيمتها #VALUE! أو غير رقمية تلقائيًا.</p>
-      <div class="btn-row">
-        <input type="number" id="weakConnWeekInput" min="1" max="53" placeholder="رقم الأسبوع" style="max-width:120px;">
-        <input type="file" id="weakConnCsvInput" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="max-width:260px;">
-        <button type="button" class="primary" id="btnImportWeakConn">⬆ استيراد الملف</button>
+    <div class="wc-head">
+      <div>
+        <h3 style="margin:0;">📉 متابعة ضعف اتصال المعدات الذكية</h3>
+        <p class="wc-sub">مقارنة أسبوعية تراكمية من صفحة Update Data، واستخراج المعدات المتكررة</p>
       </div>
-      <div id="weakConnImportResult" style="margin-top:12px; font-size:13px; color:var(--text-secondary);"></div>
+      <div class="wc-rule">شرط الفرز: <b>0% &lt; نسبة الاتصال &lt; 80%</b></div>
     </div>
 
-    <div class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-        <h3 style="margin:0;">المعدات ذات ضعف الاتصال (أقل من 80% وأكبر من 0%)</h3>
-        <div class="btn-row" style="margin:0;">
-          <select id="weakConnWeekSelect" style="max-width:160px;"></select>
-          <button id="btnExportWeakConnExcel">⬇ تصدير إلى إكسل</button>
+    <div class="wc-grid2">
+      <div class="card" style="margin:0;">
+        <h3 style="margin-top:0;">رفع ملف أسبوع</h3>
+        <p class="wc-note" style="margin:4px 0 12px">ارفع ملف «اتصال المحسنات»، ويُقرأ منه صفحة Update Data فقط. عند رفع عدة تقارير يومية لنفس الأسبوع يُحسب متوسط النسبة لكل معدة.</p>
+        <label class="wc-drop" id="wcDrop" for="wcFile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+          <strong>اسحب ملف Excel وأفلته هنا</strong>
+          <span class="wc-hint">xlsx · يمكن رفع أكثر من ملف في نفس الوقت</span>
+          <span class="wc-pick">اختيار ملف</span>
+        </label>
+        <input type="file" id="wcFile" accept=".xlsx,.xlsm,.xls" multiple hidden>
+        <ol class="wc-steps">
+          <li><b>1</b>ارفع الملف</li>
+          <li><b>2</b>تأكد من رقم الأسبوع</li>
+          <li><b>3</b>احفظ الأسبوع</li>
+        </ol>
+        <div class="wc-stage" id="wcStage"></div>
+      </div>
+
+      <div class="card" style="margin:0;">
+        <h3 style="margin-top:0;">الأسابيع المحفوظة</h3>
+        <div class="wc-weeks" id="wcWeeks"><div class="wc-note">جارٍ التحميل…</div></div>
+        <div class="wc-note" style="margin-top:10px;">
+          <label for="wcBackup" style="cursor:pointer; text-decoration:underline; display:inline; font-weight:400;">استيراد أسابيع من ملف نسخة (JSON)</label>
+          <input type="file" id="wcBackup" accept=".json,application/json" hidden>
         </div>
       </div>
-      <div id="weakConnListWrap"></div>
+    </div>
+
+    <div class="wc-stats" id="wcStats"></div>
+
+    <div class="card">
+      <div class="wc-toolbar">
+        <div class="wc-filters">
+          <h3 style="margin:0 0 0 6px;">المعدات</h3>
+          <div class="wc-seg" role="group" aria-label="العرض">
+            <button type="button" id="wcVRep" aria-pressed="true">المتكررة</button>
+            <button type="button" id="wcVNew" aria-pressed="false">جديدة في آخر أسبوع</button>
+            <button type="button" id="wcVAll" aria-pressed="false">الكل</button>
+          </div>
+        </div>
+        <div class="wc-filters">
+          <select id="wcOffice" aria-label="المكتب"><option value="">كل المكاتب</option></select>
+          <input id="wcQ" type="search" placeholder="بحث: اسم المعدة، المحطة، المغذي" aria-label="بحث">
+          <button type="button" id="wcExp" class="primary">تصدير تقرير Excel</button>
+        </div>
+      </div>
+      <div class="wc-tbl"><table id="wcTbl"><thead></thead><tbody></tbody></table></div>
+      <div class="wc-legend">
+        <span><span class="wc-pct wc-p-c">&lt; 40%</span> حرج</span>
+        <span><span class="wc-pct wc-p-w">40–60%</span> ضعيف</span>
+        <span><span class="wc-pct wc-p-m">60–80%</span> متذبذب</span>
+        <span><span class="wc-pct wc-p-n">—</span> خارج الشرط ذلك الأسبوع (0% أو ≥ 80% أو غير موجودة)</span>
+      </div>
     </div>
   </div>
-
   </section>
 
 <!-- ===================== TAB: MY PROFILE (ملفي — employee only) ===================== -->
@@ -3724,121 +3847,8 @@ async function scadaReadExcelAsCsv(file){
 
 
 /* ================= تبويب ضعف نسبة الاتصال ================= */
-async function weakConnReadExcelAsCsv(file){
-  const buf = await file.arrayBuffer();
-  const wb = XLSX.read(buf, {type:'array'});
-  const sheetName = wb.SheetNames.find(n => n.trim().toLowerCase() === 'data') || wb.SheetNames[0];
-  const sheet = wb.Sheets[sheetName];
-  return XLSX.utils.sheet_to_csv(sheet);
-}
-
-document.getElementById('btnImportWeakConn').addEventListener('click', async () => {
-  const input = document.getElementById('weakConnCsvInput');
-  const weekInput = document.getElementById('weakConnWeekInput');
-  const resultBox = document.getElementById('weakConnImportResult');
-  const file = input.files && input.files[0];
-  if(!file){ toast('اختر ملف CSV أو Excel أولًا'); return; }
-  const weekNumber = parseInt(weekInput.value, 10);
-  if(!weekNumber || weekNumber < 1 || weekNumber > 53){ toast('أدخل رقم الأسبوع أولًا'); return; }
-  const isExcel = /\.(xlsx|xls)$/i.test(file.name);
-
-  const btn = document.getElementById('btnImportWeakConn');
-  btn.disabled = true;
-  resultBox.textContent = 'جارٍ قراءة الملف...';
-  try{
-    const csvText = isExcel ? await weakConnReadExcelAsCsv(file) : await file.text();
-    resultBox.textContent = 'جارٍ رفع الملف...';
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'importWeeklyConnectionCsv', token: authToken(), csvText, weekNumber })
-    });
-    const json = await res.json();
-    if(!json.ok){
-      if(json.error === 'unauthorized'){ forceReLogin(); return; }
-      resultBox.textContent = 'تعذر الاستيراد: ' + (json.error || 'خطأ غير معروف');
-      btn.disabled = false;
-      return;
-    }
-    resultBox.textContent = `تم الاستيراد بنجاح — الأسبوع ${json.weekNumber}: ${json.totalRows} معدة، منها ${json.weakCount} ضعيفة الاتصال.`;
-    input.value = '';
-    btn.disabled = false;
-    await renderWeakConnView();
-  }catch(e){ resultBox.textContent = 'تعذر الاتصال بالخادم'; btn.disabled = false; }
-});
-
-let WEAK_CONN_CACHE = null;
-async function renderWeakConnView(selectedWeek){
-  if(!isAdmin()) return;
-  const wrap = document.getElementById('weakConnListWrap');
-  const weekSelect = document.getElementById('weakConnWeekSelect');
-  if(!wrap || !weekSelect) return;
-  wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">جارٍ التحميل...</div>`;
-  try{
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getWeeklyConnectionReport', token: authToken(), weekNumber: selectedWeek || undefined })
-    });
-    const json = await res.json();
-    if(!json.ok){
-      if(json.error === 'unauthorized'){ forceReLogin(); return; }
-      wrap.innerHTML = `<div style="color:var(--danger,#c0392b);">تعذر التحميل: ${escapeHtml(json.error||'خطأ غير معروف')}</div>`;
-      return;
-    }
-    WEAK_CONN_CACHE = json;
-    if(json.availableWeeks && json.availableWeeks.length){
-      weekSelect.innerHTML = json.availableWeeks.slice().reverse().map(w => `<option value="${w}" ${w===json.weekNumber?'selected':''}>الأسبوع ${w}</option>`).join('');
-      weekSelect.style.display = '';
-    } else {
-      weekSelect.innerHTML = '';
-      weekSelect.style.display = 'none';
-    }
-    if(!json.weekNumber){
-      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">لا توجد بيانات مرفوعة بعد.</div>`;
-      return;
-    }
-    if(!json.weak.length){
-      wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">لا توجد معدات ضعيفة الاتصال في الأسبوع ${json.weekNumber}.</div>`;
-      return;
-    }
-    wrap.innerHTML = `
-      <div style="overflow-x:auto;">
-      <table class="warranty-table">
-        <thead><tr><th>المعدة</th><th>المكتب</th><th>نسبة الاتصال</th><th>الأسابيع المتكررة</th></tr></thead>
-        <tbody>
-          ${json.weak.map(r => `<tr>
-            <td>${escapeHtml(r.pole)}</td>
-            <td>${escapeHtml(r.office||'-')}</td>
-            <td>${escapeHtml(String(r.percentage))}%</td>
-            <td>${escapeHtml(r.weeksAffected.join(', '))} (${r.recurrenceCount})</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-      </div>
-    `;
-  }catch(e){ wrap.innerHTML = `<div style="color:var(--danger,#c0392b);">تعذر الاتصال بالخادم</div>`; }
-}
-
-document.getElementById('weakConnWeekSelect').addEventListener('change', (e) => {
-  renderWeakConnView(e.target.value);
-});
-
-document.getElementById('btnExportWeakConnExcel').addEventListener('click', () => {
-  if(!WEAK_CONN_CACHE || !WEAK_CONN_CACHE.weak || !WEAK_CONN_CACHE.weak.length){ toast('لا توجد بيانات لتصديرها'); return; }
-  const rows = WEAK_CONN_CACHE.weak.map(r => ({
-    'المعدة': r.pole,
-    'المكتب': r.office,
-    'نسبة الاتصال': r.percentage,
-    'عدد أسابيع التكرار': r.recurrenceCount,
-    'الأسابيع المتكررة': r.weeksAffected.join(', ')
-  }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'ضعف الاتصال');
-  XLSX.writeFile(wb, `weak_connection_week_${WEAK_CONN_CACHE.weekNumber}.xlsx`);
-  toast('تم تصدير التقرير كملف إكسل');
-});
+// الواجهة الجديدة في آخر الصفحة (SCADA > ضعف الاتصال)
+function renderWeakConnView(){ if(window.wcLoad) return window.wcLoad(); }
 
 let FAULTY_EQUIP_FIELDS = [
   {key:'office', label:'المكتب'},
@@ -6295,6 +6305,468 @@ if(isLoggedIn()){
     document.getElementById('zpNoteClear').addEventListener('click', () => saveNote(true));
     const insBtn = document.getElementById('inspectionTabBtn');
     if(insBtn && insBtn.classList.contains('active')) load();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+})();
+</script>
+<script>
+// تقرير Excel (صفحة واحدة، بطاقات مؤشرات، بدون رسم بياني) — SpreadsheetML + JSZip
+// C = {ws:[{id,week,date,total,count}], list:[{n,o,s,f,m,by:{wid:p},cnt,wkList}]}
+async function wcBuildReport(C, JSZip, today){
+  const SH='التقرير', SHQ="'"+SH+"'";
+  const X=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const L=i=>{let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s};
+  const A=(c,r)=>L(c)+r, AA=(c,r)=>'$'+L(c)+'$'+r;
+  const ws=[...C.ws], N=ws.length, last=ws[N-1], prev=N>1?ws[N-2]:null;
+  const has=(e,w)=>w&&e.by[w.id]!=null;
+  const lw=last.week;
+
+  const items=C.list.map(e=>{
+    const earlier=ws.slice(0,-1).some(w=>has(e,w));
+    const inLast=has(e,last);
+    let tag,rank;
+    if(inLast&&earlier){tag=`متكررة: ${e.wkList.join('، ')}`;rank=0}
+    else if(inLast){tag=`جديدة: ${lw}`;rank=1}
+    else {tag=`تحسنت — آخر ظهور ${e.wkList[e.wkList.length-1]}`;rank=2}
+    return {...e,tag,rank,lp:inLast?e.by[last.id]:9};
+  }).sort((a,b)=>a.rank-b.rank||b.cnt-a.cnt||a.lp-b.lp||a.n.localeCompare(b.n));
+
+  const cNo=0,cName=1,cOff=2,cSt=3,cFd=4,cMd=5,cW0=6,cWL=6+N-1;
+  const cChg=N>1?cWL+1:-1, cTag=(N>1?cWL+2:cWL+1), LAST=cTag;
+  const widths=[9,38,10,12,12,25,...ws.map(()=>13),...(N>1?[12]:[]),30];
+
+  const S={title:1,sub:2,sec:3,kLab:4,kVal:5,kValR:6,th:7,td:8,tdC:9,tdN:10,tdP:11,tdB:12,chg:13,tagR:14,tagN:15,tagG:16,blank:17,legC:18,legW:19,legM:20,note:21,
+           tdZ:22,tdCZ:23,tdPZ:24,tdBZ:25,chgZ:26,blankZ:27,tdNZ:28,kLabR:29};
+  const rows={},merges=[],heights={};
+  const put=(c,r,v,s,o={})=>{(rows[r]=rows[r]||{})[c]={v,s,...o}};
+  const merge=(c1,r1,c2,r2,s)=>{for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(!(rows[r]&&rows[r][c]))put(c,r,null,s);if(c1!==c2||r1!==r2)merges.push(A(c1,r1)+':'+A(c2,r2))};
+
+  const rK1=4,rK2=5,rK3=6, rSec=8, rSH=9, rS0=10, rS1=rS0+N-1;
+  const rLeg=rS1+2, rTH=rLeg+1, rT0=rTH+1, rT1=rT0+Math.max(items.length,1)-1;
+  const col=c=>`${AA(c,rT0)}:${AA(c,rT1)}`;
+
+  put(0,1,`تقرير المعدات ضعيفة الاتصال — أسبوع ${lw}`,S.title);merge(0,1,LAST,1,S.title);heights[1]=38;
+  put(0,2,`المعدات التي نسبة اتصالها أكبر من 0% وأقل من 80%  |  الأسابيع المقارنة: ${ws.map(w=>w.week).join('، ')}  |  المصدر: صفحة Update Data  |  تاريخ التصدير: ${today}`,S.sub);merge(0,2,LAST,2,S.sub);heights[2]=22;
+  heights[3]=10;
+
+  const inLastN=items.filter(e=>e.rank<2).length, repN=items.filter(e=>e.rank===0).length, newN=items.filter(e=>e.rank===1).length;
+  const critN=items.filter(e=>e.rank<2&&e.lp<0.4).length;
+  const n=LAST+1, g=[0,Math.round(n/4),Math.round(n/2),Math.round(3*n/4),n];
+  const cards=[
+    {lab:`ضمن الشرط — أسبوع ${lw}`,v:inLastN,f:`COUNT(${col(cWL)})`},
+    {lab:'متكررة من أسابيع سابقة',v:repN,f:`COUNTIFS(${col(cWL)},"<>",${col(cTag)},"متكررة*")`,red:1},
+    {lab:`جديدة في أسبوع ${lw}`,v:newN,f:`COUNTIFS(${col(cWL)},"<>",${col(cTag)},"جديدة*")`},
+    {lab:'حرجة (أقل من 40%)',v:critN,f:`COUNTIFS(${col(cWL)},">0",${col(cWL)},"<0.4")`,red:1},
+  ];
+  cards.forEach((k,i)=>{const c1=g[i],c2=g[i+1]-1;
+    put(c1,rK1,k.lab,k.red?S.kLabR:S.kLab);merge(c1,rK1,c2,rK1,k.red?S.kLabR:S.kLab);
+    put(c1,rK2,k.v,k.red?S.kValR:S.kVal,{f:k.f});merge(c1,rK2,c2,rK3,k.red?S.kValR:S.kVal);
+  });
+  heights[rK1]=24;heights[rK2]=22;heights[rK3]=22;heights[7]=14;
+
+  put(0,rSec,'الملخص الأسبوعي',S.sec);merge(0,rSec,5,rSec,S.sec);heights[rSec]=24;
+  ['الأسبوع','تاريخ البيانات','إجمالي المعدات','ضمن الشرط','متكررة','جديدة'].forEach((h,i)=>put(i,rSH,h,S.th));heights[rSH]=26;
+  ws.forEach((w,i)=>{const r=rS0+i,wc=cW0+i,z=i%2;
+    const inW=items.filter(e=>has(e,w)).length;
+    const rep=i?items.filter(e=>has(e,w)&&ws.slice(0,i).some(q=>has(e,q))).length:0;
+    put(0,r,`أسبوع ${w.week}`,z?S.tdCZ:S.tdC);put(1,r,w.date,z?S.tdCZ:S.tdC);put(2,r,w.total||0,z?S.tdNZ:S.tdN);
+    put(3,r,inW,z?S.tdNZ:S.tdN,{f:`COUNT(${col(wc)})`});
+    if(i){const prevs=ws.slice(0,i).map((q,k)=>`ISNUMBER(${col(cW0+k)})`).join('+');
+      put(4,r,rep,z?S.tdNZ:S.tdN,{f:`SUMPRODUCT(ISNUMBER(${col(wc)})*((${prevs})>0))`});}
+    else put(4,r,'—',z?S.tdCZ:S.tdC);
+    put(5,r,inW-rep,z?S.tdNZ:S.tdN,{f:i?`${A(3,r)}-${A(4,r)}`:`${A(3,r)}`});
+  });
+
+  put(0,rLeg,'قائمة المعدات',S.sec);merge(0,rLeg,2,rLeg,S.sec);
+  const lg=[[S.legC,'حرج < 40%'],[S.legW,'ضعيف 40–60%'],[S.legM,'متذبذب 60–80%']];
+  const lc=[3,4,5];lg.forEach((l,i)=>put(lc[i],rLeg,l[1],l[0]));
+  if(LAST>5){put(6,rLeg,N>1?'التغير = الفرق بين آخر أسبوعين (أخضر تحسن، أحمر تراجع)':'',S.note);merge(6,rLeg,LAST,rLeg,S.note)}
+  heights[rLeg]=24;
+  const heads=['#','اسم المعدة','المكتب','المحطة','المغذي','الطراز',...ws.map(w=>`أسبوع ${w.week}`),...(N>1?['التغير']:[]),'التكرار'];
+  heads.forEach((h,i)=>put(i,rTH,h,S.th));heights[rTH]=28;
+  items.forEach((e,i)=>{const r=rT0+i,z=i%2;
+    put(cNo,r,i+1,z?S.tdNZ:S.tdN);put(cName,r,e.n,z?S.tdBZ:S.tdB);put(cOff,r,e.o,z?S.tdCZ:S.tdC);put(cSt,r,e.s,z?S.tdCZ:S.tdC);put(cFd,r,e.f,z?S.tdCZ:S.tdC);put(cMd,r,e.m,z?S.tdZ:S.td);
+    ws.forEach((w,k)=>{const p=e.by[w.id];if(p!=null)put(cW0+k,r,p,z?S.tdPZ:S.tdP);else put(cW0+k,r,null,z?S.blankZ:S.blank)});
+    if(N>1){const a=e.by[prev.id],b=e.by[last.id];
+      const v=(a!=null&&b!=null)?Math.round((b-a)*1e4)/1e4:'';
+      put(cChg,r,v,z?S.chgZ:S.chg,{f:`IF(AND(ISNUMBER(${A(cWL-1,r)}),ISNUMBER(${A(cWL,r)})),${A(cWL,r)}-${A(cWL-1,r)},"")`,str:v===''});}
+    put(cTag,r,e.tag,e.rank===0?S.tagR:e.rank===1?S.tagN:S.tagG);
+  });
+  const lastRow=rT1;
+
+  const cellXml=(c,r,x)=>{const ref=A(c,r),s=` s="${x.s}"`;
+    if(x.f){const f=`<f>${X(x.f)}</f>`;return x.str||typeof x.v==='string'?`<c r="${ref}"${s} t="str">${f}<v>${X(x.v)}</v></c>`:`<c r="${ref}"${s}>${f}<v>${x.v}</v></c>`}
+    if(x.v==null||x.v==='')return `<c r="${ref}"${s}/>`;
+    if(typeof x.v==='number')return `<c r="${ref}"${s}><v>${x.v}</v></c>`;
+    return `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${X(x.v)}</t></is></c>`};
+  let sd='';
+  [...new Set([...Object.keys(rows),...Object.keys(heights)].map(Number))].sort((a,b)=>a-b).forEach(r=>{
+    const h=heights[r]?` ht="${heights[r]}" customHeight="1"`:' ht="20" customHeight="1"';
+    const cs=rows[r]?Object.keys(rows[r]).map(Number).sort((a,b)=>a-b).map(c=>cellXml(c,r,rows[r][c])).join(''):'';
+    sd+=`<row r="${r}"${h}>${cs}</row>`;
+  });
+  const cols='<cols>'+widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')+`<col min="${LAST+2}" max="${LAST+2}" width="3" customWidth="1"/></cols>`;
+  const wr=`${A(cW0,rT0)}:${A(cWL,lastRow)}`,tl=A(cW0,rT0);
+  const cf=`<conditionalFormatting sqref="${wr}">
+<cfRule type="expression" dxfId="0" priority="1" stopIfTrue="1"><formula>AND(ISNUMBER(${tl}),${tl}&lt;0.4)</formula></cfRule>
+<cfRule type="expression" dxfId="1" priority="2" stopIfTrue="1"><formula>AND(ISNUMBER(${tl}),${tl}&gt;=0.4,${tl}&lt;0.6)</formula></cfRule>
+<cfRule type="expression" dxfId="2" priority="3" stopIfTrue="1"><formula>AND(ISNUMBER(${tl}),${tl}&gt;=0.6,${tl}&lt;0.8)</formula></cfRule></conditionalFormatting>`+(N>1?`<conditionalFormatting sqref="${A(cChg,rT0)}:${A(cChg,lastRow)}"><cfRule type="expression" dxfId="3" priority="4"><formula>AND(ISNUMBER(${A(cChg,rT0)}),${A(cChg,rT0)}&gt;0)</formula></cfRule><cfRule type="expression" dxfId="4" priority="5"><formula>AND(ISNUMBER(${A(cChg,rT0)}),${A(cChg,rT0)}&lt;0)</formula></cfRule></conditionalFormatting>`:'');
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheetPr><tabColor rgb="FF001F5E"/><pageSetUpPr fitToPage="1"/></sheetPr>
+<dimension ref="A1:${A(LAST,lastRow)}"/>
+<sheetViews><sheetView rightToLeft="1" showGridLines="0" zoomScale="100" workbookViewId="0"><selection activeCell="A1" sqref="A1"/></sheetView></sheetViews>
+<sheetFormatPr defaultRowHeight="20" customHeight="1"/>${cols}
+<sheetData>${sd}</sheetData>
+<autoFilter ref="${A(0,rTH)}:${A(LAST,lastRow)}"/>
+<mergeCells count="${merges.length}">${merges.map(m=>`<mergeCell ref="${m}"/>`).join('')}</mergeCells>
+${cf}
+<pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/>
+<pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="0"/>
+</worksheet>`;
+
+  // ألوان الموقع: كحلي #001F5E وأزرق #0081FF
+  const TEAL='FF001F5E',INK='FF101B2B',GRAY='FF5A6B7C',LINE='FFDCE6EE',CARD='FFEEF4FB',RED='FFB42318',REDS='FFFDECEA',ZEB='FFF5F9FC',WHITE='FFFFFFFF';
+  const font=(sz,color,b)=>`<font>${b?'<b/>':''}<sz val="${sz}"/><color rgb="${color}"/><name val="Arial"/><family val="2"/></font>`;
+  const fonts=[font(10,INK),font(18,WHITE,1),font(10,'FFD3E4FF'),font(12,TEAL,1),font(9,GRAY,1),font(26,TEAL,1),font(26,RED,1),font(10,WHITE,1),
+    font(10,INK,1),font(10,RED,1),font(10,'FF1D7A46',1),font(10,GRAY),font(9,RED,1),font(9,'FFB45309',1),font(9,'FF8A6D00',1),font(9,GRAY)];
+  const fill=c=>`<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`;
+  const fills=['<fill><patternFill patternType="none"/></fill>','<fill><patternFill patternType="gray125"/></fill>',
+    fill(TEAL),fill(CARD),fill(REDS),fill('FF0A3A8C'),fill(ZEB),fill('FFFDF1E1'),fill('FFFBF6DA'),fill('FFEFF2F5')];
+  const bd=(c,sides='lrtb',w='thin')=>`<border>${['left','right','top','bottom'].map((s,i)=>sides.includes('lrtb'[i])?`<${s} style="${w}"><color rgb="${c}"/></${s}>`:`<${s}/>`).join('')}<diagonal/></border>`;
+  const borders=['<border><left/><right/><top/><bottom/><diagonal/></border>',bd(LINE),bd('FF0081FF','b','medium'),
+    `<border><left style="thick"><color rgb="${WHITE}"/></left><right style="thick"><color rgb="${WHITE}"/></right><top/><bottom/><diagonal/></border>`];
+  const al=(h,v='center',wrap=0,ind=0)=>`<alignment horizontal="${h}" vertical="${v}"${wrap?' wrapText="1"':''}${ind?` indent="${ind}"`:''} readingOrder="2"/>`;
+  const xf=(fo,fi,bo,nf,a)=>`<xf numFmtId="${nf}" fontId="${fo}" fillId="${fi}" borderId="${bo}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${a}</xf>`;
+  const PCT=164,CHG=165;
+  const xfs=[
+    xf(0,0,0,0,al('right')),
+    xf(1,2,0,0,al('right','center',0,1)),
+    xf(2,2,0,0,al('right','center',0,1)),
+    xf(3,0,2,0,al('right','bottom')),
+    xf(4,3,3,0,al('center','bottom')),
+    xf(5,3,3,3,al('center','center')),
+    xf(6,4,3,3,al('center','center')),
+    xf(7,5,1,0,al('center','center',1)),
+    xf(0,0,1,0,al('right','center',0,1)),
+    xf(0,0,1,0,al('center')),
+    xf(0,0,1,3,al('center')),
+    xf(0,0,1,PCT,al('center')),
+    xf(8,0,1,0,al('right','center',0,1)),
+    xf(0,0,1,CHG,al('center')),
+    xf(9,4,1,0,al('center')),
+    xf(3,3,1,0,al('center')),
+    xf(11,0,1,0,al('center')),
+    xf(0,9,1,0,al('center')),
+    xf(12,4,1,0,al('center')),
+    xf(13,7,1,0,al('center')),
+    xf(14,8,1,0,al('center')),
+    xf(15,0,0,0,al('right','center',0,1)),
+    xf(0,6,1,0,al('right','center',0,1)),
+    xf(0,6,1,0,al('center')),
+    xf(0,6,1,PCT,al('center')),
+    xf(8,6,1,0,al('right','center',0,1)),
+    xf(0,6,1,CHG,al('center')),
+    xf(0,9,1,0,al('center')),
+    xf(0,6,1,3,al('center')),
+    xf(12,4,3,0,al('center','bottom')),
+  ];
+  const dxf=(fc,bg)=>`<dxf><font><b/><color rgb="${fc}"/></font><fill><patternFill patternType="solid"><fgColor rgb="${bg}"/><bgColor rgb="${bg}"/></patternFill></fill></dxf>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="2"><numFmt numFmtId="${PCT}" formatCode="0.00%"/><numFmt numFmtId="${CHG}" formatCode="+0.00%;-0.00%;0.00%"/></numFmts>
+<fonts count="${fonts.length}">${fonts.join('')}</fonts>
+<fills count="${fills.length}">${fills.join('')}</fills>
+<borders count="${borders.length}">${borders.join('')}</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="${xfs.length}">${xfs.join('')}</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+<dxfs count="5">${dxf('FFB42318','FFFDECEA')}${dxf('FFB45309','FFFDF1E1')}${dxf('FF8A6D00','FFFBF6DA')}<dxf><font><b/><color rgb="FF1D7A46"/></font></dxf><dxf><font><b/><color rgb="FFB42318"/></font></dxf></dxfs>
+<tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/>
+</styleSheet>`;
+
+  const rel=(id,type,t)=>`<Relationship Id="${id}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${type}" Target="${t}"/>`;
+  const rels=b=>`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${b}</Relationships>`;
+  const z=new JSZip();
+  z.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`);
+  z.file('_rels/.rels',rels(rel('rId1','officeDocument','xl/workbook.xml')));
+  z.file('xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="28800" windowHeight="15000"/></bookViews><sheets><sheet name="${SH}" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">${SHQ}!${AA(0,rTH)}:${AA(LAST,lastRow)}</definedName><definedName name="_xlnm.Print_Titles" localSheetId="0">${SHQ}!$${rTH}:$${rTH}</definedName></definedNames><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`);
+  z.file('xl/_rels/workbook.xml.rels',rels(rel('rId1','worksheet','worksheets/sheet1.xml')+rel('rId2','styles','styles.xml')));
+  z.file('xl/styles.xml',styles);
+  z.file('xl/worksheets/sheet1.xml',sheet);
+  return z.generateAsync({type:'uint8array',compression:'DEFLATE'});
+}
+
+/* ============================================================
+   SCADA > ضعف الاتصال — متابعة أسبوعية تراكمية (Update Data)
+   ============================================================ */
+(function(){
+  const $ = s => document.querySelector(s);
+  let weeks = [], staged = [], view = 'rep', delArm = null, loaded = false, busy = false;
+  const esc = s => escapeHtml(String(s == null ? '' : s));
+  const fmtP = p => (p * 100).toFixed(2) + '%';
+  const cls = p => p < 0.4 ? 'wc-p-c' : p < 0.6 ? 'wc-p-w' : 'wc-p-m';
+  const wkKey = w => w.year * 100 + w.week;
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+  async function api(payload){
+    const res = await fetch(API_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ token: authToken() }, payload)) });
+    const json = await res.json();
+    if(!json.ok && json.error === 'unauthorized'){ forceReLogin(); throw new Error('unauthorized'); }
+    return json;
+  }
+
+  // رقم الأسبوع (بداية الأسبوع الأحد — مثل Excel/strftime %U)
+  function weekU(d){ const s = new Date(d.getFullYear(), 0, 1); const yd = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - s) / 864e5); return Math.floor((yd + 7 - d.getDay()) / 7); }
+  function parseDate(v){
+    if(v == null || v === '') return null;
+    if(v instanceof Date) return v;
+    if(typeof v === 'number'){ const o = XLSX.SSF.parse_date_code(v); return o ? new Date(o.y, o.m - 1, o.d) : null; }
+    const m = String(v).match(/(\d{1,4})[\/\-](\d{1,2})[\/\-](\d{1,4})/);
+    if(!m) return null;
+    let a = +m[1], b = +m[2], c = +m[3];
+    if(a > 31) return new Date(a, b - 1, c);
+    if(c < 100) c += 2000;
+    if(a > 12) return new Date(c, b - 1, a);
+    return new Date(c, a - 1, b);
+  }
+
+  // ---------- قراءة الملف ----------
+  async function parseFile(file){
+    const buf = await file.arrayBuffer();
+    const names = XLSX.read(buf, { type:'array', bookSheets:true }).SheetNames;
+    const sn = names.find(n => /^\s*update\s*data\s*$/i.test(n)) || names.find(n => /update\s*data/i.test(n));
+    if(!sn) throw new Error('لم أجد صفحة Update Data في هذا الملف.');
+    const wb = XLSX.read(buf, { type:'array', sheets:[sn] });
+    const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, raw:true, defval:'' });
+    let h = -1;
+    for(let i = 0; i < Math.min(15, aoa.length); i++){ const r = aoa[i].map(x => String(x).trim()); if(r.includes('اسم المعدة') && r.includes('%')){ h = i; break; } }
+    if(h < 0) throw new Error('لم أجد صف العناوين (اسم المعدة و %) في صفحة Update Data.');
+    const H = aoa[h].map(x => String(x).trim()); const ix = n => H.indexOf(n);
+    const c = { n:ix('اسم المعدة'), p:ix('%'), o:ix('المكتب'), s:ix('اسم المحطة'), f:ix('رقم المغذي'), m:ix('الطراز'), id:ix('الرقم الوظيفي'), ip:ix('IP ADD'), c:ix('الاتصال'), t:ix('وقت تسجيل آخر حالة') };
+    const body = aoa.slice(h + 1).filter(r => String(r[c.n]).trim() !== '');
+    let pmax = 0; body.forEach(r => { const v = parseFloat(r[c.p]); if(!isNaN(v) && v > pmax) pmax = v; });
+    const scale = pmax > 1.5 ? 100 : 1;
+    const g = (r, k) => c[k] < 0 ? '' : String(r[c[k]] ?? '').trim();
+    const all = new Map(); const dates = {};
+    body.forEach(r => {
+      if(c.t >= 0 && Object.keys(dates).length < 50){ const d = parseDate(r[c.t]); if(d){ const k = iso(d); dates[k] = (dates[k] || 0) + 1; } }
+      const v = parseFloat(r[c.p]); if(isNaN(v)) return;
+      const n = g(r, 'n'); if(!n || all.has(n)) return;
+      all.set(n, { n, o:g(r,'o'), s:g(r,'s'), f:g(r,'f'), m:g(r,'m'), id:g(r,'id'), ip:g(r,'ip'), c:g(r,'c'), p:v / scale });
+    });
+    const top = Object.entries(dates).sort((a, b) => b[1] - a[1])[0];
+    const d = top ? new Date(top[0] + 'T12:00:00') : null;
+    return { fileName:file.name, total:body.length, all, date:d ? iso(d) : '', year:d ? d.getFullYear() : new Date().getFullYear(), week:d ? weekU(d) : '' };
+  }
+
+  // دمج الملفات اليومية لنفس الأسبوع بمتوسط النسبة
+  function mergeGroup(files){
+    const map = new Map();
+    files.forEach(f => f.all.forEach((r, n) => {
+      let e = map.get(n); if(!e){ e = Object.assign({}, r, { sum:0, d:0 }); map.set(n, e); }
+      Object.assign(e, { o:r.o || e.o, s:r.s || e.s, f:r.f || e.f, m:r.m || e.m, id:r.id || e.id, ip:r.ip || e.ip, c:r.c || e.c });
+      e.sum += r.p; e.d++;
+    }));
+    const rows = [];
+    map.forEach(e => { const p = Math.round(e.sum / e.d * 1e4) / 1e4; if(p > 0 && p < 0.8) rows.push({ n:e.n, o:e.o, s:e.s, f:e.f, m:e.m, id:e.id, ip:e.ip, c:e.c, p, d:e.d }); });
+    const ds = files.map(f => f.date).filter(Boolean).sort();
+    const date = ds.length > 1 ? `${ds[0]} → ${ds[ds.length - 1].slice(5)}` : (ds[0] || '');
+    return {
+      fileName: files.length > 1 ? `متوسط ${files.length} تقارير يومية` : files[0].fileName,
+      files: files.map(f => f.fileName), total: Math.round(files.reduce((s, f) => s + f.total, 0) / files.length),
+      rows, date, year: files[0].year, week: files[0].week
+    };
+  }
+
+  async function handleFiles(list){
+    if(!list.length) return;
+    const tmp = { fileName: list.length > 1 ? `${list.length} ملفات` : list[0].name, busy:true };
+    staged.push(tmp); renderStage();
+    const parsed = [], errors = [];
+    for(const f of list){ try{ parsed.push(await parseFile(f)); }catch(e){ errors.push({ fileName:f.name, error:e.message || 'تعذّرت قراءة الملف.' }); } }
+    staged.splice(staged.indexOf(tmp), 1);
+    const groups = new Map();
+    parsed.forEach(p => { const k = p.year + '-' + p.week; if(!groups.has(k)) groups.set(k, []); groups.get(k).push(p); });
+    groups.forEach(g => staged.push(mergeGroup(g)));
+    errors.forEach(e => staged.push(e));
+    renderStage();
+  }
+
+  function renderStage(){
+    const el = $('#wcStage'); if(!el) return; el.innerHTML = '';
+    const fileIc = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="m9 14 2 2 4-4"/></svg>';
+    staged.forEach((it, i) => {
+      const d = document.createElement('div'); d.className = 'wc-scard';
+      const title = it.files && it.files.length > 1 ? it.files.join('، ') : it.fileName;
+      const top = `<div class="top">${fileIc}<span class="fn" title="${esc(title)}">${esc(it.fileName)}</span><button type="button" class="x" data-x aria-label="إزالة">×</button></div>`;
+      if(it.busy){ d.innerHTML = top + '<div class="busy">جارٍ قراءة الملف…</div>'; }
+      else if(it.error){ d.innerHTML = top + `<div class="err">${esc(it.error)}</div>`; }
+      else{
+        const exists = weeks.some(w => w.year === it.year && w.week === +it.week);
+        d.innerHTML = top + `<div class="figs">
+            <div class="fig"><div class="k">تاريخ البيانات</div><div class="v">${esc(it.date || '—')}</div></div>
+            <div class="fig"><div class="k">إجمالي المعدات</div><div class="v">${it.total.toLocaleString('en')}</div></div>
+            <div class="fig hl"><div class="k">ضمن الشرط</div><div class="v">${it.rows.length}</div></div></div>
+          ${exists ? `<div class="warnline">الأسبوع ${esc(it.week)} محفوظ مسبقاً، والحفظ سيستبدل بياناته.</div>` : ''}
+          <div class="act"><label for="wcW${i}">رقم الأسبوع</label><input id="wcW${i}" type="number" min="1" max="53" value="${esc(it.week)}">
+          <button type="button" class="primary" data-s>${exists ? 'استبدال الأسبوع' : 'حفظ الأسبوع'}</button></div>`;
+        d.querySelector('input').addEventListener('change', e => { it.week = parseInt(e.target.value, 10) || e.target.value; renderStage(); });
+        d.querySelector('[data-s]').addEventListener('click', e => saveStaged(i, e.target));
+      }
+      const x = d.querySelector('[data-x]'); if(x) x.addEventListener('click', () => { staged.splice(i, 1); renderStage(); });
+      el.appendChild(d);
+    });
+  }
+
+  async function saveWeekData(data){
+    const json = await api(Object.assign({ action:'wcSaveWeek' }, data));
+    if(!json.ok) throw new Error(json.error || 'تعذّر الحفظ');
+    return json;
+  }
+  async function saveStaged(i, btn){
+    const it = staged[i]; const w = parseInt(it.week, 10);
+    if(!(w >= 1 && w <= 53)){ toast('أدخل رقم أسبوع بين 1 و 53'); return; }
+    if(btn){ btn.disabled = true; btn.textContent = 'جارٍ الحفظ…'; }
+    try{
+      await saveWeekData({ year:it.year, week:w, date:it.date, fileName:it.fileName, total:it.total, rows:it.rows });
+      staged.splice(staged.indexOf(it), 1); toast(`حُفظ الأسبوع ${w}`);
+      await load();
+    }catch(e){ if(String(e.message) !== 'unauthorized') toast(e.message || 'تعذّر الحفظ، حاول مرة أخرى'); if(btn){ btn.disabled = false; btn.textContent = 'حفظ الأسبوع'; } }
+  }
+
+  async function importBackup(file){
+    try{
+      const data = JSON.parse(await file.text());
+      const list = Array.isArray(data) ? data : (data.weeks || []);
+      if(!list.length){ toast('الملف لا يحتوي على أسابيع'); return; }
+      let n = 0;
+      for(const w of list){
+        if(!(w.week >= 1 && w.week <= 53) || !Array.isArray(w.rows)) continue;
+        await saveWeekData({ year:w.year, week:w.week, date:w.date || '', fileName:w.fileName || '', total:w.total || 0, rows:w.rows });
+        n++;
+      }
+      toast(`تم استيراد ${n} أسبوع`); await load();
+    }catch(e){ if(String(e.message) !== 'unauthorized') toast('تعذّر استيراد الملف: ' + (e.message || '')); }
+  }
+
+  // ---------- الأسابيع المحفوظة ----------
+  function renderWeeks(){
+    const el = $('#wcWeeks'); if(!el) return;
+    if(!weeks.length){ el.innerHTML = '<div class="wc-note">لا توجد أسابيع محفوظة بعد. ارفع أول ملف.</div>'; return; }
+    el.innerHTML = '';
+    [...weeks].sort((a, b) => wkKey(b) - wkKey(a)).forEach(w => {
+      const d = document.createElement('div'); d.className = 'wc-wk';
+      const armed = delArm === w.id;
+      d.innerHTML = `<span class="tag">أ${w.week}</span><span class="info"><b class="wc-num">${w.count}</b> معدة ضمن الشرط من <span class="wc-num">${(w.total || 0).toLocaleString('en')}</span> · <span class="wc-num">${esc(w.date)}</span><br>${esc(w.fileName)}</span>
+        <button type="button" class="${armed ? 'danger' : ''}">${armed ? 'تأكيد الحذف' : 'حذف'}</button>`;
+      d.querySelector('button').addEventListener('click', async ev => {
+        if(!armed){ delArm = w.id; renderWeeks(); setTimeout(() => { if(delArm === w.id){ delArm = null; renderWeeks(); } }, 4000); return; }
+        delArm = null; ev.target.disabled = true;
+        try{ const json = await api({ action:'wcDeleteWeek', id:w.id }); if(!json.ok) throw new Error(json.error); toast(`حُذف الأسبوع ${w.week}`); await load(); }
+        catch(e){ if(String(e.message) !== 'unauthorized') toast('تعذّر الحذف'); renderWeeks(); }
+      });
+      el.appendChild(d);
+    });
+  }
+
+  // ---------- المقارنة ----------
+  function combine(){
+    const ws = [...weeks].sort((a, b) => wkKey(a) - wkKey(b));
+    const map = new Map();
+    ws.forEach(w => (w.rows || []).forEach(r => {
+      let e = map.get(r.n); if(!e){ e = Object.assign({}, r, { by:{} }); map.set(r.n, e); }
+      Object.assign(e, { o:r.o || e.o, s:r.s || e.s, f:r.f || e.f, m:r.m || e.m, id:r.id || e.id, ip:r.ip || e.ip, c:r.c || e.c });
+      e.by[w.id] = r.p;
+    }));
+    const last = ws[ws.length - 1];
+    const list = [...map.values()].map(e => {
+      const hit = ws.filter(w => e.by[w.id] != null);
+      let streak = 0; for(let i = ws.length - 1; i >= 0 && e.by[ws[i].id] != null; i--) streak++;
+      return Object.assign({}, e, { cnt:hit.length, wkList:hit.map(w => w.week), inLast:!!last && e.by[last.id] != null, lastP:last ? e.by[last.id] : null, streak });
+    });
+    return { ws, list, last };
+  }
+  function filtered(C){
+    const q = $('#wcQ').value.trim().toLowerCase(), o = $('#wcOffice').value;
+    return C.list.filter(e => {
+      if(view === 'rep' && e.cnt < 2) return false;
+      if(view === 'new' && !(e.inLast && e.cnt === 1)) return false;
+      if(o && e.o !== o) return false;
+      if(q && ![e.n, e.s, e.f, e.m, e.id].join(' ').toLowerCase().includes(q)) return false;
+      return true;
+    }).sort((a, b) => b.cnt - a.cnt || b.streak - a.streak || (a.lastP ?? 2) - (b.lastP ?? 2) || a.n.localeCompare(b.n));
+  }
+  function renderStats(C){
+    const rep = C.list.filter(e => e.cnt > 1).length;
+    const streakAll = C.ws.length > 1 ? C.list.filter(e => e.streak === C.ws.length).length : 0;
+    const s = [
+      { v:C.ws.length, l:'أسابيع محفوظة' },
+      { v:C.last ? C.last.count : 0, l:C.last ? `ضمن الشرط في أسبوع ${C.last.week}` : 'ضمن الشرط في آخر أسبوع' },
+      { v:rep, l:'معدات متكررة (أسبوعين أو أكثر)', hl:1 },
+      { v:streakAll, l:C.ws.length > 1 ? `مستمرة في كل الأسابيع (${C.ws.map(w => w.week).join('، ')})` : 'مستمرة في كل الأسابيع' }
+    ];
+    $('#wcStats').innerHTML = s.map(x => `<div class="wc-stat${x.hl ? ' hl' : ''}"><div class="v">${x.v}</div><div class="l">${esc(x.l)}</div></div>`).join('');
+  }
+  function renderOffices(C){
+    const sel = $('#wcOffice'), cur = sel.value;
+    const offs = [...new Set(C.list.map(e => e.o).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">كل المكاتب</option>' + offs.map(o => `<option ${o === cur ? 'selected' : ''}>${esc(o)}</option>`).join('');
+  }
+  function renderTable(C){
+    const rows = filtered(C);
+    $('#wcTbl thead').innerHTML = `<tr><th>#</th><th>اسم المعدة</th><th>المكتب</th><th>المحطة</th><th>المغذي</th><th>الطراز</th>${C.ws.map(w => `<th class="wc-num">أسبوع ${w.week}</th>`).join('')}<th>التكرار</th></tr>`;
+    const tb = $('#wcTbl tbody');
+    if(!C.ws.length){ tb.innerHTML = `<tr><td colspan="8" class="wc-empty">ارفع ملف أسبوع لتظهر النتائج هنا.</td></tr>`; return; }
+    if(!rows.length){ tb.innerHTML = `<tr><td colspan="${7 + C.ws.length}" class="wc-empty">${view === 'rep' && C.ws.length < 2 ? 'تحتاج أسبوعين محفوظين على الأقل لظهور المتكررة.' : 'لا توجد معدات مطابقة.'}</td></tr>`; return; }
+    tb.innerHTML = rows.map((e, i) => `<tr><td class="wc-num">${i + 1}</td><td class="name">${esc(e.n)}</td><td>${esc(e.o)}</td><td>${esc(e.s)}</td><td>${esc(e.f)}</td><td>${esc(e.m)}</td>
+      ${C.ws.map(w => { const p = e.by[w.id]; return `<td>${p != null ? `<span class="wc-pct ${cls(p)}">${fmtP(p)}</span>` : '<span class="wc-pct wc-p-n">—</span>'}</td>`; }).join('')}
+      <td><span class="wc-rep ${e.cnt > 1 ? '' : 'once'}">${e.cnt > 1 ? `<span class="x">×${e.cnt}</span>` : ''}${esc(e.cnt > 1 ? 'الأسابيع ' + e.wkList.join('، ') : 'أسبوع ' + e.wkList[0] + ' فقط')}</span></td></tr>`).join('');
+  }
+  function renderAll(){ const C = combine(); renderWeeks(); renderStats(C); renderOffices(C); renderTable(C); renderStage(); }
+
+  async function load(){
+    if(!$('#wcWeeks') || busy) return;
+    busy = true;
+    if(!loaded) $('#wcWeeks').innerHTML = '<div class="wc-note">جارٍ التحميل…</div>';
+    try{
+      const json = await api({ action:'wcList' });
+      if(!json.ok){ $('#wcWeeks').innerHTML = `<div class="wc-note">تعذّر التحميل: ${esc(json.error || '')}</div>`; return; }
+      weeks = json.weeks || []; loaded = true; renderAll();
+    }catch(e){ if(String(e.message) !== 'unauthorized') $('#wcWeeks').innerHTML = '<div class="wc-note">تعذّر الاتصال بالخادم</div>'; }
+    finally{ busy = false; }
+  }
+  // يُستدعى من الكود الحالي عند فتح تبويب SCADA
+  window.wcLoad = load;
+
+  // ---------- التصدير ----------
+  async function exportXlsx(){
+    const C = combine(); if(!C.ws.length){ toast('لا توجد بيانات للتصدير'); return; }
+    if(typeof JSZip === 'undefined'){ toast('تعذّر تحميل مكتبة التصدير، حدّث الصفحة'); return; }
+    const btn = $('#wcExp'); btn.disabled = true; btn.textContent = 'جارٍ التجهيز…';
+    try{
+      const out = await wcBuildReport(C, JSZip, iso(new Date()));
+      const blob = new Blob([out], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `تقرير_ضعف_الاتصال_أسابيع_${C.ws.map(w => w.week).join('-')}.xlsx`;
+      document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    }catch(e){ toast('تعذّر تجهيز الملف'); }
+    finally{ btn.disabled = false; btn.textContent = 'تصدير تقرير Excel'; }
+  }
+
+  function bind(){
+    const drop = $('#wcDrop'); if(!drop) return;
+    $('#wcFile').addEventListener('change', e => { handleFiles([...e.target.files]); e.target.value = ''; });
+    ['dragenter','dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', e => handleFiles([...e.dataTransfer.files]));
+    $('#wcBackup').addEventListener('change', e => { const f = e.target.files[0]; if(f) importBackup(f); e.target.value = ''; });
+    const segs = { rep:$('#wcVRep'), new:$('#wcVNew'), all:$('#wcVAll') };
+    Object.entries(segs).forEach(([k, b]) => b.addEventListener('click', () => { view = k; Object.values(segs).forEach(x => x.setAttribute('aria-pressed', x === b)); renderTable(combine()); }));
+    $('#wcQ').addEventListener('input', () => renderTable(combine()));
+    $('#wcOffice').addEventListener('change', () => renderTable(combine()));
+    $('#wcExp').addEventListener('click', exportXlsx);
+    renderAll();
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
 })();
