@@ -667,6 +667,48 @@ button:active{ transform:scale(.96); }
 #tab-battery .kpi-grid{ grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
 #tab-battery .kpi-tile{ padding:16px; }
 #tab-battery .kpi-tile .label{ margin-bottom:8px; }
+
+/* ===== الفحص الدوري — متابعة ZONE1 / NOP ===== */
+.zp-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.zp-seg{ display:inline-flex; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--surface-2); }
+.zp-seg button{ border:0; border-radius:0; background:transparent; padding:8px 16px; font-weight:700; font-size:13px; color:var(--text-secondary); cursor:pointer; }
+.zp-seg button + button{ border-inline-start:1px solid var(--border); }
+.zp-seg button.active{ background:#001F5E; color:#fff; }
+.zp-meta{ font-size:12px; color:var(--text-muted); display:flex; gap:14px; flex-wrap:wrap; }
+.zp-meta .zp-stale{ color:var(--critical); font-weight:700; }
+.zp-kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:14px; }
+.zp-kpi{ background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+.zp-kpi .l{ font-size:11.5px; color:var(--text-secondary); font-weight:700; }
+.zp-kpi .v{ font-size:24px; font-weight:800; font-family:'JetBrains Mono',monospace; margin-top:6px; color:#001F5E; }
+[data-theme="dark"] .zp-kpi .v{ color:#8FB8FF; }
+.zp-kpi.bad .v{ color:var(--critical); } .zp-kpi.warn .v{ color:var(--warning); } .zp-kpi.good .v{ color:var(--good); }
+.zp-table-wrap{ overflow-x:auto; }
+.zp-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.zp-table th{ text-align:start; font-size:11.5px; color:var(--text-secondary); padding:8px; border-bottom:1.5px solid var(--border); white-space:nowrap; }
+.zp-table td{ padding:8px; border-bottom:1px solid var(--grid-soft); vertical-align:top; }
+.zp-table tr.zp-issue td{ background:var(--critical-dim); }
+.zp-table tr.zp-note td{ background:var(--warning-dim); }
+[data-theme="dark"] .zp-table tr.zp-issue td{ background:rgba(181,69,62,.16); }
+[data-theme="dark"] .zp-table tr.zp-note td{ background:rgba(173,124,34,.16); }
+.zp-pole{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; }
+.zp-tag{ display:inline-block; font-size:10px; font-weight:800; padding:1px 7px; border-radius:6px; margin-inline-start:4px; background:#001F5E; color:#fff; }
+.zp-tag.nop{ background:#0081FF; }
+.zp-conn{ font-weight:800; font-size:11px; padding:2px 8px; border-radius:6px; white-space:nowrap; }
+.zp-conn.on{ background:var(--good-dim); color:var(--good); }
+.zp-conn.off{ background:var(--critical-dim); color:var(--critical); }
+.zp-conn.nj{ background:var(--warning-dim); color:var(--warning); }
+.zp-conn.na{ background:var(--grid-soft); color:var(--text-muted); }
+.zp-sub{ font-size:11px; color:var(--text-muted); margin-top:3px; }
+.zp-overdue{ color:var(--critical); font-weight:800; }
+.zp-admin{ margin-top:6px; }
+.zp-admin > summary{ cursor:pointer; font-weight:800; font-size:14px; padding:12px 16px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; list-style:none; }
+.zp-admin > summary::-webkit-details-marker{ display:none; }
+.zp-admin[open] > summary{ margin-bottom:12px; }
+.zp-preview{ margin-top:12px; font-size:13px; }
+.zp-preview .zp-counts{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.zp-preview .zp-counts span{ padding:4px 10px; border-radius:7px; background:var(--grid-soft); font-weight:700; font-size:12px; }
+.zp-preview details{ margin:6px 0; }
+.zp-preview ul{ margin:6px 0; padding-inline-start:18px; max-height:180px; overflow:auto; font-family:'JetBrains Mono',monospace; font-size:11.5px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1344,23 +1386,54 @@ button:active{ transform:scale(.96); }
 <!-- ===================== TAB: الفحص الدوري (admin only) ===================== -->
 <section id="tab-inspection" class="tab-panel">
 
-  <nav class="subtabs">
-    <button class="subtab-btn active" data-subtab="inspOverview">📈 نظرة عامة</button>
-    <button class="subtab-btn" data-subtab="inspSchedule">📅 الجدولة</button>
-  </nav>
-
-  <div id="subtab-inspOverview" class="subtab-panel active">
-    <div class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-        <h3 style="margin:0;">⏰ المعدات المتأخرة عن موعد فحصها</h3>
-        <button type="button" class="primary" id="btnRunInspectionCheck">🔍 تشغيل فحص الآن</button>
+  <div class="card">
+    <div class="zp-toolbar">
+      <div class="zp-seg" id="zpFilterSeg">
+        <button type="button" data-zp-filter="ALL" class="active">الكل</button>
+        <button type="button" data-zp-filter="ZONE1">ZONE1</button>
+        <button type="button" data-zp-filter="NOP">NOP</button>
       </div>
-      <div class="form-msg" id="inspectionRunMsg"></div>
-      <div id="overdueInspectionsWrap"></div>
+      <div class="btn-row" style="margin:0;">
+        <input type="search" id="zpSearch" placeholder="بحث باسم المعدة أو المكتب" style="max-width:220px;">
+        <button type="button" id="zpBtnRefresh">↻ تحديث</button>
+        <button type="button" id="zpBtnExport">⬇ تصدير إكسل</button>
+        <button type="button" class="primary" id="btnRunInspectionCheck">🔍 إنشاء مهام الفحص المستحقة</button>
+      </div>
     </div>
+    <div class="zp-meta" id="zpMeta"></div>
+    <div class="form-msg" id="inspectionRunMsg"></div>
   </div>
 
-  <div id="subtab-inspSchedule" class="subtab-panel">
+  <div class="zp-kpis" id="zpKpis"></div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">📋 متابعة المعدات — المشاكل أولاً</h3>
+    <div class="zp-table-wrap" id="zpTableWrap"></div>
+  </div>
+
+  <details class="zp-admin" id="zpAdmin">
+    <summary>⚙️ إدارة القوائم والجدولة</summary>
+
+    <div class="card">
+      <h3>📌 قائمة ZONE1 (ثابتة — تُرفع مرة واحدة)</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ملف Excel أو CSV فيه عمود «اسم المعدة» أو «المعيد» أو «رقم العمود». تظهر معاينة قبل الاعتماد، والمعدات المعتمدة تُجدول لفحص ميداني شهري.</p>
+      <div class="btn-row">
+        <input type="file" id="zpFileZONE1" accept=".csv,text/csv,.xlsx,.xls" style="max-width:260px;">
+        <button type="button" class="primary" data-zp-preview="ZONE1">👁 معاينة</button>
+      </div>
+      <div class="zp-preview" id="zpPreviewZONE1"></div>
+    </div>
+
+    <div class="card">
+      <h3>🔁 قائمة NOP (تُستبدل شهريًا)</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع قائمة NOP الجديدة كاملة. المعاينة تعرض المضافة والمحذوفة وغير المطابقة. المعدات التي تخرج من القائمة تعود لجدولة «كل 4 أشهر» ولا يُحذف شيء.</p>
+      <div class="btn-row">
+        <input type="file" id="zpFileNOP" accept=".csv,text/csv,.xlsx,.xls" style="max-width:260px;">
+        <button type="button" class="primary" data-zp-preview="NOP">👁 معاينة</button>
+      </div>
+      <div class="zp-preview" id="zpPreviewNOP"></div>
+    </div>
+
     <div class="card">
       <h3>➕ جدولة دفعة معدات دفعة واحدة</h3>
       <div class="form-grid">
@@ -1386,17 +1459,40 @@ button:active{ transform:scale(.96); }
     </div>
 
     <div class="card">
-      <h3>📥 استيراد جدولة NOP / ZONE1</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin:0 0 10px;">ارفع ملف Excel أو CSV يحتوي على عمودي "رقم العمود" و"النوع" (NOP أو ZONE1) لجدولة فحص هذه المعدات تلقائيًا كل شهرين.</p>
-      <div class="btn-row">
-        <input type="file" id="nopZoneInput" accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="max-width:260px;">
-        <button type="button" class="primary" id="btnImportNopZone">⬆ استيراد الملف</button>
-      </div>
-      <div id="nopZoneImportResult" style="margin-top:12px; font-size:13px; color:var(--text-secondary);"></div>
-    </div>
-
-    <div class="card">
       <h3>🗓️ جداول الفحص الحالية</h3><div class="btn-row"><button type="button" class="primary" id="btnApplyDefaultSchedule">🗓️ تطبيق الجدولة الافتراضية (كل 4 أشهر) على كل المعدات الآن</button></div><div id="inspectionSchedulesWrap"></div>
+    </div>
+    <div class="card">
+      <h3>⏰ كل المعدات المتأخرة عن موعد فحصها (داخل وخارج القوائم)</h3>
+      <div id="overdueInspectionsWrap"></div>
+    </div>
+  </details>
+
+  <div id="zpNoteOverlay" class="profile-modal-overlay">
+    <div class="profile-modal" style="max-width:460px;">
+      <button class="close-x" id="zpNoteClose" type="button">×</button>
+      <h3>📝 ملاحظة المتابعة</h3>
+      <div class="login-sub zp-pole" id="zpNotePole" style="margin:0 0 12px;"></div>
+      <label for="zpNoteType">نوع الملاحظة</label>
+      <select id="zpNoteType">
+        <option value="">— لا توجد ملاحظة —</option>
+        <option>GAS LOW</option><option>BATTERY LOW</option><option>RTU FAULTY</option><option>DOOR OPEN</option>
+        <option>COMM FAIL</option><option>NO JUMPER</option><option>إشارة خاطئة</option><option>خطة الإحلال</option><option>أخرى</option>
+      </select>
+      <label for="zpNoteDetails" style="margin-top:10px;">التفاصيل</label>
+      <textarea id="zpNoteDetails" rows="2"></textarea>
+      <label for="zpNoteAction" style="margin-top:10px;">الإجراء / التصعيد</label>
+      <select id="zpNoteAction">
+        <option value="">— بدون إجراء —</option>
+        <option>قيد المتابعة</option><option>زيارة ميدانية</option><option>تصعيد للإحلال</option>
+        <option>تصعيد لسكادا</option><option>تصعيد للمصنع</option><option>تمت المعالجة</option>
+      </select>
+      <label for="zpNoteDate" style="margin-top:10px;">تاريخ الرصد</label>
+      <input type="date" id="zpNoteDate">
+      <div class="form-msg" id="zpNoteMsg"></div>
+      <div class="btn-row" style="margin-top:14px;">
+        <button type="button" class="ghost" id="zpNoteClear">🧹 مسح الملاحظة</button>
+        <button type="button" class="primary" id="zpNoteSave" style="flex:1;">💾 حفظ</button>
+      </div>
     </div>
   </div>
 
@@ -1785,7 +1881,7 @@ function restoreActiveTab(){
   if(saved==='tickets') renderTicketsView();
   if(saved==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
   if(saved==='myprofile') renderMyProfileView();
-  if(saved==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); populateScheduleBulkScopeOptions(); }
+  if(saved==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); populateScheduleBulkScopeOptions(); if(window.zpRenderBoard) zpRenderBoard(); }
   if(saved==='reports'){ renderEmployeeStats(); renderNetworkReport(); loadReportScheduleConfig(); }
   if(saved==='battery' && typeof renderBatteryView==='function') renderBatteryView();
 }
@@ -2886,49 +2982,6 @@ function populateScheduleBulkScopeOptions(){
   if(values.includes(current)) valueSel.value = current;
 }
 document.getElementById('schedBulkScopeType').addEventListener('change', populateScheduleBulkScopeOptions);
-
-/* -------- استيراد جدولة فحص NOP / ZONE1 -------- */
-async function nopZoneReadExcelAsCsv(file){
-  const buf = await file.arrayBuffer();
-  const wb = XLSX.read(buf, { type: 'array' });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  return XLSX.utils.sheet_to_csv(sheet);
-}
-
-document.getElementById('btnImportNopZone').addEventListener('click', async ()=>{
-  const input = document.getElementById('nopZoneInput');
-  const resultBox = document.getElementById('nopZoneImportResult');
-  const file = input.files && input.files[0];
-  if(!file){ toast('اختر ملف CSV أو Excel أولًا'); return; }
-  const isExcel = /\.(xlsx|xls)$/i.test(file.name);
-  const btn = document.getElementById('btnImportNopZone');
-  btn.disabled = true;
-  resultBox.textContent = 'جارٍ قراءة الملف...';
-  try{
-    const csvText = isExcel ? await nopZoneReadExcelAsCsv(file) : await file.text();
-    resultBox.textContent = 'جارٍ رفع الملف...';
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'importNopZoneSchedule', token: authToken(), csvText })
-    });
-    const json = await res.json();
-    if(!json.ok){
-      if(json.error === 'unauthorized'){ forceReLogin(); return; }
-      resultBox.textContent = 'تعذر الاستيراد: ' + (json.error || 'خطأ غير معروف');
-      btn.disabled = false;
-      return;
-    }
-    resultBox.innerHTML = `تم الاستيراد بنجاح — إجمالي الصفوف: ${json.totalRows} · معدات مطابقة: ${json.matched} · غير مطابقة: ${json.unmatched}<br>
-      أُضيفت جدولة جديدة: ${json.added} · حُدّثت جدولة قائمة: ${json.updated}${(json.nopCount||json.zoneCount) ? (' · NOP: ' + (json.nopCount||0) + ' / ZONE: ' + (json.zoneCount||0)) : ''}`;
-    toast('تم استيراد جدولة NOP/ZONE1 بنجاح');
-    input.value = '';
-    renderInspectionSchedules();
-  }catch(e){
-    resultBox.textContent = 'تعذر قراءة الملف أو الاتصال بالخادم';
-  }
-  btn.disabled = false;
-});
 
 /* ============================================================
    TAB: المتابعة والتقارير (admin only)
@@ -4822,7 +4875,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='tickets') renderTicketsView();
     if(btn.dataset.tab==='employees'){ renderEmployeesView(); renderAdminLeavesView(); }
     if(btn.dataset.tab==='myprofile') renderMyProfileView();
-    if(btn.dataset.tab==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); populateScheduleBulkScopeOptions(); }
+    if(btn.dataset.tab==='inspection'){ renderOverdueInspections(); renderInspectionSchedules(); populateScheduleBulkScopeOptions(); if(window.zpRenderBoard) zpRenderBoard(); }
     if(btn.dataset.tab==='reports'){ renderEmployeeStats(); renderNetworkReport(); loadReportScheduleConfig(); }
     if(btn.dataset.tab==='battery') renderBatteryView();
   });
@@ -6024,6 +6077,227 @@ if(isLoggedIn()){
 } else {
   showLoginScreen();
 }
+</script>
+<script>
+/* ============================================================
+   الفحص الدوري — متابعة ZONE1 / NOP (شاشة موحّدة + فلتر)
+   ============================================================ */
+(function(){
+  const ZP = { items: [], meta: {}, filter: 'ALL', search: '', loaded: false, previews: {}, editPole: null };
+  try{ const f = localStorage.getItem('zpFilter'); if(f) ZP.filter = f; }catch(e){}
+
+  async function zpPost(payload){
+    const res = await fetch(API_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ token: authToken() }, payload)) });
+    const json = await res.json();
+    if(!json.ok && json.error === 'unauthorized'){ forceReLogin(); throw new Error('unauthorized'); }
+    return json;
+  }
+  const esc = s => escapeHtml(String(s == null ? '' : s));
+  const isOpenNote = it => !!it.noteType && it.noteAction !== 'تمت المعالجة';
+  const connClass = c => c === 'ONLINE' ? 'on' : (c === 'OFFLINE' ? 'off' : (c === 'NO JUMPER' ? 'nj' : 'na'));
+  const isIssue = it => (it.conn && it.conn !== 'ONLINE') || it.overdue;
+  function daysSince(iso){ if(!iso) return null; const t = new Date(iso).getTime(); return isNaN(t) ? null : Math.floor((Date.now() - t) / 86400000); }
+  function fmt(iso){ return iso ? String(iso).slice(0,10) : '—'; }
+
+  function filtered(){
+    const q = ZP.search.trim().toLowerCase();
+    return ZP.items.filter(it => (ZP.filter === 'ALL' || it.priorities.indexOf(ZP.filter) !== -1)
+      && (!q || (it.pole + ' ' + it.office + ' ' + it.station + ' ' + it.feeder).toLowerCase().indexOf(q) !== -1));
+  }
+  function rank(it){ return (isIssue(it) ? 0 : (isOpenNote(it) ? 1 : 2)); }
+
+  function renderMeta(){
+    const m = ZP.meta || {};
+    const nopAge = daysSince(m.NOP);
+    const counts = { ZONE1: 0, NOP: 0 };
+    ZP.items.forEach(it => it.priorities.forEach(p => { if(counts[p] !== undefined) counts[p]++; }));
+    document.getElementById('zpMeta').innerHTML =
+      `<span>آخر رفع SCADA: <b>${fmt(m.scada)}</b></span>` +
+      `<span>ZONE1: <b>${counts.ZONE1}</b> معدة${m.ZONE1 ? ' · اعتُمدت ' + fmt(m.ZONE1) : ''}</span>` +
+      `<span class="${nopAge !== null && nopAge > 35 ? 'zp-stale' : ''}">NOP: <b>${counts.NOP}</b> معدة · آخر تحديث ${fmt(m.NOP)}${nopAge !== null && nopAge > 35 ? ' — مضى ' + nopAge + ' يومًا، حدّث القائمة' : ''}</span>`;
+    document.querySelectorAll('#zpFilterSeg button').forEach(b => b.classList.toggle('active', b.dataset.zpFilter === ZP.filter));
+  }
+
+  function renderKpis(list){
+    const n = f => list.filter(f).length;
+    const tiles = [
+      ['الإجمالي', list.length, ''],
+      ['ONLINE', n(i => i.conn === 'ONLINE'), 'good'],
+      ['OFFLINE', n(i => i.conn === 'OFFLINE'), 'bad'],
+      ['NO JUMPER', n(i => i.conn === 'NO JUMPER'), 'warn'],
+      ['ملاحظات مفتوحة', n(isOpenNote), 'warn'],
+      ['تمت المعالجة', n(i => i.noteType && i.noteAction === 'تمت المعالجة'), 'good'],
+      ['متأخر عن الفحص الميداني', n(i => i.overdue), 'bad']
+    ];
+    const pct = list.length ? Math.round(n(i => i.conn === 'ONLINE') / list.length * 1000) / 10 : 0;
+    tiles.splice(4, 0, ['نسبة الاتصال', pct + '%', '']);
+    document.getElementById('zpKpis').innerHTML = tiles.map(t => `<div class="zp-kpi ${t[2]}"><div class="l">${t[0]}</div><div class="v">${t[1]}</div></div>`).join('');
+  }
+
+  function renderTable(list){
+    const wrap = document.getElementById('zpTableWrap');
+    if(!ZP.items.length){
+      wrap.innerHTML = `<div class="empty-state">لا توجد معدات في القوائم بعد — افتح «⚙️ إدارة القوائم والجدولة» وارفع قائمتي ZONE1 و NOP.</div>`;
+      return;
+    }
+    if(!list.length){ wrap.innerHTML = `<div class="empty-state">لا توجد نتائج مطابقة</div>`; return; }
+    const rows = list.slice().sort((a,b) => rank(a) - rank(b) || a.pole.localeCompare(b.pole)).map(it => {
+      const cls = isIssue(it) ? 'zp-issue' : (isOpenNote(it) ? 'zp-note' : '');
+      const tags = it.priorities.map(p => `<span class="zp-tag ${p === 'NOP' ? 'nop' : ''}">${esc(p)}</span>`).join('');
+      const conn = it.conn ? `<span class="zp-conn ${connClass(it.conn)}">${esc(it.conn)}</span>` : `<span class="zp-conn na">غير متوفر</span>`;
+      const note = it.noteType ? `<b>${esc(it.noteType)}</b>${it.details ? `<div class="zp-sub">${esc(it.details)}</div>` : ''}${it.observedAt ? `<div class="zp-sub">رُصدت ${esc(it.observedAt)}</div>` : ''}` : '<span class="zp-sub">—</span>';
+      const act = it.noteAction ? esc(it.noteAction) : (it.noteType ? '<span class="zp-overdue">بدون إجراء</span>' : '<span class="zp-sub">—</span>');
+      const field = `${esc(it.frequency || '—')}<div class="zp-sub">آخر: ${esc(it.lastDate || '—')}</div><div class="zp-sub ${it.overdue ? 'zp-overdue' : ''}">القادم: ${esc(it.nextDue || '—')}${it.overdue ? ' (متأخر)' : ''}</div>`;
+      return `<tr class="${cls}">
+        <td><span class="zp-pole">${esc(it.pole)}</span>${tags}<div class="zp-sub">${esc([it.station, it.feeder, it.type].filter(Boolean).join(' · '))}</div></td>
+        <td>${esc(it.office || '—')}</td>
+        <td>${conn}${it.problem && it.problem !== it.conn ? `<div class="zp-sub">${esc(it.problem)}</div>` : ''}</td>
+        <td>${note}</td><td>${act}</td><td>${field}</td>
+        <td><button type="button" class="ghost zpEdit" data-pole="${esc(it.pole)}">✏️</button></td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `<table class="zp-table"><thead><tr><th>المعدة</th><th>المكتب</th><th>الاتصال (SCADA)</th><th>الملاحظة</th><th>الإجراء</th><th>الفحص الميداني</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    wrap.querySelectorAll('.zpEdit').forEach(b => b.addEventListener('click', () => openNote(b.dataset.pole)));
+  }
+
+  function render(){ renderMeta(); const list = filtered(); renderKpis(list); renderTable(list); }
+
+  async function load(){
+    const wrap = document.getElementById('zpTableWrap');
+    if(!wrap) return;
+    if(!ZP.loaded) wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:16px 0;">جارٍ التحميل...</div>`;
+    try{
+      const json = await zpPost({ action:'zpGetBoard' });
+      if(!json.ok){ wrap.innerHTML = `<div class="empty-state">تعذر التحميل: ${esc(json.error || '')}</div>`; return; }
+      ZP.items = json.items || []; ZP.meta = json.meta || {}; ZP.loaded = true;
+      render();
+    }catch(e){ if(String(e.message) !== 'unauthorized') wrap.innerHTML = `<div class="empty-state">تعذر الاتصال بالخادم</div>`; }
+  }
+  window.zpRenderBoard = load;
+
+  /* ----- ملاحظة المتابعة ----- */
+  function openNote(pole){
+    const it = ZP.items.find(x => x.pole === pole); if(!it) return;
+    ZP.editPole = pole;
+    document.getElementById('zpNotePole').textContent = pole + (it.conn ? ' — ' + it.conn : '');
+    document.getElementById('zpNoteType').value = it.noteType || '';
+    document.getElementById('zpNoteDetails').value = it.details || '';
+    document.getElementById('zpNoteAction').value = it.noteAction || '';
+    document.getElementById('zpNoteDate').value = it.observedAt || (it.noteType ? '' : new Date().toISOString().slice(0,10));
+    const msg = document.getElementById('zpNoteMsg'); msg.className = 'form-msg'; msg.textContent = '';
+    document.getElementById('zpNoteOverlay').classList.add('show');
+  }
+  function closeNote(){ document.getElementById('zpNoteOverlay').classList.remove('show'); ZP.editPole = null; }
+  async function saveNote(clear){
+    if(!ZP.editPole) return;
+    const payload = clear ? { noteType:'', details:'', noteAction:'', observedAt:'' } : {
+      noteType: document.getElementById('zpNoteType').value,
+      details: document.getElementById('zpNoteDetails').value.trim(),
+      noteAction: document.getElementById('zpNoteAction').value,
+      observedAt: document.getElementById('zpNoteDate').value
+    };
+    const msg = document.getElementById('zpNoteMsg');
+    if(!clear && !payload.noteType && (payload.details || payload.noteAction)){ msg.className = 'form-msg err'; msg.textContent = 'اختر نوع الملاحظة أولًا'; return; }
+    const btns = [document.getElementById('zpNoteSave'), document.getElementById('zpNoteClear')];
+    btns.forEach(b => b.disabled = true);
+    try{
+      const json = await zpPost(Object.assign({ action:'zpSaveNote', pole: ZP.editPole }, payload));
+      if(!json.ok){ msg.className = 'form-msg err'; msg.textContent = json.error || 'تعذر الحفظ'; return; }
+      const it = ZP.items.find(x => x.pole === ZP.editPole);
+      if(it) Object.assign(it, payload);
+      toast(clear ? 'تم مسح الملاحظة' : 'تم حفظ الملاحظة');
+      closeNote(); render();
+    }catch(e){ msg.className = 'form-msg err'; msg.textContent = 'تعذر الاتصال بالخادم'; }
+    finally{ btns.forEach(b => b.disabled = false); }
+  }
+
+  /* ----- قوائم ZONE1 / NOP ----- */
+  async function fileToCsv(file, priority){
+    if(!/\.(xlsx|xls)$/i.test(file.name)) return await file.text();
+    const wb = XLSX.read(await file.arrayBuffer(), { type:'array' });
+    const kw = priority === 'NOP' ? /nop/i : /(zone|زون)/i;
+    const name = wb.SheetNames.find(n => kw.test(n)) || wb.SheetNames[0];
+    return XLSX.utils.sheet_to_csv(wb.Sheets[name]);
+  }
+  function list(title, arr, fmtItem){
+    if(!arr.length) return '';
+    return `<details><summary>${title} (${arr.length})</summary><ul>${arr.map(x => `<li>${fmtItem ? fmtItem(x) : esc(x)}</li>`).join('')}</ul></details>`;
+  }
+  async function preview(priority){
+    const input = document.getElementById('zpFile' + priority);
+    const box = document.getElementById('zpPreview' + priority);
+    const file = input.files && input.files[0];
+    if(!file){ toast('اختر ملف القائمة أولًا'); return; }
+    box.textContent = 'جارٍ قراءة الملف ومطابقته...';
+    try{
+      const csvText = await fileToCsv(file, priority);
+      const json = await zpPost({ action:'zpPreviewList', priority, csvText });
+      if(!json.ok){ box.textContent = 'تعذرت المعاينة: ' + (json.error || ''); return; }
+      ZP.previews[priority] = json;
+      box.innerHTML = `
+        <div class="zp-counts">
+          <span>أسماء في الملف: ${json.totalNames}</span><span>مطابقة: ${json.matched.length}</span>
+          <span>مضافة: ${json.added.length}</span><span>محذوفة: ${json.removed.length}</span><span>بدون تغيير: ${json.unchanged}</span>
+          <span style="color:var(--critical)">غير مطابقة: ${json.unmatched.length + json.ambiguous.length}</span>
+        </div>
+        ${list('➕ مضافة', json.added)}
+        ${list('➖ ستخرج من القائمة (تعود لجدولة كل 4 أشهر)', json.removed)}
+        ${list('⚠️ غير موجودة في النظام — صحّح الاسم في الملف', json.unmatched)}
+        ${list('⚠️ أكثر من تطابق — اكتب الاسم الكامل', json.ambiguous, a => esc(a.input) + ' ← ' + a.candidates.map(esc).join(' / '))}
+        <div class="btn-row">
+          <button type="button" class="primary" data-zp-apply="${priority}" ${json.matched.length ? '' : 'disabled'}>✔ اعتماد القائمة (${json.matched.length} معدة)</button>
+        </div>`;
+      box.querySelector('[data-zp-apply]').addEventListener('click', () => apply(priority));
+    }catch(e){ if(String(e.message) !== 'unauthorized') box.textContent = 'تعذر قراءة الملف أو الاتصال بالخادم'; }
+  }
+  async function apply(priority){
+    const pv = ZP.previews[priority]; if(!pv) return;
+    const box = document.getElementById('zpPreview' + priority);
+    const btn = box.querySelector('[data-zp-apply]'); if(btn) btn.disabled = true;
+    try{
+      const json = await zpPost({ action:'zpApplyList', priority, poles: pv.matched.map(m => m.pole) });
+      if(!json.ok){ toast(json.error || 'تعذر الاعتماد'); if(btn) btn.disabled = false; return; }
+      box.innerHTML = `<div class="form-msg ok">تم اعتماد قائمة ${priority}: ${json.count} معدة مجدولة لفحص ميداني شهري${json.removed ? ' · خرجت ' + json.removed + ' معدة وأُعيدت لجدولة كل 4 أشهر' : ''}.</div>`;
+      document.getElementById('zpFile' + priority).value = '';
+      delete ZP.previews[priority];
+      toast('تم اعتماد قائمة ' + priority);
+      load();
+      if(typeof renderInspectionSchedules === 'function') renderInspectionSchedules();
+    }catch(e){ if(btn) btn.disabled = false; }
+  }
+
+  function exportExcel(){
+    const list = filtered();
+    if(!list.length){ toast('لا توجد بيانات لتصديرها'); return; }
+    const rows = list.map(it => ({
+      'المعدة': it.pole, 'القائمة': it.priorities.join(' / '), 'المكتب': it.office, 'المحطة': it.station, 'المغذي': it.feeder,
+      'الاتصال': it.conn, 'نوع المشكلة (SCADA)': it.problem, 'نوع الملاحظة': it.noteType, 'التفاصيل': it.details,
+      'الإجراء': it.noteAction, 'تاريخ الرصد': it.observedAt, 'الدورية': it.frequency, 'آخر فحص ميداني': it.lastDate,
+      'الفحص القادم': it.nextDue, 'متأخر': it.overdue ? 'نعم' : ''
+    }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'متابعة ' + (ZP.filter === 'ALL' ? 'الكل' : ZP.filter));
+    XLSX.writeFile(wb, `zone1_nop_${ZP.filter}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
+
+  function bind(){
+    const seg = document.getElementById('zpFilterSeg'); if(!seg) return;
+    seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      ZP.filter = b.dataset.zpFilter; try{ localStorage.setItem('zpFilter', ZP.filter); }catch(e){} render();
+    }));
+    document.getElementById('zpSearch').addEventListener('input', e => { ZP.search = e.target.value; render(); });
+    document.getElementById('zpBtnRefresh').addEventListener('click', load);
+    document.getElementById('zpBtnExport').addEventListener('click', exportExcel);
+    document.querySelectorAll('[data-zp-preview]').forEach(b => b.addEventListener('click', () => preview(b.dataset.zpPreview)));
+    document.getElementById('zpNoteClose').addEventListener('click', closeNote);
+    document.getElementById('zpNoteOverlay').addEventListener('click', ev => { if(ev.target.id === 'zpNoteOverlay') closeNote(); });
+    document.getElementById('zpNoteSave').addEventListener('click', () => saveNote(false));
+    document.getElementById('zpNoteClear').addEventListener('click', () => saveNote(true));
+    const insBtn = document.getElementById('inspectionTabBtn');
+    if(insBtn && insBtn.classList.contains('active')) load();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+})();
 </script>
 </body>
 </html>
