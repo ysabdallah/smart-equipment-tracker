@@ -790,6 +790,67 @@ button:active{ transform:scale(.96); }
 .wc-rep.once{ color:var(--text-muted); }
 .wc-legend{ display:flex; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--text-muted); margin-top:10px; }
 .wc-empty{ padding:28px; text-align:center; color:var(--text-muted); }
+
+/* ===== نماذج إغلاق المهام (SCADA / بطاريات / فحص دوري) ===== */
+.tc-modal{ max-width:560px !important; padding:0 !important; overflow:hidden; display:flex; flex-direction:column; }
+.tc-head{ padding:16px 18px; border-bottom:1px solid var(--border); position:relative; }
+.tc-head .close-x{ top:12px; }
+.tc-tag{ display:inline-block; font-size:11px; font-weight:800; padding:2px 9px; border-radius:6px; background:#001F5E; color:#fff; margin-bottom:6px; }
+.tc-tag.battery{ background:var(--good); } .tc-tag.inspection{ background:#0081FF; } .tc-tag.admin{ background:var(--warning); }
+.tc-head h3{ margin:0; font-size:17px; }
+.tc-pole{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-secondary); margin-top:2px; }
+.tc-body{ overflow-y:auto; max-height:calc(88vh - 150px); }
+.tc-sec{ padding:14px 18px; border-bottom:1px solid var(--border); }
+.tc-sec:last-child{ border-bottom:0; }
+.tc-sec h4{ margin:0 0 10px; font-size:13px; color:#001F5E; display:flex; align-items:center; gap:8px; }
+[data-theme="dark"] .tc-sec h4{ color:#8FB8FF; }
+.tc-sec h4 .n{ display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; background:#001F5E; color:#fff; font-size:11px; font-family:'JetBrains Mono',monospace; }
+.tc-locked{ background:var(--surface-1); border:1px dashed var(--border); border-radius:10px; padding:8px 12px; font-size:12.5px; display:flex; flex-wrap:wrap; gap:6px 14px; }
+.tc-locked b{ font-family:'JetBrains Mono',monospace; }
+.tc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; }
+@media (max-width:520px){ .tc-grid{ grid-template-columns:1fr; } }
+.tc-f{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+.tc-f.full{ grid-column:1/-1; }
+.tc-f > label{ font-size:11.5px; color:var(--text-secondary); font-weight:700; margin:0; }
+.tc-req{ color:var(--critical); }
+.tc-f input, .tc-f select, .tc-f textarea{ width:100%; margin:0; }
+.tc-f input.tc-ok, .tc-f select.tc-ok{ border-color:var(--good); background:var(--good-dim); }
+.tc-f input.tc-miss, .tc-f select.tc-miss{ border-color:var(--warning); background:var(--warning-dim); }
+.tc-f input.tc-err, .tc-f select.tc-err, .tc-chips.tc-err, .tc-opts.tc-err, .tc-ph.tc-err{ outline:2px solid var(--critical); outline-offset:1px; }
+.tc-gpsrow{ display:grid; grid-template-columns:1fr 1fr auto; gap:6px; }
+.tc-gps{ white-space:nowrap; }
+.tc-chips, .tc-opts{ display:flex; flex-wrap:wrap; gap:6px; border-radius:8px; }
+.tc-chip{ border:1px solid var(--border); border-radius:999px; padding:4px 12px; font-size:12px; background:var(--surface-2); cursor:pointer; user-select:none; }
+.tc-chip.on{ background:#001F5E; border-color:#001F5E; color:#fff; }
+.tc-opt{ border:1px solid var(--border); border-radius:8px; padding:5px 11px; font-size:12px; cursor:pointer; background:var(--surface-2); user-select:none; }
+.tc-opt.on{ background:#001F5E; border-color:#001F5E; color:#fff; font-weight:700; }
+.tc-opt.on.good{ background:var(--good); border-color:var(--good); }
+.tc-opt.on.bad{ background:var(--critical); border-color:var(--critical); }
+.tc-opt.on.warn{ background:var(--warning); border-color:var(--warning); }
+.tc-cond{ border-inline-start:3px solid #0081FF; padding-inline-start:10px; margin-top:10px; }
+.tc-cond .ct{ font-size:11px; color:#0081FF; font-weight:700; margin-bottom:6px; }
+.tc-row{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; padding:7px 0; border-bottom:1px dashed var(--border); font-size:12.5px; }
+.tc-row:last-child{ border-bottom:0; }
+.tc-note{ font-size:11.5px; color:var(--text-muted); margin-top:6px; }
+.tc-auto{ margin-top:8px; font-size:11.5px; background:var(--surface-1); border-radius:8px; padding:8px 10px; color:var(--text-secondary); }
+.tc-photos{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.tc-ph{ border:1.5px dashed var(--border); border-radius:10px; min-height:84px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:12px; color:var(--text-secondary); text-align:center; cursor:pointer; position:relative; overflow:hidden; padding:6px; }
+.tc-ph.req{ border-color:var(--critical); color:var(--critical); }
+.tc-ph img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.tc-ph input{ display:none; }
+.tc-foot{ display:flex; gap:8px; padding:12px 18px; background:var(--surface-1); border-top:1px solid var(--border); }
+.tc-foot .primary{ flex:1; }
+.tc-view dl{ display:grid; grid-template-columns:auto 1fr; gap:6px 12px; margin:0; font-size:12.5px; }
+.tc-view dt{ color:var(--text-secondary); font-weight:700; }
+.tc-view dd{ margin:0; overflow-wrap:anywhere; }
+.tc-view .tc-photos img{ width:100%; border-radius:8px; }
+.tc-modal label.tc-ph{ display:flex; margin:0; font-weight:600; text-align:center; font-size:12px; }
+.tc-modal label.tc-ph.req{ color:var(--critical); }
+.tc-modal .tc-f input, .tc-modal .tc-f select, .tc-modal .tc-f textarea, .tc-modal .tc-row input{ padding:8px 10px; border-radius:8px; border:1.5px solid var(--border); background:var(--surface-1); color:var(--text-primary); font-size:13px; font-family:inherit; box-sizing:border-box; }
+.tc-modal .tc-f textarea{ resize:vertical; }
+.tc-modal .tc-f input.tc-ok{ border-color:var(--good); background:var(--good-dim); }
+.tc-modal .tc-f input.tc-miss{ border-color:var(--warning); background:var(--warning-dim); }
+.tc-modal .tc-f input.tc-err, .tc-modal .tc-f select.tc-err, .tc-modal .tc-row input.tc-err{ outline:2px solid var(--critical); outline-offset:1px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2585,6 +2646,7 @@ function normalizeTasks(arr){
     status: String(t['الحالة']||'جديد'),
     assignedAt: String(t['تاريخ الإسناد']||''),
     completedAt: String(t['تاريخ الإكمال']||''),
+    taskType: String(t['نوع المهمة']||t.taskType||''),
   })).filter(t=>t.id);
 }
 
@@ -2724,7 +2786,8 @@ async function renderTasksView(){
     const canUpdate = admin || t.assignedToUsername.toLowerCase() === String(auth&&auth.username||'').toLowerCase();
     const statusLabel = statusDisplayLabel(t.status);
     let actionsHtml = '';
-    const isInspectionTask = t.description === 'فحص دوري';
+    const tcKindV = window.tcKind ? tcKind(t) : '';
+    const isInspectionTask = false;
     if(canUpdate && t.status !== 'مكتمل'){
       actionsHtml = `<div class="task-actions">`;
       if(t.status !== 'قيد التنفيذ'){
@@ -2732,13 +2795,13 @@ async function renderTasksView(){
       }
       if(isInspectionTask){
         actionsHtml += `<button type="button" class="primary btnOpenChecklist" data-task-id="${escapeHtml(t.id)}" data-pole-id="${escapeHtml(t.poleId||'')}">📋 تعبئة نموذج الفحص وإنهاء</button>`;
-      } else if(t.poleId && (t.description.indexOf('[بطارية] استبدال')===0 || t.description.indexOf('[بطارية] إعادة فحص')===0)){
+      } else if(!tcKindV && t.poleId && (t.description.indexOf('[بطارية] استبدال')===0 || t.description.indexOf('[بطارية] إعادة فحص')===0)){
         // مهام البطاريات تُغلق تلقائيًا عند تسجيل الفحص/الاستبدال من تبويب البطاريات
         actionsHtml += `<button type="button" class="primary btnOpenBattery" data-pole-id="${escapeHtml(t.poleId)}" data-replace="${t.description.indexOf('[بطارية] استبدال')===0 ? '1' : ''}">🔋 تسجيل في تبويب البطاريات</button>`;
-  } else if(t.description.indexOf('[SCADA] ') === 0){
+  } else if(!tcKindV && t.description.indexOf('[SCADA] ') === 0){
   actionsHtml += `<button type="button" class="primary btnOpenCloseTask" data-task-id="${escapeHtml(t.id)}">🔧 إغلاق المهمة</button>`;
   } else {
-        actionsHtml += `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
+        actionsHtml += tcKindV ? tcActionButtons(t, admin) : `<button class="primary" data-task-status="مكتمل" data-task-id="${escapeHtml(t.id)}">إنهاء المهمة</button>`;
       }
       actionsHtml += `</div>`;
     }
@@ -2765,6 +2828,7 @@ async function renderTasksView(){
       ${equipmentDetailsHtml(pole)}
       ${assignHtml}
       ${actionsHtml}
+      ${window.tcViewButton ? tcViewButton(t) : ''}
     </div>`;
   }).join('');
 
@@ -3325,6 +3389,7 @@ document.getElementById('btnSaveReportSchedule').addEventListener('click', async
 });
 
 document.getElementById('btnExportTasksExcel').addEventListener('click', ()=>{
+  if(window.tcExportTasks){ tcExportTasks(); return; }
   if(!TASKS.length){ toast('لا توجد مهام لتصديرها'); return; }
   const rows = TASKS.map(t=>({
     'الموظف': t.assignedToName,
@@ -3704,8 +3769,8 @@ async function renderFaultyCasesView(){
       wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">تعذر تحميل الحالات</div>`;
       return;
     }
-    FAULTY_CASES_CACHE = (json.cases || []).filter(c=>c.status === 'مفتوحة');
-    renderFaultyCasesHistory((json.cases || []).filter(c=>c.status !== 'مفتوحة').sort((a,b)=> String(b.closedAt||'').localeCompare(String(a.closedAt||''))));
+    FAULTY_CASES_CACHE = (json.cases || []).filter(c=>c.status === 'مفتوحة' || c.status === 'معلّقة');
+    renderFaultyCasesHistory((json.cases || []).filter(c=>c.status !== 'مفتوحة' && c.status !== 'معلّقة').sort((a,b)=> String(b.closedAt||'').localeCompare(String(a.closedAt||''))));
     if(!FAULTY_CASES_CACHE.length){
       wrap.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0;">لا توجد حالات متعطلة مفتوحة حاليًا</div>`;
       return;
@@ -3714,7 +3779,7 @@ async function renderFaultyCasesView(){
       <div class="leave-item">
         <div class="leave-top">
           <div class="leave-title">${escapeHtml(c.pole)} — ${escapeHtml(c.problemType)}</div>
-          <span class="status-pill status-new">${escapeHtml((c.office||'').toUpperCase())}</span>
+          <span style="display:flex; gap:6px; flex-wrap:wrap;">${c.status === 'معلّقة' ? `<span class="status-pill status-progress" title="لا تُسند لها مهام SCADA حتى تُقفل بـ«تمت المعالجة»">معلّقة — ${escapeHtml(c.closeReason||'')}</span>` : ''}<span class="status-pill status-new">${escapeHtml((c.office||'').toUpperCase())}</span></span>
         </div>
         <div class="leave-meta">${c.problemDescription ? escapeHtml(c.problemDescription) : 'بدون وصف'} · آخر رصد: ${escapeHtml(c.lastSeenAt||'')}</div><div class="leave-actions" style="position:relative;"><button type="button" class="faultyResolveBtn" data-id="${escapeHtml(c.id)}" title="تم الحل؟" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--good);background:var(--surface-2);color:var(--good);font-size:16px;line-height:1;cursor:pointer;">✔</button></div>
       </div>
@@ -4051,7 +4116,7 @@ document.getElementById('btnImportScadaCsv').addEventListener('click', async ()=
       : '';
     const connPct = json.totalRows ? Math.round(((json.skippedOnline||0) / json.totalRows) * 1000) / 10 : null;
     resultBox.innerHTML = `تم الاستيراد بنجاح — إجمالي الصفوف: ${json.totalRows} · معدات مطابقة: ${json.matchedPoles} · غير مطابقة: ${json.unmatchedPoles} · أُضيفت جديدًا: ${json.addedPoles||0}<br>
-      مهام أُسندت تلقائيًا: ${json.tasksCreated} · حالات متعطلة جديدة/محدَّثة: ${json.faultyUpserted} · تُترك لفريق سكادا: ${json.skippedNeedScada} · متصل: ${json.skippedOnline||0} (${connPct !== null ? connPct.toLocaleString('en-US') : '—'}%)${filterNote}`;
+      مهام أُسندت تلقائيًا: ${json.tasksCreated} · حالات متعطلة جديدة/محدَّثة: ${json.faultyUpserted} · تُترك لفريق سكادا: ${json.skippedNeedScada}${json.skippedSuspended ? ' · معلّقة (لم تُسند): ' + json.skippedSuspended : ''} · متصل: ${json.skippedOnline||0} (${connPct !== null ? connPct.toLocaleString('en-US') : '—'}%)${filterNote}`;
     toast('تم استيراد ملف SCADA بنجاح');
         if(json.ipChangesCount){ toast(`تنبيه: تغيّر IP لـ ${json.ipChangesCount} معدة`); }
         if(Array.isArray(json.ipChanges)){ for(const ch of json.ipChanges){ await logActivity(ch.pole, `تغيير عنوان IP (${ch.office||'-'}): من ${ch.oldIp||'—'} إلى ${ch.newIp||'—'}`); } }
@@ -6770,6 +6835,464 @@ ${cf}
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
 })();
+</script>
+
+<!-- ===== نماذج إغلاق المهام ===== -->
+<div id="tcOverlay" class="profile-modal-overlay">
+  <div class="profile-modal tc-modal">
+    <div class="tc-head" id="tcHead"></div>
+    <div class="tc-body" id="tcBody"></div>
+    <div class="form-msg" id="tcMsg" style="margin:0 18px;"></div>
+    <div class="tc-foot" id="tcFoot"></div>
+  </div>
+</div>
+<script>
+
+/* ============================================================
+   نماذج إغلاق المهام — SCADA / بطاريات / فحص دوري + الإغلاق الإداري + التصدير
+   الخادم: TaskClosure.gs (tcGetContext / tcSubmit / tcAdminClose / tcGetClosure / tcPhoto / tcExport / tcInfo)
+   ============================================================ */
+(function(){
+  const esc = s => escapeHtml(String(s == null ? '' : s));
+  const $ = id => document.getElementById(id);
+  const TC = { ctx:null, task:null, busy:false };
+  const RESULTS = ['تمت المعالجة','المعدة مزالة','NO JUMPER','NEED MANUFACTURE','NEED SCADA','عائق وصول للمعدة'];
+  const CAUSES = ['عطل RTU','خلل بالبرمجة','عطل شريحة','عطل مودم','ضعف التغطية','لم يُكتشف السبب','أخرى'];
+  const ACTIONS = ['إعادة برمجة','استبدال شريحة','استبدال مودم','استبدال بطارية','استبدال ANTENNA'];
+  const EQ = [
+    ['office','المكتب'],['station','المحطة'],['feeder','المغذي'],['type','نوع المعدة'],['manufacturer','المصنّع'],['ip','IP'],
+    ['serial','الرقم التسلسلي'],['manufacture_year','سنة الصنع'],['modem_type','نوع المودم'],['function_location','الموقع الوظيفي']
+  ];
+  const REQ_COMMON = ['office','station','feeder','type','manufacturer','ip','serial','manufacture_year','modem_type'];
+  const KIND_LABEL = { scada:'SCADA', battery:'بطاريات', inspection:'فحص دوري' };
+
+  async function api(payload){
+    const res = await fetch(API_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ token: authToken() }, payload)) });
+    const json = await res.json();
+    if(!json.ok && json.error === 'unauthorized'){ forceReLogin(); throw new Error('unauthorized'); }
+    return json;
+  }
+
+  /* ---------- نوع المهمة والأزرار (تُستدعى من renderTasksView) ---------- */
+  function tcKind(t){
+    const d = String(t.description || '');
+    if(!t.poleId) return '';
+    if(d.indexOf('[SCADA] ') === 0) return 'scada';
+    if(d.indexOf('[بطارية] استبدال') === 0 || d.indexOf('[بطارية] إعادة فحص') === 0) return 'battery';
+    if(t.taskType === 'فحص دوري' || d.indexOf('فحص دوري') === 0) return 'inspection';
+    return '';
+  }
+  function tcActionButtons(t, admin){
+    const k = tcKind(t), id = esc(t.id);
+    if(k === 'scada') return `<button type="button" class="primary tcOpen" data-task-id="${id}">🔧 إغلاق المهمة</button>` +
+      (admin ? `<button type="button" class="warn tcAdmin" data-task-id="${id}">🗂️ إغلاق إداري</button>` : '');
+    if(k === 'battery') return `<button type="button" class="primary tcOpen" data-task-id="${id}">🔋 نموذج البطارية وإنهاء</button>`;
+    if(k === 'inspection') return `<button type="button" class="primary tcOpen" data-task-id="${id}">✅ نموذج الفحص الدوري وإنهاء</button>`;
+    return '';
+  }
+  function tcViewButton(t){
+    if(t.status !== 'مكتمل' || !tcKind(t)) return '';
+    return `<div class="task-actions"><button type="button" class="tcView" data-task-id="${esc(t.id)}">📄 عرض نموذج الإغلاق</button></div>`;
+  }
+  window.tcKind = tcKind; window.tcActionButtons = tcActionButtons; window.tcViewButton = tcViewButton;
+
+  /* ---------- أدوات النافذة ---------- */
+  function openShell(tag, tagCls, title, sub){
+    $('tcHead').innerHTML = `<button class="close-x" type="button" data-tc-close>×</button><span class="tc-tag ${tagCls||''}">${esc(tag)}</span><h3>${title}</h3>${sub ? `<div class="tc-pole">${esc(sub)}</div>` : ''}`;
+    $('tcBody').innerHTML = `<div class="tc-sec" style="color:var(--text-muted); text-align:center;">جارٍ التحميل…</div>`;
+    $('tcFoot').innerHTML = `<button type="button" class="ghost" data-tc-close>إغلاق</button>`;
+    msg('');
+    $('tcOverlay').classList.add('show');
+  }
+  function closeShell(){ $('tcOverlay').classList.remove('show'); TC.ctx = null; TC.task = null; }
+  function msg(text, ok){ const m = $('tcMsg'); m.className = 'form-msg' + (text ? (ok ? ' ok' : ' err') : ''); m.textContent = text || ''; }
+  function sec(n, title, inner){ return `<div class="tc-sec"><h4><span class="n">${n}</span>${title}</h4>${inner}</div>`; }
+  function star(){ return ' <span class="tc-req">★</span>'; }
+  function opts(name, list, cls){
+    return `<div class="tc-opts" data-opt="${name}">` + list.map(o => `<span class="tc-opt" data-v="${esc(o)}" data-cls="${(cls && cls[o]) || ''}">${esc(o)}</span>`).join('') + `</div>`;
+  }
+  function chips(name, list){
+    return `<div class="tc-chips" data-chips="${name}">` + list.map(o => `<span class="tc-chip" data-v="${esc(o)}">${esc(o)}</span>`).join('') + `</div>`;
+  }
+  function optVal(name){ const el = $('tcBody').querySelector(`[data-opt="${name}"] .tc-opt.on`); return el ? el.dataset.v : ''; }
+  function chipVals(name){ return [...$('tcBody').querySelectorAll(`[data-chips="${name}"] .tc-chip.on`)].map(e => e.dataset.v); }
+  function val(id){ const el = $(id); return el ? String(el.value || '').trim() : ''; }
+
+  /* ---------- القسم المشترك: بيانات المعدة ---------- */
+  function equipmentSection(n, eq, keys, required){
+    eq = eq || {};
+    const fields = EQ.filter(f => keys.indexOf(f[0]) !== -1).map(f => {
+      const v = eq[f[0]] || '', req = required.indexOf(f[0]) !== -1;
+      const cls = v ? 'tc-ok' : (req ? 'tc-miss' : '');
+      const type = f[0] === 'manufacture_year' ? 'inputmode="numeric" maxlength="4" placeholder="مثال: 2019"' : (req && !v ? 'placeholder="مطلوب"' : '');
+      return `<div class="tc-f"><label>${f[1]}${req ? star() : ''}</label><input id="tcEq_${f[0]}" data-eq="${f[0]}" class="${cls}" value="${esc(v)}" ${type}></div>`;
+    }).join('');
+    let coords = '';
+    if(keys.indexOf('lat') !== -1){
+      const la = eq.lat || '', ln = eq.lng || '';
+      coords = `<div class="tc-f full"><label>الإحداثيات${star()}</label><div class="tc-gpsrow">
+        <input id="tcEq_lat" data-eq="lat" class="${la ? 'tc-ok' : 'tc-miss'}" value="${esc(la)}" placeholder="خط العرض" inputmode="decimal">
+        <input id="tcEq_lng" data-eq="lng" class="${ln ? 'tc-ok' : 'tc-miss'}" value="${esc(ln)}" placeholder="خط الطول" inputmode="decimal">
+        <button type="button" class="tc-gps" data-tc-gps>📍 موقعي الحالي</button></div></div>`;
+    }
+    return sec(n, 'بيانات المعدة', `<div class="tc-grid">${fields}${coords}</div><div class="tc-note">الخانات الفارغة تُكمَّل في بيانات المعدة عند الحفظ، ولا يُستبدل أي بيان موجود.</div>`);
+  }
+  function photosSection(n){
+    return sec(n, 'الصور والملاحظات', `<div class="tc-photos">
+        <label class="tc-ph" id="tcPhBefore">📷 صورة قبل<br>(اختياري)<input type="file" accept="image/*" capture="environment" id="tcFileBefore"></label>
+        <label class="tc-ph req" id="tcPhAfter">📷 صورة بعد العمل${star()}<input type="file" accept="image/*" capture="environment" id="tcFileAfter"></label>
+      </div>
+      <div class="tc-f full" style="margin-top:8px"><label>ملاحظات</label><textarea id="tcNotes" rows="2"></textarea></div>`);
+  }
+  function collectEquipment(){
+    const eq = {};
+    $('tcBody').querySelectorAll('[data-eq]').forEach(i => { eq[i.dataset.eq] = String(i.value || '').trim(); });
+    return eq;
+  }
+
+  /* ---------- فتح نموذج الإغلاق ---------- */
+  async function openForm(taskId){
+    const t = TASKS.find(x => x.id === taskId); if(!t) return;
+    const kind = tcKind(t);
+    const titles = { scada:'🔧 إغلاق مهمة SCADA', battery:'🔋 إغلاق مهمة بطارية', inspection:'✅ نموذج الفحص الدوري' };
+    openShell(KIND_LABEL[kind], kind, titles[kind], t.poleId);
+    TC.task = t;
+    try{
+      const ctx = await api({ action:'tcGetContext', taskId });
+      if(!ctx.ok){ $('tcBody').innerHTML = `<div class="tc-sec">${esc(ctx.error || 'تعذر التحميل')}</div>`; return; }
+      TC.ctx = ctx;
+      const eq = Object.assign({}, ctx.equipment || {});
+      const local = poleByCode(t.poleId);
+      if(local){ ['office','type','manufacturer','ip','station','feeder','serial','modem_type','manufacture_year','function_location'].forEach(k => { if(!eq[k] && local[k]) eq[k] = local[k]; });
+        if(!eq.lat && local.lat != null) eq.lat = String(local.lat); if(!eq.lng && local.lng != null) eq.lng = String(local.lng); }
+      $('tcHead').querySelector('.tc-pole').textContent = t.poleId + (eq.office ? ' · ' + eq.office : '');
+      if(kind === 'scada') renderScada(eq, ctx);
+      else if(kind === 'battery') renderBattery(eq, ctx);
+      else renderInspection(eq, ctx);
+      $('tcFoot').innerHTML = `<button type="button" class="ghost" data-tc-close>إلغاء</button><button type="button" class="primary" id="tcSubmitBtn">${kind === 'inspection' ? '✔ إنهاء الفحص وحفظه' : '✔ حفظ وإغلاق المهمة'}</button>`;
+      $('tcSubmitBtn').addEventListener('click', submit);
+    }catch(e){ if(String(e.message) !== 'unauthorized') $('tcBody').innerHTML = `<div class="tc-sec">تعذر الاتصال بالخادم</div>`; }
+  }
+
+  function renderScada(eq, ctx){
+    const o = ctx.observed || {};
+    $('tcBody').innerHTML =
+      sec(1, 'المشكلة المرصودة (للعرض فقط)', `<div class="tc-locked"><span>الحالة: <b>${esc(o.status || 'OFFLINE')}</b></span>${o.problem ? `<span>النوع: <b>${esc(o.problem)}</b></span>` : ''}${o.firstSeen ? `<span>أول رصد: <b>${esc(String(o.firstSeen).slice(0,10))}</b></span>` : ''}${o.lastSeen ? `<span>آخر رصد: <b>${esc(String(o.lastSeen).slice(0,10))}</b></span>` : ''}</div>`) +
+      equipmentSection(2, eq, EQ.map(f => f[0]).concat(['lat','lng']), REQ_COMMON) +
+      sec(3, 'التشخيص والإجراء', `<div class="tc-grid">
+        <div class="tc-f full"><label>السبب المكتشف${star()}</label><select id="tcCause"><option value="">— اختر —</option>${CAUSES.map(c => `<option>${esc(c)}</option>`).join('')}</select></div>
+        <div class="tc-f full" id="tcCauseOtherWrap" style="display:none"><label>اكتب السبب${star()}</label><input id="tcCauseOther"></div>
+        <div class="tc-f full"><label>الإجراء المتخذ${star()} <span style="font-weight:400">(اختيار متعدد)</span></label>${chips('actions', ACTIONS)}</div>
+        <div class="tc-f full"><label>نتيجة الإغلاق${star()}</label>${opts('result', RESULTS, { 'تمت المعالجة':'good' })}</div>
+        </div>
+        <div class="tc-cond" id="tcReconWrap" style="display:none"><div class="ct">يظهر عند «تمت المعالجة»</div>
+          <div class="tc-f"><label>عادت المعدة للاتصال مع مركز التحكم؟${star()}</label>${opts('reconnected', ['نعم','لا'], { 'نعم':'good', 'لا':'bad' })}</div></div>
+        <div class="tc-auto">«تمت المعالجة» تُغلق الحالة المتعطلة · «NEED MANUFACTURE» تفتح تذكرة مصنّع · باقي النتائج تُسجَّل المعدة «معلّقة» ولا تُسند لها مهام من SCADA حتى تُغيَّر إلى «تمت المعالجة».</div>`) +
+      photosSection(4);
+    $('tcCause').addEventListener('change', () => { $('tcCauseOtherWrap').style.display = val('tcCause') === 'أخرى' ? '' : 'none'; });
+    TC.onOpt = name => { if(name === 'result') $('tcReconWrap').style.display = optVal('result') === 'تمت المعالجة' ? '' : 'none'; };
+  }
+
+  function renderBattery(eq, ctx){
+    const s = ctx.batterySpec || {};
+    const types = ['VRLA','Li-ion','LiFePO4'];
+    $('tcBody').innerHTML =
+      equipmentSection(1, eq, ['type','manufacturer'], ['type','manufacturer']) +
+      sec(2, 'البطارية الحالية', `<div class="tc-note" style="margin:-4px 0 8px">${s.type ? 'المواصفات المحفوظة لهذه المعدة — عدّلها إن كانت مختلفة.' : 'مواصفات البطارية تُختار يدويًا إلى حين استكمال بيانات بطاريات كل المعدات، وتُحفظ للمعدة بعد هذا الإدخال.'}</div>
+        <div class="tc-grid">
+          <div class="tc-f"><label>النوع${star()}</label><select id="tcBatType"><option value="">— اختر —</option>${types.map(x => `<option ${s.type === x ? 'selected' : ''}>${x}</option>`).join('')}<option value="__other" ${s.type && types.indexOf(s.type) === -1 ? 'selected' : ''}>أخرى…</option></select></div>
+          <div class="tc-f" id="tcBatTypeOtherWrap" style="${s.type && types.indexOf(s.type) === -1 ? '' : 'display:none'}"><label>اكتب النوع${star()}</label><input id="tcBatTypeOther" value="${esc(s.type && types.indexOf(s.type) === -1 ? s.type : '')}"></div>
+          <div class="tc-f"><label>التركيب${star()}</label><select id="tcBatConfig"><option value="">— اختر —</option><option ${s.config === 'مفردة' ? 'selected' : ''}>مفردة</option><option ${s.config === 'مزدوجة' ? 'selected' : ''}>مزدوجة</option></select></div>
+          <div class="tc-f"><label>الجهد (V)${star()}</label><select id="tcBatV"><option value="">— اختر —</option>${[6,12,24,48].map(v => `<option ${Number(s.voltage) === v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+          <div class="tc-f"><label>السعة (Ah)${star()}</label><input id="tcBatAh" inputmode="decimal" value="${esc(s.capacity || '')}"></div>
+          <div class="tc-f"><label>نسبة البطارية %${star()}</label><input id="tcBatP1" inputmode="numeric"></div>
+          <div class="tc-f" id="tcBatP2Wrap" style="display:none"><label>نسبة البطارية الثانية %${star()}</label><input id="tcBatP2" inputmode="numeric"></div>
+          <div class="tc-f"><label>الجهد المقاس فعليًا (V)</label><input id="tcBatMeasured" inputmode="decimal"></div>
+          <div class="tc-f"><label>حالة الشاحن${star()}</label>${opts('charger', ['سليم','عاطل'], { 'سليم':'good', 'عاطل':'bad' })}</div>
+        </div>
+        <div class="tc-note" id="tcBatHint">أقل من 50% استبدال · أقل من 80% إعادة فحص</div>`) +
+      sec(3, 'نتيجة الإغلاق' + star(), `${opts('result', ['سليمة','تحتاج إعادة فحص','تم الاستبدال','لا يوجد مخزون'], { 'سليمة':'good', 'تم الاستبدال':'good', 'لا يوجد مخزون':'warn', 'تحتاج إعادة فحص':'warn' })}
+        <div class="tc-cond" id="tcRepWrap" style="display:none"><div class="ct">يظهر عند «تم الاستبدال»</div><div class="tc-grid">
+          <div class="tc-f"><label>نسبة البطارية الجديدة %${star()}</label><input id="tcBatN1" inputmode="numeric"></div>
+          <div class="tc-f" id="tcBatN2Wrap" style="display:none"><label>نسبة البطارية الجديدة الثانية %${star()}</label><input id="tcBatN2" inputmode="numeric"></div></div>
+          <div class="tc-note">يُخصم من المخزون تلقائيًا.</div></div>
+        <div class="tc-auto">«لا يوجد مخزون» تُبقي المهمة مفتوحة وتظهر في «الاحتياج مقابل المخزون».</div>`) +
+      photosSection(4);
+    const syncCfg = () => { const d = val('tcBatConfig') === 'مزدوجة'; $('tcBatP2Wrap').style.display = d ? '' : 'none'; $('tcBatN2Wrap').style.display = d ? '' : 'none'; };
+    $('tcBatConfig').addEventListener('change', syncCfg); syncCfg();
+    $('tcBatType').addEventListener('change', () => { $('tcBatTypeOtherWrap').style.display = val('tcBatType') === '__other' ? '' : 'none'; });
+    const hint = () => { const p1 = Number(val('tcBatP1')), p2 = Number(val('tcBatP2')); if(val('tcBatP1') === '') return;
+      const m = val('tcBatConfig') === 'مزدوجة' && val('tcBatP2') !== '' ? Math.min(p1, p2) : p1;
+      $('tcBatHint').textContent = 'التصنيف حسب النسبة: ' + (m < 50 ? 'استبدال' : (m < 80 ? 'إعادة فحص' : 'سليم')); };
+    $('tcBatP1').addEventListener('input', hint); $('tcBatP2').addEventListener('input', hint);
+    TC.onOpt = name => { if(name === 'result') $('tcRepWrap').style.display = optVal('result') === 'تم الاستبدال' ? '' : 'none'; };
+  }
+
+  function renderInspection(eq, ctx){
+    const row = (label, name, list, cls, note) => `<div class="tc-row"><span>${label}${star()}${note ? ` <span class="tc-note">${note}</span>` : ''}</span>${opts(name, list, cls)}</div>`;
+    const G = 'good', B = 'bad', W = 'warn';
+    const isRec = /REC|RECLOSER|معيد/i.test(String(eq.type || ''));
+    $('tcBody').innerHTML =
+      equipmentSection(1, eq, EQ.map(f => f[0]).concat(['lat','lng']), REQ_COMMON) +
+      sec(2, 'بنود الفحص',
+        row('🧰 حالة المعدة', 'equipState', ['سليم','يحتاج صيانة','تالف'], { 'سليم':G, 'يحتاج صيانة':W, 'تالف':B }) +
+        row('🧪 مستوى الغاز', 'gas', ['أخضر','أحمر','تعذر الرؤية','لا ينطبق'], { 'أخضر':G, 'أحمر':B }) +
+        row('⛓️ حالة السلسلة', 'chain', ['سليمة','تحتاج مراجعة','لا ينطبق'], { 'سليمة':G, 'تحتاج مراجعة':W }) +
+        `<div class="tc-row"><span>🔋 نسبة البطارية %${star()}</span><input id="tcInsBat" inputmode="numeric" style="width:90px"></div>` +
+        row('📡 الاتصال مع SCADA', 'scadaConn', ['متصل','غير متصل'], { 'متصل':G, 'غير متصل':B }) +
+        row('🔌 الجمبر والتأريض', 'jumperGround', ['سليم','يحتاج صيانة'], { 'سليم':G, 'يحتاج صيانة':W }) +
+        row('🧵 الكابلات والتوصيلات', 'cables', ['سليمة','تحتاج صيانة'], { 'سليمة':G, 'تحتاج صيانة':W }) +
+        row('🗄️ الكابينة والباب', 'cabinet', ['سليم','يحتاج صيانة'], { 'سليم':G, 'يحتاج صيانة':W }) +
+        `<div class="tc-row"><span>🔢 عدّاد العمليات <span class="tc-note">${isRec ? '(للمعيدات)' : '(إن وجد)'}</span></span><input id="tcInsOps" inputmode="numeric" style="width:90px"></div>` +
+        `<div class="tc-note">${ctx.batterySpec ? 'نسبة البطارية تُسجَّل تلقائيًا في تبويب البطاريات.' : 'مواصفات بطارية هذه المعدة غير مسجلة بعد — تُحفظ النسبة في النموذج فقط.'}</div>`) +
+      sec(3, 'نتيجة الفحص' + star(), opts('result', ['سليمة','تحتاج صيانة','تالفة'], { 'سليمة':G, 'تحتاج صيانة':W, 'تالفة':B }) +
+        `<div class="tc-auto">«تحتاج صيانة» تُنشئ مهمة صيانة · «تالفة» تُنشئ مهمة وتُدرج المعدة في «معدات متعطلة» · موعد الفحص القادم يُحسب تلقائيًا.</div>`) +
+      photosSection(4);
+    TC.onOpt = null;
+  }
+
+  /* ---------- الإرسال ---------- */
+  function markErr(sel, on){ const el = typeof sel === 'string' ? $('tcBody').querySelector(sel) : sel; if(el) el.classList.toggle('tc-err', !!on); }
+  async function submit(){
+    if(TC.busy || !TC.task) return;
+    const kind = tcKind(TC.task);
+    $('tcBody').querySelectorAll('.tc-err').forEach(e => e.classList.remove('tc-err'));
+    const eq = collectEquipment();
+    const miss = [];
+    const reqEq = kind === 'battery' ? ['type','manufacturer'] : REQ_COMMON.concat(['lat','lng']);
+    reqEq.forEach(k => { if(!eq[k]){ const l = k === 'lat' || k === 'lng' ? 'الإحداثيات' : (EQ.find(f => f[0] === k) || [k,k])[1]; if(miss.indexOf(l) === -1) miss.push(l); markErr('#tcEq_' + k, true); } });
+    if(kind !== 'battery' && eq.manufacture_year && !/^(19|20)\d{2}$/.test(eq.manufacture_year)){ miss.push('سنة الصنع (4 أرقام)'); markErr('#tcEq_manufacture_year', true); }
+    const form = { notes: val('tcNotes') };
+    const need = (cond, label, sel) => { if(!cond){ miss.push(label); if(sel) markErr(sel, true); } };
+    const pct = id => { const v = val(id); const n = Number(v); return v === '' || isNaN(n) || n < 0 || n > 100 ? null : n; };
+    if(kind === 'scada'){
+      form.observed = (TC.ctx.observed && TC.ctx.observed.problem) || '';
+      form.cause = val('tcCause'); need(form.cause, 'السبب المكتشف', '#tcCause');
+      form.causeOther = val('tcCauseOther'); if(form.cause === 'أخرى') need(form.causeOther, 'تفاصيل السبب', '#tcCauseOther');
+      form.actions = chipVals('actions'); need(form.actions.length, 'الإجراء المتخذ', '[data-chips="actions"]');
+      form.result = optVal('result'); need(form.result, 'نتيجة الإغلاق', '[data-opt="result"]');
+      if(form.result === 'تمت المعالجة'){ form.reconnected = optVal('reconnected'); need(form.reconnected, 'تأكيد عودة الاتصال', '[data-opt="reconnected"]'); }
+    } else if(kind === 'battery'){
+      form.batType = val('tcBatType') === '__other' ? val('tcBatTypeOther') : val('tcBatType'); need(form.batType, 'نوع البطارية', '#tcBatType');
+      form.config = val('tcBatConfig'); need(form.config, 'التركيب', '#tcBatConfig');
+      form.voltage = val('tcBatV'); need(form.voltage, 'الجهد (V)', '#tcBatV');
+      form.capacity = val('tcBatAh'); need(Number(form.capacity) > 0, 'السعة (Ah)', '#tcBatAh');
+      form.pct1 = pct('tcBatP1'); need(form.pct1 !== null, 'نسبة البطارية', '#tcBatP1');
+      if(form.config === 'مزدوجة'){ form.pct2 = pct('tcBatP2'); need(form.pct2 !== null, 'نسبة البطارية الثانية', '#tcBatP2'); }
+      form.measuredV = val('tcBatMeasured');
+      form.charger = optVal('charger'); need(form.charger, 'حالة الشاحن', '[data-opt="charger"]');
+      form.result = optVal('result'); need(form.result, 'النتيجة', '[data-opt="result"]');
+      if(form.result === 'تم الاستبدال'){
+        form.newPct1 = pct('tcBatN1'); need(form.newPct1 !== null, 'نسبة البطارية الجديدة', '#tcBatN1');
+        if(form.config === 'مزدوجة'){ form.newPct2 = pct('tcBatN2'); need(form.newPct2 !== null, 'نسبة البطارية الجديدة الثانية', '#tcBatN2'); }
+      }
+    } else {
+      [['equipState','حالة المعدة'],['gas','مستوى الغاز'],['chain','حالة السلسلة'],['scadaConn','الاتصال مع SCADA'],['jumperGround','الجمبر والتأريض'],['cables','الكابلات والتوصيلات'],['cabinet','الكابينة والباب'],['result','نتيجة الفحص']]
+        .forEach(([k, l]) => { form[k] = optVal(k); need(form[k], l, `[data-opt="${k}"]`); });
+      form.batteryPct = pct('tcInsBat'); need(form.batteryPct !== null, 'نسبة البطارية %', '#tcInsBat');
+      form.opsCounter = val('tcInsOps');
+    }
+    const after = $('tcFileAfter').files[0], before = $('tcFileBefore').files[0];
+    need(after, 'صورة بعد العمل', '#tcPhAfter');
+    if(miss.length){ msg('حقول إجبارية ناقصة: ' + miss.join('، ')); const f = $('tcBody').querySelector('.tc-err'); if(f) f.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+
+    TC.busy = true; const btn = $('tcSubmitBtn'); btn.disabled = true; btn.textContent = 'جارٍ الحفظ…'; msg('');
+    try{
+      const payload = { action:'tcSubmit', taskId: TC.task.id, equipment: eq, form };
+      payload.photoAfter = await resizeImageToDataUrl(after, 1280, 1280, 0.8);
+      if(before) payload.photoBefore = await resizeImageToDataUrl(before, 1280, 1280, 0.8);
+      const json = await api(payload);
+      if(!json.ok){ msg(json.error || 'تعذر الحفظ'); return; }
+      const t = TASKS.find(x => x.id === TC.task.id);
+      if(t){ t.status = json.taskClosed ? 'مكتمل' : 'قيد التنفيذ'; if(json.taskClosed) t.completedAt = new Date().toISOString(); }
+      const p = poleByCode(TC.task.poleId);
+      if(p && json.equipment){ Object.keys(json.equipment).forEach(k => { const v = json.equipment[k]; if(!v) return;
+        if(k === 'lat' || k === 'lng'){ if(p[k] == null || isNaN(p[k])) p[k] = parseFloat(v); } else if(!p[k]) p[k] = v; }); }
+      let note = json.taskClosed ? 'تم إغلاق المهمة وحفظ النموذج' : 'تم حفظ النموذج — المهمة باقية مفتوحة (لا يوجد مخزون)';
+      if(json.suspended) note += ' · سُجّلت المعدة «معلّقة»';
+      if(json.ticketCreated) note += ' · فُتحت تذكرة مصنّع';
+      if(json.maintenanceTask) note += ' · أُنشئت مهمة صيانة';
+      toast(note);
+      closeShell();
+      renderTasksView();
+      if(typeof loadBatteryData === 'function' && kind !== 'scada'){ try{ BATTERY.loaded = false; }catch(e){} }
+    }catch(e){ if(String(e.message) !== 'unauthorized') msg('تعذر الاتصال بالخادم — لم يُحفظ النموذج'); }
+    finally{ TC.busy = false; const b = $('tcSubmitBtn'); if(b){ b.disabled = false; b.textContent = kind === 'inspection' ? '✔ إنهاء الفحص وحفظه' : '✔ حفظ وإغلاق المهمة'; } }
+  }
+
+  /* ---------- الإغلاق الإداري ---------- */
+  function openAdmin(taskId){
+    const t = TASKS.find(x => x.id === taskId); if(!t) return;
+    TC.task = t;
+    openShell('إغلاق إداري', 'admin', '🗂️ إغلاق إداري — حالة معروفة', t.poleId);
+    $('tcBody').innerHTML = sec(1, 'السبب' + star(), opts('adminReason', RESULTS, { 'تمت المعالجة':'good', 'NEED MANUFACTURE':'warn' }) +
+      `<div class="tc-f full" style="margin-top:10px"><label>ملاحظة</label><textarea id="tcAdminNote" rows="2"></textarea></div>
+       <div class="tc-auto">«تمت المعالجة» تُغلق الحالة المتعطلة مباشرة · باقي الأسباب تُسجَّل المعدة «معلّقة» في الحالات المتعطلة ولا تُسند لها مهام من SCADA حتى تُغيَّر حالتها إلى «تمت المعالجة».</div>`);
+    TC.onOpt = null;
+    $('tcFoot').innerHTML = `<button type="button" class="ghost" data-tc-close>إلغاء</button><button type="button" class="primary" id="tcAdminBtn">✔ إغلاق</button>`;
+    $('tcAdminBtn').addEventListener('click', async () => {
+      const reason = optVal('adminReason');
+      if(!reason){ msg('اختر السبب'); markErr('[data-opt="adminReason"]', true); return; }
+      const b = $('tcAdminBtn'); b.disabled = true;
+      try{
+        const json = await api({ action:'tcAdminClose', taskId, reason, note: val('tcAdminNote') });
+        if(!json.ok){ msg(json.error || 'تعذر الإغلاق'); b.disabled = false; return; }
+        const tt = TASKS.find(x => x.id === taskId); if(tt){ tt.status = 'مكتمل'; tt.completedAt = new Date().toISOString(); }
+        toast(reason === 'تمت المعالجة' ? 'أُغلقت المهمة والحالة المتعطلة' : 'أُغلقت المهمة وسُجّلت المعدة «معلّقة»');
+        closeShell(); renderTasksView();
+      }catch(e){ b.disabled = false; if(String(e.message) !== 'unauthorized') msg('تعذر الاتصال بالخادم'); }
+    });
+  }
+
+  /* ---------- عرض نموذج الإغلاق ---------- */
+  async function openView(taskId){
+    const t = TASKS.find(x => x.id === taskId); if(!t) return;
+    const kind = tcKind(t);
+    openShell(KIND_LABEL[kind] || 'نموذج', kind, '📄 نموذج الإغلاق', t.poleId);
+    try{
+      const json = await api({ action:'tcGetClosure', taskId });
+      if(!json.ok){ $('tcBody').innerHTML = `<div class="tc-sec">${esc(json.error || 'تعذر التحميل')}</div>`; return; }
+      if(!json.record){ $('tcBody').innerHTML = `<div class="tc-sec" style="color:var(--text-muted)">لا يوجد نموذج إغلاق لهذه المهمة (أُغلقت قبل تفعيل النماذج).</div>`; return; }
+      const r = json.record;
+      const skip = ['معرف المهمة','صورة قبل','صورة بعد','بيانات المعدة','تعديلات مقترحة'];
+      const rows = Object.keys(r).filter(k => skip.indexOf(k) === -1 && r[k]).map(k => `<dt>${esc(k)}</dt><dd>${esc(r[k])}</dd>`).join('');
+      let eqHtml = '';
+      const lab = Object.fromEntries(EQ.concat([['lat','خط العرض'],['lng','خط الطول']]));
+      try{ const e = JSON.parse(r['بيانات المعدة'] || '{}');
+        eqHtml = Object.keys(e).filter(k => e[k]).map(k => `<dt>${esc(lab[k] || k)}</dt><dd>${esc(e[k])}</dd>`).join(''); }catch(e){}
+      let prop = '';
+      try{ const pr = JSON.parse(r['تعديلات مقترحة'] || '{}'); prop = Object.keys(pr).map(k => `<li>${esc(lab[k] || k)}: المسجل ${esc(pr[k].from)} — الميداني ${esc(pr[k].to)}</li>`).join(''); }catch(e){}
+      $('tcBody').innerHTML = `<div class="tc-view">` + sec(1, 'البيانات', `<dl>${rows}</dl>`) +
+        (eqHtml ? sec(2, 'بيانات المعدة عند الإغلاق', `<dl>${eqHtml}</dl>`) : '') +
+        (prop ? sec(3, 'تعديلات مقترحة (لم تُطبَّق)', `<ul style="margin:0; padding-inline-start:18px; font-size:12.5px">${prop}</ul>`) : '') +
+        sec('📷', 'الصور', `<div class="tc-photos"><div>${r['صورة قبل'] ? '<button type="button" data-tc-photo="before">عرض صورة قبل</button>' : '<span class="tc-note">لا توجد صورة قبل</span>'}</div><div>${r['صورة بعد'] ? '<button type="button" data-tc-photo="after">عرض صورة بعد</button>' : ''}</div></div>`) + `</div>`;
+      $('tcBody').querySelectorAll('[data-tc-photo]').forEach(b => b.addEventListener('click', async () => {
+        b.disabled = true; b.textContent = 'جارٍ التحميل…';
+        try{ const p = await api({ action:'tcPhoto', taskId, which: b.dataset.tcPhoto });
+          if(p.ok){ const img = document.createElement('img'); img.src = p.dataUrl; b.replaceWith(img); } else { b.textContent = p.error || 'تعذر التحميل'; } }
+        catch(e){ b.textContent = 'تعذر التحميل'; }
+      }));
+    }catch(e){ if(String(e.message) !== 'unauthorized') $('tcBody').innerHTML = `<div class="tc-sec">تعذر الاتصال بالخادم</div>`; }
+  }
+
+  /* ---------- تصدير المهام ---------- */
+  function tcExportTasks(){
+    openShell('تصدير', '', '⬇ تصدير المهام إلى Excel', '');
+    const emps = [...new Set(TASKS.map(t => t.assignedToName).filter(Boolean))].sort();
+    $('tcBody').innerHTML = sec(1, 'الفلاتر', `<div class="tc-grid">
+      <div class="tc-f"><label>نوع المهمة</label><select id="tcExType"><option value="">الكل</option><option value="scada">SCADA</option><option value="battery">بطاريات</option><option value="inspection">فحص دوري</option><option value="other">أخرى</option></select></div>
+      <div class="tc-f"><label>الحالة</label><select id="tcExStatus"><option value="">الكل</option><option value="open">مفتوحة</option><option value="done">مكتملة</option></select></div>
+      <div class="tc-f"><label>الموظف</label><select id="tcExEmp"><option value="">الكل</option>${emps.map(e => `<option>${esc(e)}</option>`).join('')}</select></div>
+      <div class="tc-f"><label>الفترة (تاريخ الإسناد)</label><select id="tcExDays"><option value="">الكل</option><option value="7">آخر 7 أيام</option><option value="30" selected>آخر 30 يومًا</option><option value="90">آخر 90 يومًا</option></select></div>
+      </div><div class="tc-note">الملف: صفحة «المهام» + صفحة لكل نموذج إغلاق بكل الحقول وروابط الصور.</div>`);
+    $('tcFoot').innerHTML = `<button type="button" class="ghost" data-tc-close>إلغاء</button><button type="button" class="primary" id="tcExBtn">⬇ تصدير</button>`;
+    $('tcExBtn').addEventListener('click', async () => {
+      const type = val('tcExType'), st = val('tcExStatus'), emp = val('tcExEmp'), days = Number(val('tcExDays') || 0);
+      const since = days ? Date.now() - days * 86400000 : 0;
+      const list = TASKS.filter(t => {
+        const k = tcKind(t) || 'other';
+        if(type && k !== type) return false;
+        if(st === 'open' && t.status === 'مكتمل') return false;
+        if(st === 'done' && t.status !== 'مكتمل') return false;
+        if(emp && t.assignedToName !== emp) return false;
+        if(since){ const d = new Date(t.assignedAt).getTime(); if(!isNaN(d) && d < since) return false; }
+        return true;
+      });
+      if(!list.length){ msg('لا توجد مهام مطابقة للفلاتر'); return; }
+      const b = $('tcExBtn'); b.disabled = true; b.textContent = 'جارٍ التجهيز…';
+      try{
+        const ex = await api({ action:'tcExport' });
+        if(!ex.ok){ msg(ex.error || 'تعذر التصدير'); return; }
+        const ids = new Set(list.map(t => t.id));
+        const lastBy = {}; ['scada','battery','inspection'].forEach(k => (ex[k] || []).forEach(r => { lastBy[r['معرف المهمة']] = r; }));
+        const typeLabel = { scada:'SCADA', battery:'بطاريات', inspection:'فحص دوري', other:'أخرى' };
+        const rows = list.map(t => { const c = lastBy[t.id] || {}; return {
+          'الوصف': t.description, 'رقم المعدة': t.poleId, 'النوع': typeLabel[tcKind(t) || 'other'], 'الموظف': t.assignedToName, 'الحالة': statusDisplayLabel(t.status),
+          'أسندها': t.assignedBy, 'تاريخ الإسناد': t.assignedAt, 'تاريخ الإكمال': t.completedAt,
+          'نتيجة الإغلاق': c['نتيجة الإغلاق'] || c['النتيجة'] || c['نتيجة الفحص'] || '', 'نوع الإغلاق': c['نوع الإغلاق'] || (c['معرف المهمة'] ? 'موظف' : '') }; });
+        const wb = XLSX.utils.book_new();
+        const addSheet = (name, data) => {
+          if(!data.length) return;
+          const ws = XLSX.utils.json_to_sheet(data);
+          const hdr = Object.keys(data[0]);
+          ['صورة قبل','صورة بعد'].forEach(h => { const ci = hdr.indexOf(h); if(ci === -1) return;
+            data.forEach((r, i) => { const url = r[h]; if(!url) return; const ref = XLSX.utils.encode_cell({ r:i + 1, c:ci }); ws[ref] = { t:'s', v:'فتح الصورة', l:{ Target:url } }; }); });
+          ws['!cols'] = hdr.map(h => ({ wch: Math.min(40, Math.max(12, h.length + 4)) }));
+          ws['!views'] = [{ RTL:true }];
+          XLSX.utils.book_append_sheet(wb, ws, name);
+        };
+        addSheet('المهام', rows);
+        const pick = k => (ex[k] || []).filter(r => ids.has(r['معرف المهمة'])).map(r => { const o = Object.assign({}, r); delete o['بيانات المعدة']; return o; });
+        addSheet('إغلاق SCADA', pick('scada'));
+        addSheet('إغلاق البطاريات', pick('battery'));
+        addSheet('الفحص الدوري', pick('inspection'));
+        wb.Workbook = { Views:[{ RTL:true }] };
+        XLSX.writeFile(wb, `tasks_export_${new Date().toISOString().slice(0,10)}.xlsx`);
+        closeShell();
+      }catch(e){ if(String(e.message) !== 'unauthorized') msg('تعذر الاتصال بالخادم'); }
+      finally{ const bb = $('tcExBtn'); if(bb){ bb.disabled = false; bb.textContent = '⬇ تصدير'; } }
+    });
+  }
+  window.tcExportTasks = tcExportTasks;
+
+  /* ---------- الأحداث العامة ---------- */
+  document.addEventListener('click', ev => {
+    const el = ev.target.closest('.tcOpen, .tcAdmin, .tcView, [data-tc-close], .tc-opt, .tc-chip, [data-tc-gps], #tcFolderBtn');
+    if(!el) return;
+    if(el.classList.contains('tcOpen')) return openForm(el.dataset.taskId);
+    if(el.classList.contains('tcAdmin')) return openAdmin(el.dataset.taskId);
+    if(el.classList.contains('tcView')) return openView(el.dataset.taskId);
+    if(el.hasAttribute('data-tc-close')) return closeShell();
+    if(el.classList.contains('tc-opt')){
+      el.parentElement.querySelectorAll('.tc-opt').forEach(o => o.classList.remove('on', 'good', 'bad', 'warn'));
+      el.classList.add('on'); if(el.dataset.cls) el.classList.add(el.dataset.cls);
+      el.parentElement.classList.remove('tc-err');
+      if(TC.onOpt) TC.onOpt(el.parentElement.dataset.opt);
+      return;
+    }
+    if(el.classList.contains('tc-chip')){ el.classList.toggle('on'); el.parentElement.classList.remove('tc-err'); return; }
+    if(el.hasAttribute('data-tc-gps')){
+      if(!navigator.geolocation){ msg('المتصفح لا يدعم تحديد الموقع'); return; }
+      el.disabled = true; el.textContent = 'جارٍ التحديد…';
+      navigator.geolocation.getCurrentPosition(pos => {
+        $('tcEq_lat').value = pos.coords.latitude.toFixed(6); $('tcEq_lng').value = pos.coords.longitude.toFixed(6);
+        ['tcEq_lat','tcEq_lng'].forEach(i => { $(i).classList.remove('tc-miss','tc-err'); $(i).classList.add('tc-ok'); });
+        el.disabled = false; el.textContent = '📍 موقعي الحالي';
+      }, () => { msg('تعذر تحديد الموقع — فعّل خدمة الموقع أو أدخل الإحداثيات يدويًا'); el.disabled = false; el.textContent = '📍 موقعي الحالي'; }, { enableHighAccuracy:true, timeout:15000 });
+      return;
+    }
+    if(el.id === 'tcFolderBtn'){
+      el.disabled = true;
+      api({ action:'tcInfo' }).then(j => { if(j.ok && j.folderUrl) window.open(j.folderUrl, '_blank'); else toast(j.error || 'تعذر فتح المجلد'); })
+        .catch(() => toast('تعذر الاتصال بالخادم')).finally(() => { el.disabled = false; });
+    }
+  });
+  document.addEventListener('change', ev => {
+    const inp = ev.target;
+    if(inp.id === 'tcFileBefore' || inp.id === 'tcFileAfter'){
+      const box = inp.closest('.tc-ph'); const f = inp.files[0]; if(!f) return;
+      box.classList.remove('tc-err');
+      let img = box.querySelector('img'); if(!img){ img = document.createElement('img'); box.appendChild(img); }
+      const r = new FileReader(); r.onload = () => { img.src = r.result; }; r.readAsDataURL(f);
+    }
+    if(inp.dataset && inp.dataset.eq){ inp.classList.remove('tc-err'); inp.classList.toggle('tc-ok', !!inp.value.trim()); inp.classList.toggle('tc-miss', !inp.value.trim()); }
+  });
+  document.addEventListener('input', ev => { if(ev.target.closest && ev.target.closest('#tcBody')) ev.target.classList.remove('tc-err'); });
+  document.addEventListener('click', ev => { if(ev.target.closest && ev.target.closest('#tcBody') && !$('tcBody').querySelector('.tc-err')) msg(''); }, true);
+  $('tcOverlay').addEventListener('click', ev => { if(ev.target.id === 'tcOverlay') closeShell(); });
+
+  // زر مجلد الصور للمدير بجانب زر التصدير
+  function placeFolderBtn(){
+    const ex = document.getElementById('btnExportTasksExcel'); if(!ex || document.getElementById('tcFolderBtn')) return;
+    const b = document.createElement('button'); b.id = 'tcFolderBtn'; b.type = 'button'; b.textContent = '📁 مجلد صور الإغلاق';
+    ex.insertAdjacentElement('afterend', b);
+    const sync = () => { b.style.display = ex.style.display; };
+    sync(); new MutationObserver(sync).observe(ex, { attributes:true, attributeFilter:['style'] });
+    if(ex.parentElement) ex.parentElement.style.gap = '8px';
+  }
+  placeFolderBtn();
+})();
+
 </script>
 </body>
 </html>
