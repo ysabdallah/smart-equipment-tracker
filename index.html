@@ -852,45 +852,55 @@ button:active{ transform:scale(.96); }
 .tc-modal .tc-f input.tc-miss{ border-color:var(--warning); background:var(--warning-dim); }
 .tc-modal .tc-f input.tc-err, .tc-modal .tc-f select.tc-err, .tc-modal .tc-row input.tc-err{ outline:2px solid var(--critical); outline-offset:1px; }
 
-/* ===== بطاقات المهام ===== */
-#tasksListWrap{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:12px; align-items:stretch; }
+/* ===== بطاقات المهام (v2) ===== */
+#tasksListWrap{ display:grid; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr)); gap:14px; align-items:stretch; }
 #tasksListWrap > .tk-empty, #tasksListWrap > div:not(.task-item){ grid-column:1/-1; }
-#tasksListWrap .task-item.tk-card{ margin:0; padding:12px 14px; display:flex; flex-direction:column; gap:6px; border-top:4px solid var(--tk-c, #64748B); border-inline-start-width:1px; min-width:0; }
-#tasksListWrap .task-item.tk-card:hover{ transform:translateY(-2px); border-inline-start-color:var(--border); }
-.tk-card.tk-scada{ --tk-c:#001F5E; } .tk-card.tk-battery{ --tk-c:var(--good); } .tk-card.tk-inspection{ --tk-c:#0081FF; } .tk-card.tk-maint{ --tk-c:var(--warning); }
+#tasksListWrap .task-item.tk-card{ margin:0; padding:0; display:flex; flex-direction:column; min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:12px; background:var(--surface-1); box-shadow:0 1px 2px rgba(15,23,42,.04); }
+#tasksListWrap .task-item.tk-card:hover{ transform:translateY(-2px); box-shadow:0 12px 24px -16px rgba(0,31,94,.35); border-color:var(--tk-c); }
+.tk-card{ --tk-c:#64748B; } .tk-card.tk-scada{ --tk-c:#001F5E; } .tk-card.tk-battery{ --tk-c:#3F8F72; } .tk-card.tk-inspection{ --tk-c:#0081FF; } .tk-card.tk-maint{ --tk-c:#AD7C22; }
 [data-theme="dark"] .tk-card.tk-scada{ --tk-c:#4C7DFF; }
-.tk-card.tk-done{ opacity:.78; }
-.tk-head{ display:flex; align-items:center; gap:8px; flex-wrap:nowrap; min-width:0; }
-.tk-type{ font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; color:#fff; background:var(--tk-c, #64748B); white-space:nowrap; }
-.tk-pole{ min-width:0; overflow-wrap:anywhere; font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:800; direction:ltr; }
-.tk-head .status-pill{ margin-inline-start:auto; white-space:nowrap; flex-shrink:0; }
-.tk-sub{ font-size:12px; color:var(--text-secondary); }
-.tk-sub b{ color:var(--text-primary); }
-.tk-card .task-desc{ font-size:12.5px; font-weight:600; margin:0; line-height:1.6; }
-.tk-card .task-meta{ font-size:11px; }
-.tk-card .task-actions{ flex-wrap:wrap; margin-top:4px !important; }
-.tk-card > .task-actions:first-of-type, .tk-card > details + .task-actions{ margin-top:auto !important; }
-.tk-card > .tk-spacer{ flex:1; }
-.tk-card .task-actions button{ flex:1 1 auto; padding:7px 10px; font-size:12px; }
-.tk-card .task-actions select{ flex:1 1 140px; min-width:0; }
-.tk-card details.task-equipment{ margin-top:2px; }
-.tk-filter{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:0 0 12px; }
-.tk-filter .sep{ width:1px; height:22px; background:var(--border); margin:0 4px; }
-.tk-chip{ border:1px solid var(--border); background:var(--surface-2); color:var(--text-primary); border-radius:999px; padding:5px 12px; font-size:12px; cursor:pointer; box-shadow:none; }
-.tk-chip.on{ background:#001F5E; border-color:#001F5E; color:#fff; font-weight:700; }
-.tk-chip .c{ font-family:'JetBrains Mono',monospace; opacity:.8; margin-inline-start:4px; }
-.tk-empty{ color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0; }
-@media (max-width:640px){ #tasksListWrap{ grid-template-columns:1fr; } }
-.tk-eq{ display:grid; grid-template-columns:auto 1fr; gap:2px 8px; font-size:12px; align-items:baseline; }
-.tk-eq .k{ color:var(--text-muted); font-size:11px; }
-.tk-eq b{ font-weight:700; overflow-wrap:anywhere; }
+.tk-card.tk-hidden{ display:none !important; }
+.tk-card.tk-done{ opacity:.72; }
+.tk-card .tk-body{ padding:12px 14px 10px; display:flex; flex-direction:column; gap:8px; border-top:3px solid var(--tk-c); flex:1; }
+.tk-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.tk-type{ font-size:10.5px; font-weight:800; letter-spacing:.3px; padding:3px 8px; border-radius:5px; color:#fff; background:var(--tk-c); white-space:nowrap; }
+.tk-status{ display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--text-secondary); white-space:nowrap; }
+.tk-status::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--warning); }
+.tk-status.status-progress::before{ background:#0081FF; } .tk-status.status-done::before{ background:var(--good); }
+.tk-card .tk-pole{ font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:800; direction:ltr; text-align:right; overflow-wrap:anywhere; line-height:1.3; color:var(--text-primary); }
+.tk-title{ font-size:13.5px; font-weight:800; line-height:1.5; }
+.tk-eq{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.tk-eq > div{ min-width:0; background:var(--surface-2); border-radius:8px; padding:6px 9px; }
+.tk-eq span{ display:block; font-size:10.5px; color:var(--text-muted); margin-bottom:1px; }
+.tk-eq b{ display:block; font-size:12.5px; font-weight:700; overflow-wrap:anywhere; line-height:1.35; }
 .tk-state{ display:flex; align-items:center; gap:6px; min-width:0; }
-.tk-st{ font-size:11.5px; font-weight:800; padding:3px 10px; border-radius:6px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.tk-st-bad{ background:var(--critical-dim); color:var(--critical); font-family:'JetBrains Mono',monospace; letter-spacing:.3px; }
+.tk-st{ font-size:11.5px; font-weight:800; padding:3px 10px; border-radius:999px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tk-st-bad{ background:var(--critical-dim); color:var(--critical); font-family:'JetBrains Mono',monospace; letter-spacing:.5px; }
 .tk-st-warn{ background:var(--warning-dim); color:var(--warning); }
 .tk-st-info{ background:rgba(0,129,255,.12); color:#0081FF; }
 .tk-st-muted{ background:var(--surface-2); color:var(--text-secondary); font-weight:600; }
-.tk-map{ margin-inline-start:auto; flex-shrink:0; padding:3px 8px !important; font-size:12px !important; box-shadow:none; }
+.tk-map{ margin-inline-start:auto; flex-shrink:0; width:30px; height:30px; padding:0 !important; border-radius:8px !important; font-size:14px !important; box-shadow:none; background:var(--surface-2) !important; border:1px solid var(--border) !important; }
+.tk-card .tk-foot{ padding:10px 14px 12px; border-top:1px solid var(--border); background:var(--surface-2); display:flex; flex-direction:column; gap:8px; }
+.tk-card .tk-foot:empty{ display:none; }
+.tk-card .tk-foot .task-actions{ margin:0 !important; display:flex; gap:6px; flex-wrap:nowrap; }
+.tk-card .tk-foot .task-actions button{ flex:1 1 0; min-width:0; padding:7px 8px; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-radius:8px; }
+.tk-card .tk-foot .task-actions button.primary{ flex:2 1 0; }
+.tk-card .tk-foot .task-actions .tk-start{ background:transparent; border:1px solid var(--border); color:var(--text-primary); box-shadow:none; }
+.tk-card .tk-foot .task-actions .tcAdmin{ flex:0 0 auto; background:transparent; color:var(--warning); border:1px solid var(--warning); box-shadow:none; }
+.tk-card .tk-foot .tk-assign select{ flex:1 1 auto; min-width:0; padding:6px 8px; font-size:12px; border-radius:8px; margin:0; }
+.tk-card .tk-foot .tk-assign button{ flex:0 0 auto !important; width:auto; padding:6px 12px; }
+.tk-card .tk-foot .tcView{ width:100%; }
+
+.tk-toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 14px; padding:10px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; }
+.tk-seg{ display:inline-flex; background:var(--surface-1); border:1px solid var(--border); border-radius:10px; padding:3px; gap:2px; flex-wrap:wrap; }
+.tk-seg button{ border:0; background:transparent; box-shadow:none; color:var(--text-secondary); font-size:12px; font-weight:700; padding:5px 11px; border-radius:7px; cursor:pointer; white-space:nowrap; }
+.tk-seg button.on{ background:#001F5E; color:#fff; }
+[data-theme="dark"] .tk-seg button.on{ background:#2D5BD8; }
+.tk-seg button .c{ font-family:'JetBrains Mono',monospace; font-size:11px; opacity:.75; margin-inline-start:5px; }
+.tk-search{ flex:1 1 200px; min-width:160px; margin:0 !important; padding:8px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface-1); color:var(--text-primary); font-size:12.5px; font-family:inherit; }
+.tk-count{ font-size:11.5px; color:var(--text-muted); white-space:nowrap; }
+.tk-empty{ color:var(--text-muted); font-size:13px; text-align:center; padding:28px 0; }
+@media (max-width:640px){ #tasksListWrap{ grid-template-columns:1fr; } .tk-search{ flex-basis:100%; } }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2832,7 +2842,7 @@ async function renderTasksView(){
     if(canUpdate && t.status !== 'مكتمل'){
       actionsHtml = `<div class="task-actions">`;
       if(t.status !== 'قيد التنفيذ'){
-        actionsHtml += `<button data-task-status="قيد التنفيذ" data-task-id="${escapeHtml(t.id)}">بدء التنفيذ</button>`;
+        actionsHtml += `<button class="tk-start" data-task-status="قيد التنفيذ" data-task-id="${escapeHtml(t.id)}">▶ بدء</button>`;
       }
       if(isInspectionTask){
         actionsHtml += `<button type="button" class="primary btnOpenChecklist" data-task-id="${escapeHtml(t.id)}" data-pole-id="${escapeHtml(t.poleId||'')}">📋 تعبئة نموذج الفحص وإنهاء</button>`;
@@ -2849,29 +2859,27 @@ async function renderTasksView(){
     const isUnassigned = admin && !t.assignedToUsername;
     let assignHtml = '';
     if(isUnassigned){
-      assignHtml = `<div class="task-actions">
+      assignHtml = `<div class="task-actions tk-assign">
         <select class="taskReassignSelect" data-task-id="${escapeHtml(t.id)}">
-          <option value="">-- إسناد إلى موظف --</option>
+          <option value="">إسناد إلى موظف…</option>
           ${(TECHNICIANS_CACHE||[]).map(u=>`<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)}</option>`).join('')}
         </select>
-        <button type="button" class="primary btnTaskReassign" data-task-id="${escapeHtml(t.id)}">✔ إسناد</button>
+        <button type="button" class="primary btnTaskReassign" data-task-id="${escapeHtml(t.id)}">✔</button>
       </div>`;
     }
     const pole = t.poleId ? poleByCode(t.poleId) : null;
     const tkI = window.tkInfo ? tkInfo(t) : { k:'other', label:'مهمة' };
-    return `<div class="task-item tk-card tk-${tkI.k}${t.status === 'مكتمل' ? ' tk-done' : ''}">
-      <div class="tk-head">
-        <span class="tk-type">${escapeHtml(tkI.label)}</span>
-        ${t.poleId ? `<span class="tk-pole">${escapeHtml(t.poleId)}</span>` : ''}
-        <span class="status-pill ${statusClass(t.status)}">${escapeHtml(statusLabel)}</span>
+    const tkS = window.tkState ? tkState(t) : { text: t.description || '', cls:'muted' };
+    const tkC = pole && pole.lat != null && pole.lng != null && !isNaN(pole.lat) && !isNaN(pole.lng);
+    const tkQ = [t.poleId, pole && pole.manufacturer, pole && pole.type, pole && pole.office, t.assignedToName, t.description].filter(Boolean).join(' ').toLowerCase();
+    return `<div class="task-item tk-card tk-${tkI.k}${t.status === 'مكتمل' ? ' tk-done' : ''}" data-k="${tkI.k}" data-st="${t.status === 'مكتمل' ? 'done' : 'open'}" data-q="${escapeHtml(tkQ)}">
+      <div class="tk-body">
+        <div class="tk-top"><span class="tk-type">${escapeHtml(tkI.label)}</span><span class="tk-status ${statusClass(t.status)}">${escapeHtml(statusLabel)}</span></div>
+        ${t.poleId ? `<div class="tk-pole">${escapeHtml(t.poleId)}</div>` : `<div class="tk-title">${escapeHtml(t.description || 'بدون وصف')}</div>`}
+        ${t.poleId ? `<div class="tk-eq"><div><span>نوع المعدة</span><b title="${escapeHtml((pole && pole.type) || '')}">${escapeHtml((pole && pole.type) || '—')}</b></div><div><span>المصنّع</span><b title="${escapeHtml((pole && pole.manufacturer) || '')}">${escapeHtml((pole && pole.manufacturer) || '—')}</b></div></div>` : ''}
+        ${t.poleId ? `<div class="tk-state"><span class="tk-st tk-st-${tkS.cls}" title="${escapeHtml(t.description || '')}">${escapeHtml(tkS.text)}</span>${tkC ? `<button type="button" class="tk-map" title="خرائط جوجل" onclick="window.open('${mapsLink(pole.lat, pole.lng)}','_blank')">📍</button>` : ''}</div>` : ''}
       </div>
-      ${t.poleId ? `<div class="tk-eq"><span class="k">نوع المعدة</span><b>${escapeHtml((pole && pole.type) || '—')}</b><span class="k">المصنّع</span><b>${escapeHtml((pole && pole.manufacturer) || '—')}</b></div>` : ''}
-      ${(() => { const st = window.tkState ? tkState(t) : { text: t.description || '', cls:'muted' }; const hasC = pole && pole.lat != null && pole.lng != null && !isNaN(pole.lat) && !isNaN(pole.lng);
-        return `<div class="tk-state"><span class="tk-st tk-st-${st.cls}" title="${escapeHtml(t.description || '')}">${escapeHtml(st.text)}</span>${hasC ? `<button type="button" class="ghost tk-map" title="خرائط جوجل" onclick="window.open('${mapsLink(pole.lat, pole.lng)}','_blank')">📍</button>` : ''}</div>`; })()}
-      <div class="tk-spacer"></div>
-      ${assignHtml}
-      ${actionsHtml}
-      ${window.tcViewButton ? tcViewButton(t) : ''}
+      <div class="tk-foot">${assignHtml}${actionsHtml}${window.tcViewButton ? tcViewButton(t) : ''}</div>
     </div>`;
   }).join('') || `<div class="tk-empty">لا توجد مهام بهذا الفلتر</div>`;
 
@@ -6928,9 +6936,9 @@ ${cf}
   function tcActionButtons(t, admin){
     const k = tcKind(t), id = esc(t.id);
     if(k === 'scada') return `<button type="button" class="primary tcOpen" data-task-id="${id}">🔧 إغلاق المهمة</button>` +
-      (admin ? `<button type="button" class="warn tcAdmin" data-task-id="${id}">🗂️ إغلاق إداري</button>` : '');
-    if(k === 'battery') return `<button type="button" class="primary tcOpen" data-task-id="${id}">🔋 نموذج البطارية وإنهاء</button>`;
-    if(k === 'inspection') return `<button type="button" class="primary tcOpen" data-task-id="${id}">✅ نموذج الفحص الدوري وإنهاء</button>`;
+      (admin ? `<button type="button" class="warn tcAdmin" data-task-id="${id}" title="إغلاق إداري">🗂️ إداري</button>` : '');
+    if(k === 'battery') return `<button type="button" class="primary tcOpen" data-task-id="${id}">🔋 نموذج البطارية</button>`;
+    if(k === 'inspection') return `<button type="button" class="primary tcOpen" data-task-id="${id}">✅ نموذج الفحص</button>`;
     return '';
   }
   function tcViewButton(t){
@@ -7339,69 +7347,79 @@ ${cf}
 </script>
 <script>
 
-/* ===== بطاقات المهام: النوع + الفلترة ===== */
+/* ===== بطاقات المهام (v2): النوع، الحالة، الفلترة والبحث ===== */
 (function(){
-  window.TK_FILTER = { type:'', status:'' };
+  const F = window.TK_FILTER = { type:'', status:'', q:'' };
   const TYPES = [['','الكل'],['scada','SCADA'],['battery','بطارية'],['inspection','فحص دوري'],['maint','صيانة'],['other','عامة']];
-  const STATUS = [['','كل الحالات'],['open','مفتوحة'],['done','مكتملة']];
+  const STATUS = [['','الكل'],['open','مفتوحة'],['done','مكتملة']];
   function tkInfo(t){
     const d = String(t.description || '');
     const k = window.tcKind ? tcKind(t) : '';
     if(k === 'scada' || d.indexOf('[SCADA]') === 0) return { k:'scada', label:'SCADA' };
-    if(k === 'battery' || d.indexOf('[بطارية]') === 0) return { k:'battery', label:'🔋 بطارية' };
-    if(k === 'inspection' || t.taskType === 'فحص دوري') return { k:'inspection', label:'✅ فحص دوري' };
-    if(/^صيانة/.test(d)) return { k:'maint', label:'🛠️ صيانة' };
+    if(k === 'battery' || d.indexOf('[بطارية]') === 0) return { k:'battery', label:'بطارية' };
+    if(k === 'inspection' || t.taskType === 'فحص دوري') return { k:'inspection', label:'فحص دوري' };
+    if(/^صيانة/.test(d)) return { k:'maint', label:'صيانة' };
     return { k:'other', label:'مهمة عامة' };
   }
-  function tkDesc(t){ return String(t.description || 'بدون وصف').replace(/^\[(SCADA|بطارية)\]\s*/, ''); }
-  function tkApply(list){
-    const wrap = document.getElementById('tasksListWrap');
-    let bar = document.getElementById('tkFilter');
-    if(!bar && wrap){ bar = document.createElement('div'); bar.id = 'tkFilter'; bar.className = 'tk-filter'; wrap.parentNode.insertBefore(bar, wrap); }
-    const f = window.TK_FILTER;
-    const cnt = {}; list.forEach(t => { const k = tkInfo(t).k; cnt[k] = (cnt[k] || 0) + 1; });
-    const open = list.filter(t => t.status !== 'مكتمل').length;
-    if(bar){
-      bar.innerHTML = TYPES.filter(([k]) => !k || cnt[k]).map(([k, l]) => `<button type="button" class="tk-chip${f.type === k ? ' on' : ''}" data-tk-type="${k}">${l} <span class="c">${k ? cnt[k] : list.length}</span></button>`).join('') +
-        `<span class="sep"></span>` +
-        STATUS.map(([k, l]) => `<button type="button" class="tk-chip${f.status === k ? ' on' : ''}" data-tk-status="${k}">${l}${k === 'open' ? ` <span class="c">${open}</span>` : k === 'done' ? ` <span class="c">${list.length - open}</span>` : ''}</button>`).join('');
-    }
-    const out = list.slice().reverse().filter(t => {
-      if(f.type && tkInfo(t).k !== f.type) return false;
-      if(f.status === 'open' && t.status === 'مكتمل') return false;
-      if(f.status === 'done' && t.status !== 'مكتمل') return false;
-      return true;
-    });
-    // المفتوحة أولاً ثم المكتملة (مع الحفاظ على الأحدث أولاً)
-    return out.filter(t => t.status !== 'مكتمل').concat(out.filter(t => t.status === 'مكتمل'));
-  }
-  window.tkInfo = tkInfo; window.tkDesc = tkDesc; window.tkApply = tkApply;
-  document.addEventListener('click', ev => {
-    const b = ev.target.closest('[data-tk-type], [data-tk-status]'); if(!b) return;
-    if(b.hasAttribute('data-tk-type')) window.TK_FILTER.type = b.dataset.tkType;
-    else window.TK_FILTER.status = b.dataset.tkStatus;
-    renderTasksView();
-  });
-})();
-
-</script>
-<script>
-
-/* ===== بطاقات المهام: حالة المعدة المختصرة ===== */
-(function(){
   function tkState(t){
     const d = String(t.description || '');
-    const k = window.tkInfo ? tkInfo(t).k : 'other';
+    const k = tkInfo(t).k;
     if(k === 'scada'){ const m = d.match(/\b(OFFLINE|ONLINE|COMM(?:UNICATION)? FAIL\w*)\b/i); return { text: m ? m[1].toUpperCase() : 'OFFLINE', cls:'bad' }; }
-    if(k === 'battery'){
-      const body = d.replace(/^\[بطارية\]\s*/, ''); const act = body.split(/\s+[—-]\s+/)[0].trim(); const pct = (body.match(/(\d+(?:\.\d+)?)\s*%/) || [])[1];
-      return { text: act + (pct ? ' · ' + pct + '%' : ''), cls:'warn' };
-    }
+    if(k === 'battery'){ const body = d.replace(/^\[بطارية\]\s*/, ''); const act = body.split(/\s+[—-]\s+/)[0].trim(); const pct = (body.match(/(\d+(?:\.\d+)?)\s*%/) || [])[1]; return { text: act + (pct ? ' · ' + pct + '%' : ''), cls:'warn' }; }
     if(k === 'inspection') return { text:'فحص دوري مستحق', cls:'info' };
     if(k === 'maint'){ const r = d.split(':').slice(1).join(':').trim(); return { text: 'صيانة' + (r ? ': ' + r : ''), cls:'warn' }; }
     return { text: d || 'بدون وصف', cls:'muted' };
   }
-  window.tkState = tkState;
+  function toolbar(){
+    const wrap = document.getElementById('tasksListWrap'); if(!wrap) return null;
+    let bar = document.getElementById('tkToolbar');
+    if(!bar){
+      const old = document.getElementById('tkFilter'); if(old) old.remove();
+      bar = document.createElement('div'); bar.id = 'tkToolbar'; bar.className = 'tk-toolbar';
+      bar.innerHTML = `<div class="tk-seg" id="tkSegType"></div><div class="tk-seg" id="tkSegSt"></div><input type="search" class="tk-search" id="tkSearch" placeholder="🔍 بحث برقم العمود أو المصنّع أو المكتب" autocomplete="off"><span class="tk-count" id="tkCount"></span>`;
+      wrap.parentNode.insertBefore(bar, wrap);
+      bar.querySelector('#tkSearch').addEventListener('input', e => { F.q = e.target.value.trim().toLowerCase(); applyDom(); });
+      bar.addEventListener('click', e => {
+        const b = e.target.closest('[data-f]'); if(!b) return;
+        F[b.dataset.f] = b.dataset.v; paintSeg(); applyDom();
+      });
+    }
+    return bar;
+  }
+  let lastCounts = { cnt:{}, total:0, open:0 };
+  function paintSeg(){
+    const { cnt, total, open } = lastCounts;
+    const t = document.getElementById('tkSegType'), s = document.getElementById('tkSegSt'); if(!t || !s) return;
+    t.innerHTML = TYPES.filter(([k]) => !k || cnt[k]).map(([k, l]) => `<button type="button" data-f="type" data-v="${k}" class="${F.type === k ? 'on' : ''}">${l} <span class="c">${k ? cnt[k] : total}</span></button>`).join('');
+    s.innerHTML = STATUS.map(([k, l]) => `<button type="button" data-f="status" data-v="${k}" class="${F.status === k ? 'on' : ''}">${l}${k ? ` <span class="c">${k === 'open' ? open : total - open}</span>` : ''}</button>`).join('');
+  }
+  function applyDom(){
+    const wrap = document.getElementById('tasksListWrap'); if(!wrap) return;
+    let shown = 0, all = 0;
+    wrap.querySelectorAll('.tk-card').forEach(c => {
+      all++;
+      const ok = (!F.type || c.dataset.k === F.type) && (!F.status || c.dataset.st === F.status) && (!F.q || (c.dataset.q || '').indexOf(F.q) !== -1);
+      c.classList.toggle('tk-hidden', !ok); if(ok) shown++;
+    });
+    let em = wrap.querySelector('.tk-empty-f');
+    if(all && !shown){ if(!em){ em = document.createElement('div'); em.className = 'tk-empty tk-empty-f'; em.textContent = 'لا توجد مهام مطابقة'; wrap.appendChild(em); } }
+    else if(em) em.remove();
+    const c = document.getElementById('tkCount'); if(c) c.textContent = all ? `عرض ${shown} من ${all}` : '';
+  }
+  function tkApply(list){
+    const cnt = {}; list.forEach(t => { const k = tkInfo(t).k; cnt[k] = (cnt[k] || 0) + 1; });
+    const open = list.filter(t => t.status !== 'مكتمل').length;
+    lastCounts = { cnt, total:list.length, open };
+    if(toolbar()) paintSeg();
+    const rank = t => t.status === 'قيد التنفيذ' ? 0 : (t.status === 'مكتمل' ? 2 : 1);
+    return list.map((t, i) => [t, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || b[1] - a[1]).map(x => x[0]);
+  }
+  window.tkInfo = tkInfo; window.tkState = tkState; window.tkApply = tkApply;
+  function watch(){
+    const wrap = document.getElementById('tasksListWrap'); if(!wrap) return;
+    new MutationObserver(() => { if(!wrap.querySelector('.tk-empty-f') || wrap.querySelector('.tk-card')) applyDom(); }).observe(wrap, { childList:true });
+  }
+  watch();
 })();
 
 </script>
