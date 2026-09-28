@@ -851,6 +851,36 @@ button:active{ transform:scale(.96); }
 .tc-modal .tc-f input.tc-ok{ border-color:var(--good); background:var(--good-dim); }
 .tc-modal .tc-f input.tc-miss{ border-color:var(--warning); background:var(--warning-dim); }
 .tc-modal .tc-f input.tc-err, .tc-modal .tc-f select.tc-err, .tc-modal .tc-row input.tc-err{ outline:2px solid var(--critical); outline-offset:1px; }
+
+/* ===== بطاقات المهام ===== */
+#tasksListWrap{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:12px; align-items:stretch; }
+#tasksListWrap > .tk-empty, #tasksListWrap > div:not(.task-item){ grid-column:1/-1; }
+#tasksListWrap .task-item.tk-card{ margin:0; padding:12px 14px; display:flex; flex-direction:column; gap:6px; border-top:4px solid var(--tk-c, #64748B); border-inline-start-width:1px; min-width:0; }
+#tasksListWrap .task-item.tk-card:hover{ transform:translateY(-2px); border-inline-start-color:var(--border); }
+.tk-card.tk-scada{ --tk-c:#001F5E; } .tk-card.tk-battery{ --tk-c:var(--good); } .tk-card.tk-inspection{ --tk-c:#0081FF; } .tk-card.tk-maint{ --tk-c:var(--warning); }
+[data-theme="dark"] .tk-card.tk-scada{ --tk-c:#4C7DFF; }
+.tk-card.tk-done{ opacity:.78; }
+.tk-head{ display:flex; align-items:center; gap:8px; flex-wrap:nowrap; min-width:0; }
+.tk-type{ font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; color:#fff; background:var(--tk-c, #64748B); white-space:nowrap; }
+.tk-pole{ min-width:0; overflow-wrap:anywhere; font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:800; direction:ltr; }
+.tk-head .status-pill{ margin-inline-start:auto; white-space:nowrap; flex-shrink:0; }
+.tk-sub{ font-size:12px; color:var(--text-secondary); }
+.tk-sub b{ color:var(--text-primary); }
+.tk-card .task-desc{ font-size:12.5px; font-weight:600; margin:0; line-height:1.6; }
+.tk-card .task-meta{ font-size:11px; }
+.tk-card .task-actions{ flex-wrap:wrap; margin-top:4px !important; }
+.tk-card > .task-actions:first-of-type, .tk-card > details + .task-actions{ margin-top:auto !important; }
+.tk-card > .tk-spacer{ flex:1; }
+.tk-card .task-actions button{ flex:1 1 auto; padding:7px 10px; font-size:12px; }
+.tk-card .task-actions select{ flex:1 1 140px; min-width:0; }
+.tk-card details.task-equipment{ margin-top:2px; }
+.tk-filter{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:0 0 12px; }
+.tk-filter .sep{ width:1px; height:22px; background:var(--border); margin:0 4px; }
+.tk-chip{ border:1px solid var(--border); background:var(--surface-2); color:var(--text-primary); border-radius:999px; padding:5px 12px; font-size:12px; cursor:pointer; box-shadow:none; }
+.tk-chip.on{ background:#001F5E; border-color:#001F5E; color:#fff; font-weight:700; }
+.tk-chip .c{ font-family:'JetBrains Mono',monospace; opacity:.8; margin-inline-start:4px; }
+.tk-empty{ color:var(--text-muted); font-size:13px; text-align:center; padding:20px 0; }
+@media (max-width:640px){ #tasksListWrap{ grid-template-columns:1fr; } }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2735,7 +2765,7 @@ function equipmentDetailsHtml(pole, openByDefault){
   ).join('');
   if(!rows) return '';
   const mapsBtn = hasCoords ? `<button type="button" class="btn-maps" style="margin-top:10px; width:100%;" onclick="window.open('${mapsLink(pole.lat,pole.lng)}','_blank')">📍 الانتقال إلى خرائط جوجل</button>` : '';
-  return `<details class="task-equipment"${openByDefault ? ' open' : ''}><summary>📋 عرض تفاصيل المعدة الكاملة (بدون الحاجة للبحث)</summary><div class="te-grid">${rows}</div>${mapsBtn}</details>`;
+  return `<details class="task-equipment"${openByDefault ? ' open' : ''}><summary>📋 تفاصيل المعدة</summary><div class="te-grid">${rows}</div>${mapsBtn}</details>`;
 }
 
 async function loadTechniciansForAssignment(){
@@ -2782,7 +2812,8 @@ async function renderTasksView(){
     return;
   }
 
-  listWrap.innerHTML = visibleTasks.slice().reverse().map(t=>{
+  const tkList = window.tkApply ? tkApply(visibleTasks) : visibleTasks.slice().reverse();
+  listWrap.innerHTML = tkList.map(t=>{
     const canUpdate = admin || t.assignedToUsername.toLowerCase() === String(auth&&auth.username||'').toLowerCase();
     const statusLabel = statusDisplayLabel(t.status);
     let actionsHtml = '';
@@ -2817,20 +2848,23 @@ async function renderTasksView(){
       </div>`;
     }
     const pole = t.poleId ? poleByCode(t.poleId) : null;
-    return `<div class="task-item">
-      <div class="task-top">
-        <div>
-          <div class="task-desc">${escapeHtml(t.description || 'بدون وصف')}</div>
-          <div class="task-meta">${t.poleId ? ('العمود: ' + escapeHtml(t.poleId) + ' · ') : ''}الموظف: ${t.assignedToName ? escapeHtml(t.assignedToName) : '<span style="color:var(--warning-color,#b45309);">غير مسندة</span>'} · أسندها: ${escapeHtml(t.assignedBy)}</div>
-        </div>
+    const tkI = window.tkInfo ? tkInfo(t) : { k:'other', label:'مهمة' };
+    return `<div class="task-item tk-card tk-${tkI.k}${t.status === 'مكتمل' ? ' tk-done' : ''}">
+      <div class="tk-head">
+        <span class="tk-type">${escapeHtml(tkI.label)}</span>
+        ${t.poleId ? `<span class="tk-pole">${escapeHtml(t.poleId)}</span>` : ''}
         <span class="status-pill ${statusClass(t.status)}">${escapeHtml(statusLabel)}</span>
       </div>
+      ${t.poleId ? `<div class="tk-sub">المصنّع: <b>${escapeHtml((pole && pole.manufacturer) || '—')}</b>${pole && pole.type ? ' · ' + escapeHtml(pole.type) : ''}${pole && pole.office ? ' · ' + escapeHtml(pole.office) : ''}</div>` : ''}
+      <div class="task-desc">${escapeHtml(window.tkDesc ? tkDesc(t) : (t.description || 'بدون وصف'))}</div>
+      <div class="task-meta">الموظف: ${t.assignedToName ? escapeHtml(t.assignedToName) : '<span style="color:var(--warning-color,#b45309);">غير مسندة</span>'} · أسندها: ${escapeHtml(t.assignedBy)}</div>
+      <div class="tk-spacer"></div>
       ${equipmentDetailsHtml(pole)}
       ${assignHtml}
       ${actionsHtml}
       ${window.tcViewButton ? tcViewButton(t) : ''}
     </div>`;
-  }).join('');
+  }).join('') || `<div class="tk-empty">لا توجد مهام بهذا الفلتر</div>`;
 
   listWrap.querySelectorAll('[data-task-status]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
@@ -7291,6 +7325,54 @@ ${cf}
     if(ex.parentElement) ex.parentElement.style.gap = '8px';
   }
   placeFolderBtn();
+})();
+
+</script>
+<script>
+
+/* ===== بطاقات المهام: النوع + الفلترة ===== */
+(function(){
+  window.TK_FILTER = { type:'', status:'' };
+  const TYPES = [['','الكل'],['scada','SCADA'],['battery','بطارية'],['inspection','فحص دوري'],['maint','صيانة'],['other','عامة']];
+  const STATUS = [['','كل الحالات'],['open','مفتوحة'],['done','مكتملة']];
+  function tkInfo(t){
+    const d = String(t.description || '');
+    const k = window.tcKind ? tcKind(t) : '';
+    if(k === 'scada' || d.indexOf('[SCADA]') === 0) return { k:'scada', label:'SCADA' };
+    if(k === 'battery' || d.indexOf('[بطارية]') === 0) return { k:'battery', label:'🔋 بطارية' };
+    if(k === 'inspection' || t.taskType === 'فحص دوري') return { k:'inspection', label:'✅ فحص دوري' };
+    if(/^صيانة/.test(d)) return { k:'maint', label:'🛠️ صيانة' };
+    return { k:'other', label:'مهمة عامة' };
+  }
+  function tkDesc(t){ return String(t.description || 'بدون وصف').replace(/^\[(SCADA|بطارية)\]\s*/, ''); }
+  function tkApply(list){
+    const wrap = document.getElementById('tasksListWrap');
+    let bar = document.getElementById('tkFilter');
+    if(!bar && wrap){ bar = document.createElement('div'); bar.id = 'tkFilter'; bar.className = 'tk-filter'; wrap.parentNode.insertBefore(bar, wrap); }
+    const f = window.TK_FILTER;
+    const cnt = {}; list.forEach(t => { const k = tkInfo(t).k; cnt[k] = (cnt[k] || 0) + 1; });
+    const open = list.filter(t => t.status !== 'مكتمل').length;
+    if(bar){
+      bar.innerHTML = TYPES.filter(([k]) => !k || cnt[k]).map(([k, l]) => `<button type="button" class="tk-chip${f.type === k ? ' on' : ''}" data-tk-type="${k}">${l} <span class="c">${k ? cnt[k] : list.length}</span></button>`).join('') +
+        `<span class="sep"></span>` +
+        STATUS.map(([k, l]) => `<button type="button" class="tk-chip${f.status === k ? ' on' : ''}" data-tk-status="${k}">${l}${k === 'open' ? ` <span class="c">${open}</span>` : k === 'done' ? ` <span class="c">${list.length - open}</span>` : ''}</button>`).join('');
+    }
+    const out = list.slice().reverse().filter(t => {
+      if(f.type && tkInfo(t).k !== f.type) return false;
+      if(f.status === 'open' && t.status === 'مكتمل') return false;
+      if(f.status === 'done' && t.status !== 'مكتمل') return false;
+      return true;
+    });
+    // المفتوحة أولاً ثم المكتملة (مع الحفاظ على الأحدث أولاً)
+    return out.filter(t => t.status !== 'مكتمل').concat(out.filter(t => t.status === 'مكتمل'));
+  }
+  window.tkInfo = tkInfo; window.tkDesc = tkDesc; window.tkApply = tkApply;
+  document.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-tk-type], [data-tk-status]'); if(!b) return;
+    if(b.hasAttribute('data-tk-type')) window.TK_FILTER.type = b.dataset.tkType;
+    else window.TK_FILTER.status = b.dataset.tkStatus;
+    renderTasksView();
+  });
 })();
 
 </script>
