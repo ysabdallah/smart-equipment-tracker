@@ -2477,13 +2477,24 @@ const EXTRA_LABELS = {
   material_code: 'كود المادة',
   po_number: 'رقم أمر الشراء',
 };
+/* توحيد اسم الشركة المصنّعة: COOPER_LBS / LBS_COOPER / LUCY _SLBS → COOPER / LUCY */
+const MANU_TYPE_TOKENS = ['LBS','SLBS','REC','SREC','RECLOSER','SEC','SSEC','SECTIONLIZER','SECTIONALIZER'];
+const MANU_ALIASES = { 'FANAR':'ALFANAR' };
+function normalizeManufacturer(v){
+  const raw = String(v == null ? '' : v).trim();
+  if(!raw) return '';
+  const parts = raw.split(/[_\s]+/).filter(Boolean);
+  const rest = parts.filter(x => MANU_TYPE_TOKENS.indexOf(x.toUpperCase()) === -1);
+  const out = (rest.length && rest.length < parts.length) ? rest.join(' ') : raw;
+  return MANU_ALIASES[out.toUpperCase()] || out;
+}
 function normalizePoles(arr){
   return (arr||[]).map(p=>{
     const rec = {
       pole: String(p.pole||''),
       office: String(p.office||''),
       type: String(p.type||''),
-      manufacturer: String(p.manufacturer||''),
+      manufacturer: normalizeManufacturer(p.manufacturer),
       rtu: String(p.rtu||''),
       ip: String(p.ip||''),
       lat: (p.lat==='' || p.lat===undefined || p.lat===null || isNaN(parseFloat(p.lat))) ? null : parseFloat(p.lat),
@@ -2611,7 +2622,7 @@ async function initData(){
     // نحمّلها أولًا ونحاول رفعها للخادم قبل أي شيء آخر، حتى لا تُفقد أو تُستبدل ببيانات الخادم القديمة
     const cachedPoles = loadPolesFromCache();
     const cachedActivity = loadActivityFromCache();
-    POLES = cachedPoles || [];
+    POLES = (cachedPoles || []).map(p => { p.manufacturer = normalizeManufacturer(p.manufacturer); return p; });
     ACTIVITY_LOG = cachedActivity || [];
     STORAGE_AVAILABLE = true;
     const ok = await persistPoles(POLES);
@@ -2648,7 +2659,7 @@ async function initData(){
       console.warn('external database unavailable, falling back to local cache', e);
       const cachedPoles = loadPolesFromCache();
       const cachedActivity = loadActivityFromCache();
-      POLES = cachedPoles || [];
+      POLES = (cachedPoles || []).map(p => { p.manufacturer = normalizeManufacturer(p.manufacturer); return p; });
       ACTIVITY_LOG = cachedActivity || [];
       STORAGE_AVAILABLE = false;
       setConnStatus('disconnected');
@@ -5794,7 +5805,7 @@ function savePole(idx){
     pole: document.getElementById('f_pole').value.trim(),
     office: getFieldValue('f_office_select','f_office_new'),
     type: document.getElementById('f_type').value,
-    manufacturer: getFieldValue('f_manu_select','f_manu_new'),
+    manufacturer: normalizeManufacturer(getFieldValue('f_manu_select','f_manu_new')),
     rtu: getFieldValue('f_rtu_select','f_rtu_new'),
     ip: document.getElementById('f_ip').value.trim(),
     serial: document.getElementById('f_serial').value.trim(),
