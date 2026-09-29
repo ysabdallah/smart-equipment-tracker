@@ -1274,7 +1274,7 @@ button:active{ transform:scale(.96); }
     </div>
     <div class="card">
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
-        <h3 style="margin:0;">حالة الضمان — تُحسب تلقائيًا من سنة الصنع (مدة الضمان 5 سنوات)</h3>
+        <div><h3 style="margin:0;">حالة الضمان — تُحسب تلقائيًا من سنة الصنع (مدة الضمان 5 سنوات)</h3><div id="warrantyScope" style="font-size:11.5px; color:var(--text-muted); margin-top:4px;"></div></div>
         <button id="btnExportWarranty">⬇ تصدير المعدات المتأثرة (قاربت/انتهى ضمانها)</button>
       </div>
       <div class="warranty-ring-row">
@@ -6064,11 +6064,18 @@ function warrantyStatus(p){
 let WARRANTY_ATTENTION_ALL = []; // uncapped list (expired + warning), used by the export button
 
 function renderWarrantySection(){
-  const withStatus = POLES.map(p=>Object.assign({}, p, warrantyStatus(p)));
+  // المعدات المشمولة: الموجودة في النظام حسب آخر ملف SCADA فقط
+  const basePoles = (typeof scadaLatestPoles === 'function') ? scadaLatestPoles() : POLES;
+  const withStatus = basePoles.map(p=>Object.assign({}, p, warrantyStatus(p)));
   const counts = { ok:0, warning:0, expired:0, unknown:0 };
   withStatus.forEach(p=>counts[p.status]++);
+  const scopeEl = document.getElementById('warrantyScope');
+  if(scopeEl){
+    const ts = (SCADA_CONN_STATUS && SCADA_CONN_STATUS.lastImportAt) ? new Date(SCADA_CONN_STATUS.lastImportAt) : null;
+    scopeEl.textContent = `المعدات حسب آخر ملف SCADA: ${withStatus.length.toLocaleString('en-US')} معدة` + (ts && !isNaN(ts) ? ` · ${ts.toLocaleDateString('en-GB')}` : '') + ` — النسبة محسوبة من المعدات المعروفة سنة صنعها (${(withStatus.length - counts.unknown).toLocaleString('en-US')})`;
+  }
 
-  const totalForRing = withStatus.length || 1;
+  const totalForRing = (withStatus.length - counts.unknown) || 1;
   const okPct = Math.round((counts.ok / totalForRing) * 100);
   const ringFill = document.getElementById('warrantyRingFill');
   const ringPctLabel = document.getElementById('warrantyRingPct');
@@ -6080,7 +6087,7 @@ function renderWarrantySection(){
     <div class="warranty-stat"><div class="k">ضمن الضمان</div><div class="v" style="color:var(--good);">${counts.ok.toLocaleString('en-US')}</div></div>
     <div class="warranty-stat"><div class="k">قارب على الانتهاء (سنة 4-5)</div><div class="v" style="color:var(--warning);">${counts.warning.toLocaleString('en-US')}</div></div>
     <div class="warranty-stat"><div class="k">خارج الضمان</div><div class="v" style="color:var(--critical);">${counts.expired.toLocaleString('en-US')}</div></div>
-    <div class="warranty-stat"><div class="k">سنة الصنع غير محددة</div><div class="v" style="color:var(--text-muted);">${counts.unknown.toLocaleString('en-US')}</div></div>
+    <div class="warranty-stat"><div class="k">بيانات ناقصة (سنة الصنع) — تُعبّأ لاحقًا</div><div class="v" style="color:var(--text-muted);">${counts.unknown.toLocaleString('en-US')}</div></div>
   `;
 
   const chartData = ['ok','warning','expired','unknown']
@@ -6125,7 +6132,7 @@ function renderWarrantySection(){
 
   const note = document.getElementById('warrantyUnknownNote');
   note.textContent = counts.unknown>0
-    ? `${counts.unknown.toLocaleString('en-US')} معدة بدون سنة صنع مسجّلة — لا تُحتسب ضمن حالة الضمان حتى تُعبّأ`
+    ? `${counts.unknown.toLocaleString('en-US')} معدة من آخر ملف SCADA بدون سنة صنع — لا تدخل في نسبة الضمان، وتُحتسب تلقائيًا بعد تعبئة بياناتها (من بيانات المعدة أو نموذج إغلاق المهمة)`
     : '';
 }
 document.getElementById('btnExportWarranty').addEventListener('click', ()=>{
