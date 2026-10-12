@@ -1182,8 +1182,19 @@ button:active{ transform:scale(.96); }
     </div>
   </div>
 
-  <div id="poleDetailPanel"></div>
-
+      <div id="poleDetailPanel"></div>
+    <div class="card">
+      <h3 style="margin-bottom:10px;">تصفح الكل حسب المكتب / النوع</h3>
+      <div class="btn-row" style="gap:10px; flex-wrap:wrap;">
+        <select id="browseOfficeFilter" style="min-width:160px;"></select>
+        <select id="browseTypeFilter" style="min-width:160px;"></select>
+      </div>
+      <div class="login-sub" id="browseResultsMeta" style="margin-top:8px;"></div>
+      <div id="browseResultsGrid" class="pole-results-grid" style="margin-top:12px;"></div>
+      <div id="browseLoadMoreWrap" style="text-align:center; margin-top:14px; display:none;">
+        <button id="btnBrowseLoadMore" class="ghost">عرض المزيد</button>
+      </div>
+    </div>
   <div id="poleResults" class="pole-results-grid"></div>
 
   <div class="card">
@@ -2575,7 +2586,7 @@ async function attemptReconnect(){
       FAULTY_CASES_DASH = data.faultyCases || [];
       cachePolesLocally();
       cacheActivityLocally();
-      renderPoleResults();
+      renderPoleResults();renderBrowseResults();
       renderDashboard();
       renderNotifBadge();
       renderTasksView();
@@ -2642,7 +2653,7 @@ async function initData(){
 
   updateSyncBadge();
   renderNotifBadge();
-  renderPoleResults();
+  renderPoleResults();renderBrowseResults();
   renderDashboard();
   renderTasksView();
 }
@@ -5625,7 +5636,76 @@ function renderPoleResults(){
     </div>`;
   }).join('');
 }
-function togglePoleExtra(idx){
+let browseFilters = { office:'', type:'', limit:60 };
+  
+  function populateBrowseFilters(){
+    const officeSel = document.getElementById('browseOfficeFilter');
+    const typeSel = document.getElementById('browseTypeFilter');
+    if(!officeSel || !typeSel) return;
+    const offices = distinctValues('office');
+    const types = distinctValues('type');
+    officeSel.innerHTML = '<option value="">كل المكاتب</option>' + offices.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+    typeSel.innerHTML = '<option value="">كل الأنواع</option>' + types.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+    officeSel.value = browseFilters.office;
+    typeSel.value = browseFilters.type;
+  }
+  function renderBrowseResults(){
+    const grid = document.getElementById('browseResultsGrid');
+    const meta = document.getElementById('browseResultsMeta');
+    const loadMoreWrap = document.getElementById('browseLoadMoreWrap');
+    if(!grid || !meta) return;
+    populateBrowseFilters();
+    if(!browseFilters.office && !browseFilters.type){
+      grid.innerHTML = '';
+      meta.textContent = '';
+      if(loadMoreWrap) loadMoreWrap.style.display = 'none';
+      return;
+    }
+    const matches = POLES.filter(p=>{
+      if(browseFilters.office && String(p.office||'') !== browseFilters.office) return false;
+      if(browseFilters.type && String(p.type||'') !== browseFilters.type) return false;
+      return true;
+  });
+    meta.textContent = matches.length + ' معدة مطابقة';
+    const shown = matches.slice(0, browseFilters.limit);
+    grid.innerHTML = shown.map(p=>{
+      const idx = POLES.indexOf(p);
+      return `<div class="pole-card" style="cursor:pointer;" onclick="openPoleDetail(${idx})">
+        <div class="pc-head">
+          <div class="pc-title">${escapeHtml(p.pole)}</div>
+          <div class="pc-head-corner">
+            <span class="badge ${typeBadgeClass(p.type)}">${escapeHtml(p.type||'—')}</span>
+          </div>
+        </div>
+        <div class="pc-fields">
+          <div class="pc-field"><div class="k">المكتب</div><div class="v">${escapeHtml(p.office||'—')}</div></div>
+          <div class="pc-field"><div class="k">الشركة المصنّعة</div><div class="v">${escapeHtml(p.manufacturer||'—')}</div></div>
+        </div>
+      </div>`;
+  }).join('');
+    if(loadMoreWrap) loadMoreWrap.style.display = matches.length > browseFilters.limit ? 'block' : 'none';
+  }
+  if(document.getElementById('browseOfficeFilter')){
+    document.getElementById('browseOfficeFilter').addEventListener('change', (e)=>{
+      browseFilters.office = e.target.value;
+      browseFilters.limit = 60;
+      renderBrowseResults();
+  });
+  }
+  if(document.getElementById('browseTypeFilter')){
+    document.getElementById('browseTypeFilter').addEventListener('change', (e)=>{
+      browseFilters.type = e.target.value;
+      browseFilters.limit = 60;
+      renderBrowseResults();
+  });
+  }
+  if(document.getElementById('btnBrowseLoadMore')){
+    document.getElementById('btnBrowseLoadMore').addEventListener('click', ()=>{
+      browseFilters.limit += 60;
+      renderBrowseResults();
+    });
+  }
+  function togglePoleExtra(idx){
   const box = document.getElementById('pcExtra_'+idx);
   const btn = document.getElementById('pcExtraBtn_'+idx);
   if(!box || !btn) return;
@@ -5805,7 +5885,7 @@ function savePole(idx){
     logActivity(rec.pole, 'تعديل بيانات العمود');
   }
   closePoleDetail();
-  renderPoleResults();
+  renderPoleResults();renderBrowseResults();
   cachePolesLocally();
   persistPoles();
 }
@@ -5814,7 +5894,7 @@ function deletePole(idx){
   const deletedPole = POLES[idx] ? POLES[idx].pole : '';
   POLES.splice(idx,1);
   closePoleDetail();
-  renderPoleResults();
+  renderPoleResults();renderBrowseResults();
   toast('تم الحذف');
   cachePolesLocally();
   persistPoles();
