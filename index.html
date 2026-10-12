@@ -1724,6 +1724,7 @@ button:active{ transform:scale(.96); }
   <nav class="subtabs">
     <button class="subtab-btn active" data-subtab="batInspect">🔋 الفحص</button>
     <button class="subtab-btn" data-subtab="batStock" id="batStockSubBtn" style="display:none;">📦 المخزون</button>
+    <button type="button" class="ghost" id="btnBatExport" style="margin-inline-start:auto;">📤 تصدير Excel</button>
   </nav>
 
   <div id="subtab-batInspect" class="subtab-panel active">
@@ -3445,6 +3446,33 @@ document.getElementById('btnExportTasksExcel').addEventListener('click', ()=>{
   XLSX.utils.book_append_sheet(wb, ws, 'المهام');
   XLSX.writeFile(wb, 'tasks_export.xlsx');
   toast('تم تصدير المهام كملف إكسل');
+});
+
+document.getElementById('btnBatExport').addEventListener('click', ()=>{
+  if(!BATTERY.loaded){ toast('بيانات البطاريات لم تُحمَّل بعد'); return; }
+  const rows = batRows().filter(r=> r.status==='استبدال فوري' || r.status==='إعادة فحص');
+  if(!rows.length){ toast('لا توجد معدات بحاجة لاستبدال أو إعادة فحص حاليًا'); return; }
+  const data = rows.map(r=>{
+    const s = r.s;
+    const pct = s ? (s.config==='مزدوجة' ? `${s.pct1} / ${s.pct2}` : `${s.pct1}`) : '';
+    return {
+      'رقم المعدة': r.p.pole,
+      'نوع المعدة': r.p.type || '',
+      'الشركة المصنعة': r.p.manufacturer || '',
+      'مواصفات البطارية': s ? s.type : '',
+      'مفردة / مزدوجة': s ? s.config : '',
+      'نسبة البطارية %': pct,
+      'الحالة': r.status,
+      'تاريخ الفحص': s ? s.lastDate : '',
+      'موعد الفحص': s ? s.nextDue : '',
+      'ملاحظات': s ? (s.note||'') : ''
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'بطاريات تحتاج متابعة');
+  XLSX.writeFile(wb, `بطاريات_تحتاج_متابعة_${batTodayRiyadh()}.xlsx`);
+  toast('تم تصدير '+rows.length+' معدة إلى ملف إكسل');
 });
 
 /* ================= تبويب بيانات الموظفين (للمدير) ================= */
@@ -5312,6 +5340,7 @@ function batRenderList(){
     const pid = escapeHtml(r.p.pole);
     return `<tr class="${r.status==='استبدال فوري' ? 'bat-row-bad' : ''}" data-pole="${pid}">
       <td><b>${pid}</b></td>
+      <td>${escapeHtml(r.p.type)||'—'}</td>
       <td>${escapeHtml(r.p.office)||'—'}</td>
       <td>${spec}</td>
       <td style="font-family:'JetBrains Mono',monospace;">${pct}</td>
@@ -5328,7 +5357,7 @@ function batRenderList(){
   wrap.innerHTML = `
     <div class="bat-muted" style="margin:10px 0 6px;">عدد النتائج: ${rows.length}${rows.length>shown.length ? ` — معروض ${shown.length}` : ''}</div>
     <div class="bat-table-wrap"><table>
-      <thead><tr><th>المعدة</th><th>المكتب</th><th>البطارية</th><th>النسبة</th><th>الحالة</th><th>آخر فحص</th><th>الاستحقاق</th><th></th></tr></thead>
+      <thead><tr><th>المعدة</th><th>النوع</th><th>المكتب</th><th>البطارية</th><th>النسبة</th><th>الحالة</th><th>آخر فحص</th><th>الاستحقاق</th><th></th></tr></thead>
       <tbody>${body}</tbody></table></div>
     ${rows.length>shown.length ? `<div class="bat-more"><button type="button" id="btnBatMore">عرض المزيد</button></div>` : ''}`;
   const more = batEl('btnBatMore');
@@ -5344,7 +5373,7 @@ async function batToggleHistory(btn){
   if(next && next.classList.contains('bat-hist-row')){ next.remove(); return; }
   const row = document.createElement('tr');
   row.className = 'bat-hist-row';
-  row.innerHTML = `<td colspan="8" style="white-space:normal; background:var(--surface-1);">جاري تحميل السجل…</td>`;
+  row.innerHTML = `<td colspan="9" style="white-space:normal; background:var(--surface-1);">جاري تحميل السجل…</td>`;
   tr.after(row);
   try{
     const d = await batPost('batteryGetHistory', { pole: btn.dataset.pole });
