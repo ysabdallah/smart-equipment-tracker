@@ -357,7 +357,7 @@ nav.tabs{ order:1 !important; }
 .empty-state{ text-align:center; padding:40px 20px; color:var(--text-muted); font-size:13px;}
 .map-link{ color:var(--s1); text-decoration:none; font-weight:700; font-size:12px;}
 .map-link:hover{ text-decoration:underline; }
-.toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--text-primary); color:#fff; padding:11px 22px; border-radius:9px; font-size:13px; font-weight:600; z-index:200; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; box-shadow:0 12px 32px -8px rgba(16,27,43,.3);}
+.toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#101B28; color:#fff; padding:11px 22px; border-radius:9px; font-size:13px; font-weight:600; z-index:200; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; box-shadow:0 12px 32px -8px rgba(16,27,43,.3);}
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(-6px); }
 
 /* pole result cards (coordinates tab) — styled after the reference "result-card" */
@@ -5465,6 +5465,7 @@ function batOpenForPole(pole, scroll){
   batEl('batPct1').value=''; batEl('batPct2').value='';
   batPreview();
   batEl('batReplaceCard').style.display='none';
+  batEl('batFormCard').style.display='';
   if(scroll){
     batEl('batFormCard').scrollIntoView({ behavior:'smooth', block:'start' });
     setTimeout(()=>batEl('batPct1').focus(), 350);
