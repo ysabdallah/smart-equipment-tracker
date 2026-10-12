@@ -90,7 +90,7 @@ header.app-header .sub{ font-size:10.5px; color:var(--text-secondary); margin-to
 .status-badge::before{ content:''; width:7px; height:7px; border-radius:2px; background:currentColor; flex-shrink:0;}
 .status-badge.connected{ color:#5FE0A8; background:rgba(0,214,143,0.18); border:1px solid rgba(95,224,168,0.4);}
 .status-badge.connected::before{ animation:ledBlink 1.6s ease-in-out infinite; }
-.status-badge.disconnected{ color:rgba(242,247,255,.7); background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);}
+.status-badge.disconnected{ color:rgba(242,247,255,.7); background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);} .status-badge.connecting{ color:rgba(242,247,255,.55); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15);} .status-badge.connecting::before{ animation:syncPulse 1.4s ease-in-out infinite; }
 @keyframes ledBlink{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
 @media (prefers-reduced-motion: reduce){ .status-badge.connected::before{ animation:none; } }
 .logo-mark{
@@ -1039,7 +1039,7 @@ button:active{ transform:scale(.96); }
     </div>
   </div>
   <div class="badge-group">
-    <div class="status-badge disconnected" id="statusBadge">غير متصل</div>
+    <div class="status-badge connecting" id="statusBadge">جارٍ الاتصال...</div>
     <button id="syncPendingBtn" class="ghost sync-pending-btn" style="display:none;" title="يوجد تغييرات محلية لم تتم مزامنتها بعد — اضغط للمحاولة الآن">⏳ بانتظار المزامنة</button>
     <div class="badge-icons-row">
       <button id="profileBtn" class="ghost user-chip" title="حسابي — تعديل كلمة المرور والصورة الشخصية"><span class="hdr-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 20c.6-3.6 3.2-5.8 7-5.8s6.4 2.2 7 5.8"/></svg></span> <span id="currentUserLabel">—</span><span class="role-pill" id="currentUserRole"></span></button>
