@@ -1831,7 +1831,7 @@ button:active{ transform:scale(.96); }
           <select id="batFilterStatus">
             <option value="all">الكل</option>
             <option value="لم تُفحص">لم تُفحص بعد</option>
-            <option value="استبدال">استبدال</option>
+            <option value="استبدال فوري">استبدال</option>
             <option value="إعادة فحص">إعادة فحص</option>
             <option value="سليم">سليم</option>
             <option value="due">مستحقة الآن</option>
@@ -5126,7 +5126,7 @@ function batNum(s){
   return parseFloat(t);
 }
 function batStatusOf(minPct){
-  if(minPct < 50) return 'استبدال';
+  if(minPct < 50) return 'استبدال فوري';
   if(minPct < 80) return 'إعادة فحص';
   return 'سليم';
 }
@@ -5136,7 +5136,7 @@ function batTodayRiyadh(){
 }
 function batKey(type, v, c){ return String(type||'').trim().toLowerCase()+'|'+v+'|'+c; }
 function batPillClass(status){
-  if(status==='استبدال') return 'bad';
+  if(status==='استبدال فوري') return 'bad';
   if(status==='إعادة فحص') return 'warn';
   if(status==='سليم') return 'ok';
   return 'none';
@@ -5239,7 +5239,7 @@ function batRows(){
     return { p, s, status, due };
   });
 }
-const BAT_ORDER = { 'استبدال':0, 'إعادة فحص':1, 'لم تُفحص':2, 'سليم':3 };
+const BAT_ORDER = { 'استبدال فوري':0, 'إعادة فحص':1, 'لم تُفحص':2, 'سليم':3 };
 
 function batRender(){
   if(!batEl('tab-battery')) return;
@@ -5257,7 +5257,7 @@ function batRenderKpis(){
   const c = { total: rows.length, none:0, rep:0, rec:0, ok:0, due:0 };
   rows.forEach(r=>{
     if(r.status==='لم تُفحص') c.none++;
-    else if(r.status==='استبدال') c.rep++;
+    else if(r.status==='استبدال فوري') c.rep++;
     else if(r.status==='إعادة فحص') c.rec++;
     else c.ok++;
     if(r.due) c.due++;
@@ -5310,7 +5310,7 @@ function batRenderList(){
     const spec = s ? batSpecLabel(s) : '<span class="bat-muted">لم تُسجَّل</span>';
     const next = s && s.nextDue ? (r.due ? `<span style="color:var(--critical); font-weight:700;">${escapeHtml(s.nextDue)} (مستحق)</span>` : escapeHtml(s.nextDue)) : '—';
     const pid = escapeHtml(r.p.pole);
-    return `<tr class="${r.status==='استبدال' ? 'bat-row-bad' : ''}" data-pole="${pid}">
+    return `<tr class="${r.status==='استبدال فوري' ? 'bat-row-bad' : ''}" data-pole="${pid}">
       <td><b>${pid}</b></td>
       <td>${escapeHtml(r.p.office)||'—'}</td>
       <td>${spec}</td>
@@ -5320,7 +5320,7 @@ function batRenderList(){
       <td>${next}</td>
       <td>
         <button type="button" class="bat-act btnBatFill" data-pole="${pid}">${s ? 'فحص' : 'أول فحص'}</button>
-        ${r.status==='استبدال' ? `<button type="button" class="bat-act primary btnBatReplace" data-pole="${pid}">استبدال</button>` : ''}
+        ${r.status==='استبدال فوري' ? `<button type="button" class="bat-act primary btnBatReplace" data-pole="${pid}">استبدال</button>` : ''}
         ${s ? `<button type="button" class="bat-act btnBatHist" data-pole="${pid}">السجل</button>` : ''}
       </td>
     </tr>`;
@@ -5383,7 +5383,7 @@ function batPreview(){
   const v = batNum(batEl('batVoltage').value), c = batNum(batEl('batCapacity').value);
   let txt = `التصنيف التلقائي: ${st}`;
   if(dual) txt += ` (الأدنى ${min}%)`;
-  if(st==='استبدال'){
+  if(st==='استبدال فوري'){
     txt += ` — يلزم ${batCount(dual?'مزدوجة':'مفردة')} × ${v||'؟'}V ${c||'؟'}Ah، وتُنشأ مهمة للمكتب تلقائيًا`;
   } else if(st==='إعادة فحص'){
     txt += ' — تُنشأ مهمة إعادة فحص بعد 30 يومًا';
@@ -5463,7 +5463,7 @@ async function batSaveInspection(){
     if(d.taskCreated==='replace') msg += ' — أُنشئت مهمة استبدال للمكتب';
     else if(d.taskCreated==='recheck') msg += ' — أُنشئت مهمة إعادة فحص';
     if(d.tasksClosed) msg += ` — أُغلقت ${d.tasksClosed} مهمة مفتوحة`;
-    if(d.status==='استبدال' && d.stockShort) msg += ' — تنبيه: المخزون لا يكفي لهذا النوع';
+    if(d.status==='استبدال فوري' && d.stockShort) msg += ' — تنبيه: المخزون لا يكفي لهذا النوع';
     batMsg('batFormMsg', msg, true);
     toast('تم حفظ الفحص');
     batClearForm(false);
@@ -5672,7 +5672,7 @@ function openBatteryTabForPole(pole, forReplace){
   if(!btn) return;
   btn.click();
   const go = ()=>{
-    if(forReplace && BATTERY.specs[String(pole).toLowerCase()] && BATTERY.specs[String(pole).toLowerCase()].status==='استبدال') batOpenReplace(pole);
+    if(forReplace && BATTERY.specs[String(pole).toLowerCase()] && BATTERY.specs[String(pole).toLowerCase()].status==='استبدال فوري') batOpenReplace(pole);
     else batOpenForPole(pole, true);
   };
   const t0 = Date.now();
