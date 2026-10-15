@@ -6851,10 +6851,10 @@ ${cf}
     const wb = XLSX.read(buf, { type:'array', sheets:[sn] });
     const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, raw:true, defval:'' });
     let h = -1;
-    for(let i = 0; i < Math.min(15, aoa.length); i++){ const r = aoa[i].map(x => String(x).trim()); if(r.includes('اسم المعدة') && r.includes('%')){ h = i; break; } }
+    for(let i = 0; i < Math.min(15, aoa.length); i++){ const r = aoa[i].map(x => String(x).trim()); if(r.includes('اسم المعدة') && r.some(x=>x.includes('%'))){ h = i; break; } }
     if(h < 0) throw new Error('لم أجد صف العناوين (اسم المعدة و %) في صفحة Update Data.');
     const H = aoa[h].map(x => String(x).trim()); const ix = n => H.indexOf(n);
-    const c = { n:ix('اسم المعدة'), p:ix('%'), o:ix('المكتب'), s:ix('اسم المحطة'), f:ix('رقم المغذي'), m:ix('الطراز'), id:ix('الرقم الوظيفي'), ip:ix('IP ADD'), c:ix('الاتصال'), t:ix('وقت تسجيل آخر حالة') };
+    const c = { n:ix('اسم المعدة'), p:H.findIndex(x=>x.includes('%')), o:ix('المكتب'), s:ix('اسم المحطة'), f:ix('رقم المغذي'), m:ix('الطراز'), id:ix('الرقم الوظيفي'), ip:ix('IP ADD'), c:ix('الاتصال'), t:ix('وقت تسجيل آخر حالة') };
     const body = aoa.slice(h + 1).filter(r => String(r[c.n]).trim() !== '');
     let pmax = 0; body.forEach(r => { const v = parseFloat(r[c.p]); if(!isNaN(v) && v > pmax) pmax = v; });
     const scale = pmax > 1.5 ? 100 : 1;
